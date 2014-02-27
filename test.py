@@ -4,20 +4,25 @@
 
 import unittest
 import btern
+from btern import Trit, NEG, ZERO, POS
 
 
 class TestTrit(unittest.TestCase):
     def setUp(self):
-        self.unary = [btern.Trit(x) for x in btern.ORDERING]
+        self.unary = [btern.TRITS[x] for x in btern.GLYPHS]
         self.binary = [(x, y) for x in self.unary for y in self.unary]
 
     def test_init(self):
-        trits = [btern.Trit(x) for x in btern.INPUTS]
+        assert len(btern.TRITS) == 3
+        assert len(btern.INTEGERS) == 3
+
+    def test_make(self):
+        trits = [Trit.make(x) for x in btern.INPUTS]
         with self.assertRaises(ValueError):
-            trit = btern.Trit('$')
+            trit = Trit.make('$')
 
     def test_str(self):
-        assert [str(x) for x in self.unary] == list(btern.ORDERING)
+        assert [str(x) for x in self.unary] == [NEG, ZERO, POS]
 
     def test_int(self):
         assert [int(x) for x in self.unary] == [-1, 0, 1]
@@ -26,10 +31,10 @@ class TestTrit(unittest.TestCase):
         assert [bool(x) for x in self.unary] == [False, False, True]
 
     def test_negate(self):
-        assert [int(-x) for x in self.unary] == [1, 0, -1]
+        assert [str(-x) for x in self.unary] == [POS, ZERO, NEG]
 
     def test_abs(self):
-        assert [int(abs(x)) for x in self.unary] == [1, 0, 1]
+        assert [str(abs(x)) for x in self.unary] == [POS, ZERO, POS]
 
     def test_lt(self):
         assert [x < y for (x, y) in self.binary] == [
@@ -68,25 +73,25 @@ class TestTrit(unittest.TestCase):
             True,  True,  True]
 
     def test_and(self):
-        assert [int(x & y) for (x, y) in self.binary] == [
-            -1, -1, -1,
-            -1,  0,  0,
-            -1,  0,  1]
+        assert [str(x & y) for (x, y) in self.binary] == [
+            NEG,  NEG,  NEG,
+            NEG,  ZERO, ZERO,
+            NEG,  ZERO, POS]
 
     def test_or(self):
-        assert [int(x | y) for (x, y) in self.binary] == [
-            -1,  0,  1,
-             0,  0,  1,
-             1,  1,  1]
+        assert [str(x | y) for (x, y) in self.binary] == [
+            NEG,  ZERO, POS,
+            ZERO, ZERO, POS,
+            POS,  POS,  POS]
 
     def test_xor(self):
-        assert [int(x ^ y) for (x, y) in self.binary] == [
-            -1,  0,  1,
-             0,  0,  0,
-             1,  0, -1]
+        assert [str(x ^ y) for (x, y) in self.binary] == [
+            NEG,  ZERO, POS,
+            ZERO, ZERO, ZERO,
+            POS,  ZERO, NEG]
 
     def test_add(self):
-        assert [list(map(int, x.add(y))) for (x, y) in self.binary] == [
-            [ 1, -1], [-1,  0], [ 0,  0],
-            [-1,  0], [ 0,  0], [ 1,  0],
-            [ 0,  0], [ 1,  0], [-1,  1]]
+        assert [list(map(str, x.add(y))) for (x, y) in self.binary] == [
+            [POS,  NEG ], [NEG,  ZERO], [ZERO, ZERO],
+            [NEG,  ZERO], [ZERO, ZERO], [POS,  ZERO],
+            [ZERO, ZERO], [POS,  ZERO], [NEG,  POS ]]

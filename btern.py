@@ -8,8 +8,8 @@ This library implements computations over values expressed in Balanced Ternary
 form.
 
 Balanced Ternary is a numeral system with three symbols, equating to the
-decimal values -1, 0 and +1.  We use the characters -, 0 and + to represents these
-values respectively.
+decimal values -1, 0 and +1.  We use the characters -, 0 and + to represent
+these values respectively.
 
 When performing logical operations with balanced ternary values, we use the
 Kleene ternary propositional logic system, where - represents False, +
@@ -22,7 +22,11 @@ NEG  = '-'
 ZERO = '0'
 POS  = '+'
 
-ORDERING = (NEG, ZERO, POS)
+GLYPHS = (NEG, ZERO, POS)
+INTEGERS = {
+        NEG: -1,
+        ZERO: 0,
+        POS:  1}
 INPUTS = {
         NEG:  NEG,
         '-1': NEG,
@@ -38,33 +42,50 @@ INPUTS = {
         '1':  POS,
         '✓':  POS,
         }
-INTEGERS = {
-        NEG: -1,
-        ZERO: 0,
-        POS:  1,
-        }
 
 
 class Trit(object):
+    """A ternary bit (trit) is the basic unit of information in ternary.
+
+    In balanced ternary, each trit represents one of the three values:
+      * -1 (negative, false, low),
+      *  0 (zero, unknown, none), or
+      *  1 (positive, true, high).
+    """
     def __init__(self, value):
-        if isinstance(value, int) or isinstance(value, float):
+        self.value = value
+        self.integer = INTEGERS[self.value]
+
+    @staticmethod
+    def make(value):
+        """Return a Trit corresponding to 'value'.
+
+        If 'value' is a Trit, we return that Trit unmodified.  If it is an
+        integer or a float, we return a Trit according to whether the number is
+        negative, zero, or positive.
+
+        Otherwise we treat 'value' and string and try to parse it.  If it
+        matches one of the keys in INPUTS then it yields a Trit.  If not,
+        the value is not recognised and we raise a ValueError.
+        """
+        if isinstance(value, Trit):
+            return value
+        elif isinstance(value, int) or isinstance(value, float):
             if value == 0:
-                self.value = ZERO
+                return TRITS[ZERO]
             elif value > 0:
-                self.value = POS
+                return TRITS[POS]
             else:
-                self.value = NEG
-        elif isinstance(value, Trit):
-            self.value = value.value
+                return TRITS[NEG]
         elif value is None:
-            self.value = ZERO
+            return TRITS[ZERO]
+
+        text = str(value).strip()
+        if text in INPUTS:
+            return TRITS[INPUTS[text]]
         else:
-            text = str(value).strip()
-            if text in INPUTS:
-                self.value = INPUTS[text]
-            else:
-                raise ValueError(
-                        "Failed to parse {0!r} as a trit.".format(value))
+            raise ValueError(
+                    "Failed to parse {0!r} as a trit.".format(value))
 
     def __unicode__(self):
         return self.value
@@ -79,16 +100,13 @@ class Trit(object):
         return 'Trit({})'.format(int(self))
 
     def __int__(self):
-        return INTEGERS[self.value]
+        return self.integer
 
     def __oct__(self):
         return oct(int(self))
 
     def __hex__(self):
         return hex(int(self))
-
-    def ordinal(self):
-        return ORDERING.index(self.value)
 
     def __bool__(self):
         """Return the boolean truth value of this trit.
@@ -109,15 +127,15 @@ class Trit(object):
         each other.
         """
         if self.value == NEG:
-            return Trit(POS)
+            return TRITS[POS]
         elif self.value == POS:
-            return Trit(NEG)
+            return TRITS[NEG]
         else:
-            return Trit(ZERO)
+            return TRITS[ZERO]
 
     def __pos__(self):
-        """Return a copy of the trit."""
-        return Trit(self)
+        """Unary plus is an identity function: return the trit."""
+        return self
 
     def __abs__(self):
         """Return the absolute value (value without any sign) of this trit.
@@ -126,19 +144,19 @@ class Trit(object):
         trits yield themselves.
         """
         if self.value == NEG:
-            return Trit(POS)
+            return TRITS[POS]
         else:
-            return Trit(self)
+            return self
 
     def __invert__(self):
         """Return the inverse of this Trit (same as negation)."""
         return self.__neg__()
 
     def __lt__(self, other):
-        return (self.ordinal() < other.ordinal())
+        return (int(self) < int(other))
 
     def __le__(self, other):
-        return (self.ordinal() <= other.ordinal())
+        return (int(self) <= int(other))
 
     def __eq__(self, other):
         return (self.value == other.value)
@@ -147,10 +165,10 @@ class Trit(object):
         return (self.value != other.value)
 
     def __gt__(self, other):
-        return (self.ordinal() > other.ordinal())
+        return (int(self) > int(other))
 
     def __ge__(self, other):
-        return (self.ordinal() >= other.ordinal())
+        return (int(self) >= int(other))
 
     def __and__(self, other):
         """Return the tritwise AND of two trits.
@@ -159,11 +177,11 @@ class Trit(object):
         inputs are positive, otherwise zero.
         """
         if NEG in (self.value, other.value):
-            return Trit(NEG)
+            return TRITS[NEG]
         elif self.value == POS and other.value == POS:
-            return Trit(POS)
+            return TRITS[POS]
         else:
-            return Trit(ZERO)
+            return TRITS[ZERO]
 
     def __or__(self, other):
         """Return the tritwise OR of two trits.
@@ -172,11 +190,11 @@ class Trit(object):
         inputs are negative, otherwise zero.
         """
         if POS in (self.value, other.value):
-            return Trit(POS)
+            return TRITS[POS]
         elif self.value == NEG and other.value == NEG:
-            return Trit(NEG)
+            return TRITS[NEG]
         else:
-            return Trit(ZERO)
+            return TRITS[ZERO]
 
     def __xor__(self, other):
         """Return the tritwise XOR (exclusive-OR) of two trits.
@@ -185,22 +203,24 @@ class Trit(object):
         positive and the other negative, and negative otherwise.
         """
         if ZERO in (self.value, other.value):
-            return Trit(ZERO)
+            return TRITS[ZERO]
         elif self.value != other.value:
-            return Trit(POS)
+            return TRITS[POS]
         else:
-            return Trit(NEG)
+            return TRITS[NEG]
 
     def add(self, other):
         """Add two Trits and return a 2-tuple of (result, carry)."""
-        carry = Trit(ZERO)
+        carry = TRITS[ZERO]
         if self.value == ZERO:
             return (other, carry)
         elif other.value == ZERO:
             return (self, carry)
         elif self == other:
-            return (-self, Trit(self))
+            return (-self, self)
         else:
             # Values are unequal and neither is zero, must be -1 + 1.
-            return (Trit(ZERO), carry)
-        
+            return (TRITS[ZERO], carry)
+
+
+TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
