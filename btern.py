@@ -69,32 +69,26 @@ class Trit(object):
     def __unicode__(self):
         return self.value
 
+    def __str__(self):
+        return self.value
+
     def __hash__(self):
         return hash(self.value)
 
     def __repr__(self):
         return 'Trit({})'.format(int(self))
 
+    def __int__(self):
+        return INTEGERS[self.value]
+
+    def __oct__(self):
+        return oct(int(self))
+
+    def __hex__(self):
+        return hex(int(self))
+
     def ordinal(self):
         return ORDERING.index(self.value)
-
-    def __lt__(self, other):
-        return (self.ordinal() < other.ordinal())
-
-    def __le__(self, other):
-        return (self.ordinal() <= other.ordinal())
-
-    def __eq__(self, other):
-        return (self.value == other.value)
-
-    def __ne__(self, other):
-        return (self.value != other.value)
-
-    def __gt__(self, other):
-        return (self.ordinal() > other.ordinal())
-
-    def __ge__(self, other):
-        return (self.ordinal() >= other.ordinal())
 
     def __nonzero__(self):
         """Return the boolean truth value of this trit.
@@ -138,6 +132,24 @@ class Trit(object):
         """Return the inverse of this Trit (same as negation)."""
         return self.__neg__()
 
+    def __lt__(self, other):
+        return (self.ordinal() < other.ordinal())
+
+    def __le__(self, other):
+        return (self.ordinal() <= other.ordinal())
+
+    def __eq__(self, other):
+        return (self.value == other.value)
+
+    def __ne__(self, other):
+        return (self.value != other.value)
+
+    def __gt__(self, other):
+        return (self.ordinal() > other.ordinal())
+
+    def __ge__(self, other):
+        return (self.ordinal() >= other.ordinal())
+
     def __and__(self, other):
         """Return the tritwise AND of two trits.
         
@@ -176,15 +188,6 @@ class Trit(object):
             return Trit(POS)
         else:
             return Trit(NEG)
-
-    def __int__(self):
-        return INTEGERS[self.value]
-
-    def __oct__(self):
-        return oct(int(self))
-
-    def __hex__(self):
-        return hex(int(self))
 
     def add(self, other):
         """Add two Trits and return a 2-tuple of (result, carry)."""
