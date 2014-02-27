@@ -90,15 +90,17 @@ class Trit(object):
     def ordinal(self):
         return ORDERING.index(self.value)
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Return the boolean truth value of this trit.
         
-        The name of this method is a little misleading, it is used for direct
-        truth tests and conversions to boolean.  Only the positive trit is
-        considered True in the boolean (two-valued logic) sense, the other
-        trits are False.
+        Only the positive trit is considered True in the boolean (two-valued
+        logic) sense, the other trits are False.
         """
         return (self.value == POS)
+
+    def __nonzero__(self):
+        """Return the boolean truth value (Python2 equivalent of __bool__)."""
+        return self.__bool__()
 
     def __neg__(self):
         """Return the negation of this Trit.

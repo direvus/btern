@@ -86,7 +86,7 @@ class TestTrit(unittest.TestCase):
              1,  0, -1]
 
     def test_add(self):
-        assert [map(int, x.add(y)) for (x, y) in self.binary] == [
+        assert [list(map(int, x.add(y))) for (x, y) in self.binary] == [
             [ 1, -1], [-1,  0], [ 0,  0],
             [-1,  0], [ 0,  0], [ 1,  0],
             [ 0,  0], [ 1,  0], [-1,  1]]
