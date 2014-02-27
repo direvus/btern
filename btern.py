@@ -223,4 +223,54 @@ class Trit(object):
             return (TRITS[ZERO], carry)
 
 
+class Trits(object):
+    """An immutable ordered sequence of one or more trits.
+    
+    This class provides some basic operations that can be performed on trit
+    sequences, but does not make any judgements about what kind of information
+    the trits are being used to encode.
+
+    A Trits object may be initialised with an optional 'length' argument, in
+    which case the value will be forced to have exactly 'length' trits, by
+    either adding zero trits or removing trits on the left as required.
+
+    Unless otherwise noted, when an operation returns a Trits object, it has
+    whatever length is necessary to fully represent the operation's result.
+    """
+    def __init__(self, trits, length=None):
+        self.trits = [Trit.make(x) for x in trits]
+        if length is not None:
+            if length <= 0:
+                raise ValueError("Invalid Trits length '{!r}'.".format(length))
+            if len(self.trits) < length:
+                pad = [TRITS[ZERO]] * (length - len(self.trits))
+                self.trits = pad + self.trits
+            elif len(self.trits) > length:
+                self.trits = self.trits[-length:]
+        elif len(self.trits) == 0:
+            raise ValueError(
+                    "Empty trits list is invalid without a length argument.")
+
+    def __str__(self):
+        return ''.join([str(x) for x in self.trits])
+
+    def __repr__(self):
+        return "Trits('{0!s}')".format(self)
+
+
+class Int(Trits):
+    """An integer represented as a big-endian sequence of trits.
+
+    Each trit in the sequence represents an integer value 'v':
+
+      v = t * (3 ** p)
+
+    where 't' is the value of the isolated trit (-1, 0, 1) and 'p' is the
+    position of the trit in the sequence, numbered with zero as the rightmost
+    trit.
+
+    The value of the sequence as a whole is the sum of all 'v' in the sequence.
+    """
+
+
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
