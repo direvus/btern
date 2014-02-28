@@ -226,16 +226,27 @@ class Trit(object):
 class Trits(object):
     """An immutable ordered sequence of one or more trits.
     
-    This class provides some basic operations that can be performed on trit
-    sequences, but does not make any judgements about what kind of information
-    the trits are being used to encode.
-
     A Trits object may be initialised with an optional 'length' argument, in
     which case the value will be forced to have exactly 'length' trits, by
-    either adding zero trits or removing trits on the left as required.
+    either adding zero trits or removing trits on the left as required.  If no
+    length is specified, the value will be represented using the minimum number
+    of trits.
 
     Unless otherwise noted, when an operation returns a Trits object, it has
     whatever length is necessary to fully represent the operation's result.
+
+    Every sequence of trits represents an integer, which is the sum of the
+    integer equivalent of each trit, times 3 to the power of the trit's index,
+    starting from zero in the rightmost position.  E.g.,
+
+    For example, the trit sequence '-++' has the integer equivalent 'i' of:
+
+    i = -1 * (3 ** 2)
+      +  1 * (3 ** 1)
+      +  1 * (3 ** 0)
+      =  (-1 * 9) + (1 * 3) + (1 * 1)
+      = -9 + 3 + 1
+      = -5
     """
     def __init__(self, trits, length=None):
         self.trits = [Trit.make(x) for x in trits]
@@ -252,6 +263,10 @@ class Trits(object):
             raise ValueError(
                     "Empty trits list is invalid without a length argument.")
         self.string = ''.join([str(x) for x in self.trits])
+        self.integer = 0
+        for i in range(len(self)):
+            power = len(self) - 1 - i
+            self.integer += int(self[i]) * (3 ** power)
 
     def __str__(self):
         return self.string
@@ -279,20 +294,14 @@ class Trits(object):
     def __iter__(self):
         return iter(self.trits)
 
+    def __int__(self):
+        return self.integer
 
-class Int(Trits):
-    """An integer represented as a big-endian sequence of trits.
+    def __oct__(self):
+        return oct(int(self))
 
-    Each trit in the sequence represents an integer value 'v':
-
-      v = t * (3 ** p)
-
-    where 't' is the value of the isolated trit (-1, 0, 1) and 'p' is the
-    position of the trit in the sequence, numbered with zero as the rightmost
-    trit.
-
-    The value of the sequence as a whole is the sum of all 'v' in the sequence.
-    """
+    def __hex__(self):
+        return hex(int(self))
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}

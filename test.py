@@ -174,3 +174,5 @@ class TestTrits(unittest.TestCase):
         with self.assertRaises(TypeError):
             self.unary[0][0] = TRITS[POS]
 
+    def test_int(self):
+        assert [int(x) for x in self.unary] == list(range(-13, 14))
