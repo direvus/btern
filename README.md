@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/direvus/btern.png?branch=master)](https://travis-ci.org/direvus/btern)
+
 Balanced Ternary
 ================
 
