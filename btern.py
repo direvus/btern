@@ -241,7 +241,8 @@ class Trits(object):
         self.trits = [Trit.make(x) for x in trits]
         if length is not None:
             if length <= 0:
-                raise ValueError("Invalid Trits length '{!r}'.".format(length))
+                raise ValueError(
+                        "Invalid length argument '{!r}'.".format(length))
             if len(self.trits) < length:
                 pad = [TRITS[ZERO]] * (length - len(self.trits))
                 self.trits = pad + self.trits
@@ -250,12 +251,33 @@ class Trits(object):
         elif len(self.trits) == 0:
             raise ValueError(
                     "Empty trits list is invalid without a length argument.")
+        self.string = ''.join([str(x) for x in self.trits])
 
     def __str__(self):
-        return ''.join([str(x) for x in self.trits])
+        return self.string
 
     def __repr__(self):
-        return "Trits('{0!s}')".format(self)
+        return "Trits('{}')".format(self.string)
+
+    def __hash__(self):
+        return hash(self.string)
+
+    def __len__(self):
+        return len(self.trits)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return Trits(self.trits[key])
+        return self.trits[key]
+
+    def __contains__(self, item):
+        if isinstance(item, Trit):
+            return (item in self.trits)
+        else:
+            return (str(item) in self.string)
+
+    def __iter__(self):
+        return iter(self.trits)
 
 
 class Int(Trits):

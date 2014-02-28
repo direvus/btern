@@ -4,16 +4,16 @@
 
 import unittest
 import btern
-from btern import Trit, NEG, ZERO, POS
+from btern import Trit, Trits, NEG, ZERO, POS, TRITS
 
 
 class TestTrit(unittest.TestCase):
     def setUp(self):
-        self.unary = [btern.TRITS[x] for x in btern.GLYPHS]
+        self.unary = [TRITS[x] for x in btern.GLYPHS]
         self.binary = [(x, y) for x in self.unary for y in self.unary]
 
     def test_init(self):
-        assert len(btern.TRITS) == 3
+        assert len(TRITS) == 3
         assert len(btern.INTEGERS) == 3
 
     def test_make(self):
@@ -95,3 +95,82 @@ class TestTrit(unittest.TestCase):
             [POS,  NEG ], [NEG,  ZERO], [ZERO, ZERO],
             [NEG,  ZERO], [ZERO, ZERO], [POS,  ZERO],
             [ZERO, ZERO], [POS,  ZERO], [NEG,  POS ]]
+
+
+class TestTrits(unittest.TestCase):
+    def setUp(self):
+        # Set up all possible 3-trit sequences:
+        glyphs = btern.GLYPHS
+        self.length = 3
+        self.unary = [Trits(x + y + z)
+                for x in glyphs
+                for y in glyphs
+                for z in glyphs]
+
+    def test_init(self):
+        with self.assertRaises(ValueError):
+            trits = Trits('')
+        with self.assertRaises(ValueError):
+            trits = Trits('0', 0)
+        assert len(self.unary) == 3 ** self.length
+        assert str(Trits('', 4)) == '0000'
+        assert str(Trits('+', 4)) == '000+'
+        assert str(Trits('---0', 2)) == '-0'
+
+    def test_str(self):
+        assert [str(x) for x in self.unary] == [
+                '---', '--0', '--+', '-0-', '-00', '-0+', '-+-', '-+0', '-++',
+                '0--', '0-0', '0-+', '00-', '000', '00+', '0+-', '0+0', '0++',
+                '+--', '+-0', '+-+', '+0-', '+00', '+0+', '++-', '++0', '+++']
+
+    def test_len(self):
+        assert [len(x) for x in self.unary] == [3] * len(self.unary)
+        assert len(Trits('', 8)) == 8
+        assert len(Trits('----', 1)) == 1
+
+    def test_index(self):
+        assert [str(x[0]) for x in self.unary] == [
+                '-', '-', '-', '-', '-', '-', '-', '-', '-',
+                '0', '0', '0', '0', '0', '0', '0', '0', '0',
+                '+', '+', '+', '+', '+', '+', '+', '+', '+']
+        assert [str(x[-1]) for x in self.unary] == [
+                '-', '0', '+', '-', '0', '+', '-', '0', '+',
+                '-', '0', '+', '-', '0', '+', '-', '0', '+',
+                '-', '0', '+', '-', '0', '+', '-', '0', '+']
+        with self.assertRaises(IndexError):
+            self.unary[0][3]
+        with self.assertRaises(TypeError):
+            self.unary[0]['a']
+
+    def test_slice(self):
+        assert [str(x[:2]) for x in self.unary] == [
+                '--', '--', '--', '-0', '-0', '-0', '-+', '-+', '-+',
+                '0-', '0-', '0-', '00', '00', '00', '0+', '0+', '0+',
+                '+-', '+-', '+-', '+0', '+0', '+0', '++', '++', '++']
+        assert [str(x[1:]) for x in self.unary] == [
+                '--', '-0', '-+', '0-', '00', '0+', '+-', '+0', '++',
+                '--', '-0', '-+', '0-', '00', '0+', '+-', '+0', '++',
+                '--', '-0', '-+', '0-', '00', '0+', '+-', '+0', '++']
+        assert [str(x[0:3:2]) for x in self.unary] == [
+                '--', '-0', '-+', '--', '-0', '-+', '--', '-0', '-+',
+                '0-', '00', '0+', '0-', '00', '0+', '0-', '00', '0+',
+                '+-', '+0', '++', '+-', '+0', '++', '+-', '+0', '++']
+
+    def test_contains(self):
+        assert [('-' in x) for x in self.unary] == [
+                True, True, True, True, True,  True,  True, True,  True,
+                True, True, True, True, False, False, True, False, False,
+                True, True, True, True, False, False, True, False, False]
+        assert [(TRITS[POS] in x) for x in self.unary] == [
+                False, False, True,  False, False, True, True, True, True,
+                False, False, True,  False, False, True, True, True, True,
+                True,  True,  True,  True,  True,  True, True, True, True]
+
+    def test_iteration(self):
+        assert [x for x in self.unary[5]] == [
+                TRITS[NEG], TRITS[ZERO], TRITS[POS]]
+
+    def test_immutability(self):
+        with self.assertRaises(TypeError):
+            self.unary[0][0] = TRITS[POS]
+
