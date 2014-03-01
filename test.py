@@ -229,3 +229,50 @@ class TestTrits(unittest.TestCase):
                 '0000-',  '00000',  '0000+',  '--0--',  '0000-+',
                 '00000+', '000000', '00000-', '0000-+', '0000--']
 
+    def test_lt(self):
+        assert [x < y for x, y in self.binary] == [
+                False, True,  True,  False, True,
+                False, False, True,  False, True,
+                False, False, False, False, True,
+                True,  True,  True,  False, True,
+                False, False, False, False, False]
+
+    def test_le(self):
+        assert [x <= y for x, y in self.binary] == [
+                True,  True,  True,  False, True,
+                False, True,  True,  False, True,
+                False, False, True,  False, True,
+                True,  True,  True,  True,  True,
+                False, False, False, False, True]
+
+    def test_eq(self):
+        assert [x == y for x, y in self.binary] == [
+                True,  False, False, False, False,
+                False, True,  False, False, False,
+                False, False, True,  False, False,
+                False, False, False, True,  False,
+                False, False, False, False, True]
+
+    def test_ne(self):
+        assert [x != y for x, y in self.binary] == [
+                False, True,  True,  True,  True,
+                True,  False, True,  True,  True,
+                True,  True,  False, True,  True,
+                True,  True,  True,  False, True,
+                True,  True,  True,  True,  False]
+
+    def test_gt(self):
+        assert [x > y for x, y in self.binary] == [
+                False, False, False, True,  False,
+                True,  False, False, True,  False,
+                True,  True,  False, True,  False,
+                False, False, False, False, False,
+                True,  True,  True,  True,  False]
+
+    def test_ge(self):
+        assert [x >= y for x, y in self.binary] == [
+                True,  False, False, True,  False,
+                True,  True,  False, True,  False,
+                True,  True,  True,  True,  False,
+                False, False, False, True,  False,
+                True,  True,  True,  True,  True]

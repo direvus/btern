@@ -380,6 +380,15 @@ class Trits(object):
         a, b = Trits.match_length(self, other)
         return Trits([x ^ y for x, y in zip(a, b)])
 
+    def __cmp__(self, other):
+        a, b = Trits.match_length(self, other)
+        for x, y in zip(a, b):
+            if x < y:
+                return -1
+            elif x > y:
+                return 1
+        return 0
+
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
 
