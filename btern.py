@@ -16,6 +16,7 @@ Kleene ternary propositional logic system, where - represents False, +
 represents True, and 0 represents an indeterminate value, which is either True
 or False.
 """
+import math
 
 
 NEG  = '-'
@@ -249,7 +250,25 @@ class Trits(object):
       = -5
     """
     def __init__(self, trits, length=None):
-        self.trits = [Trit.make(x) for x in trits]
+        if isinstance(trits, int):
+            if trits == 0:
+                self.trits = [TRITS[ZERO]]
+            else:
+                integer = trits
+                self.trits = []
+                power = int_order(integer) - 1
+                while power >= 0:
+                    if integer == 0 or int_order(integer) <= power:
+                        trit = TRITS[ZERO]
+                    elif integer < 0:
+                        trit = TRITS[NEG]
+                    else:
+                        trit = TRITS[POS]
+                    self.trits.append(trit)
+                    integer -= int(trit) * (3 ** power)
+                    power -= 1
+        else:
+            self.trits = [Trit.make(x) for x in trits]
         if length is not None:
             if length <= 0:
                 raise ValueError(
@@ -265,6 +284,8 @@ class Trits(object):
         self.string = ''.join([str(x) for x in self.trits])
         self.integer = 0
         for i in range(len(self)):
+            if self[i] == TRITS[ZERO]:
+                continue
             power = len(self) - 1 - i
             self.integer += int(self[i]) * (3 ** power)
 
@@ -305,3 +326,8 @@ class Trits(object):
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
+
+
+def int_order(integer):
+    """Return the number of trits required to represent 'integer'."""
+    return int(math.ceil(math.log(2 * abs(integer), 3)))

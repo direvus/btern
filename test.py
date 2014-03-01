@@ -116,6 +116,7 @@ class TestTrits(unittest.TestCase):
         assert str(Trits('', 4)) == '0000'
         assert str(Trits('+', 4)) == '000+'
         assert str(Trits('---0', 2)) == '-0'
+        assert [i for i in range(-100, 100) if int(Trits(i)) != i] == []
 
     def test_str(self):
         assert [str(x) for x in self.unary] == [
