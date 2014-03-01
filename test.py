@@ -99,13 +99,22 @@ class TestTrit(unittest.TestCase):
 
 class TestTrits(unittest.TestCase):
     def setUp(self):
-        # Set up all possible 3-trit sequences:
+        # Set up all possible 3-trit sequences for unary operations.
         glyphs = btern.GLYPHS
         self.length = 3
         self.unary = [Trits(x + y + z)
                 for x in glyphs
                 for y in glyphs
                 for z in glyphs]
+        # Set up a selection of various sequences for binary operations.
+        seqs = (
+                Trits('-'),
+                Trits('0'),
+                Trits('+'),
+                Trits('--0+-'),
+                Trits('++', 6),
+                )
+        self.binary = [(x, y) for x in seqs for y in seqs]
 
     def test_init(self):
         with self.assertRaises(ValueError):
@@ -195,4 +204,28 @@ class TestTrits(unittest.TestCase):
                 '+++', '++0', '++-', '+0+', '+00', '+0-', '+-+', '+-0', '+--',
                 '0++', '0+0', '0+-', '00+', '000', '00+', '0+-', '0+0', '0++',
                 '+--', '+-0', '+-+', '+0-', '+00', '+0+', '++-', '++0', '+++']
+
+    def test_and(self):
+        assert [str(x & y) for (x, y) in self.binary] == [
+                '-',      '-',      '-',      '--00-',  '00000-',
+                '-',      '0',      '0',      '--00-',  '000000',
+                '-',      '0',      '+',      '--00-',  '00000+',
+                '--00-',  '--00-',  '--00-',  '--0+-',  '0--0+-',
+                '00000-', '000000', '00000+', '0--0+-', '0000++']
+
+    def test_or(self):
+        assert [str(x | y) for (x, y) in self.binary] == [
+                '-',      '0',      '+',      '000+-',  '0000++',
+                '0',      '0',      '+',      '000+0',  '0000++',
+                '+',      '+',      '+',      '000++',  '0000++',
+                '000+-',  '000+0',  '000++',  '--0+-',  '0000++',
+                '0000++', '0000++', '0000++', '0000++', '0000++']
+
+    def test_xor(self):
+        assert [str(x ^ y) for (x, y) in self.binary] == [
+                '-',      '0',      '+',      '0000-',  '00000+',
+                '0',      '0',      '0',      '00000',  '000000',
+                '+',      '0',      '-',      '0000+',  '00000-',
+                '0000-',  '00000',  '0000+',  '--0--',  '0000-+',
+                '00000+', '000000', '00000-', '0000-+', '0000--']
 

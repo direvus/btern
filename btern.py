@@ -231,8 +231,9 @@ class Trits(object):
     which case the value will be forced to have exactly 'length' trits, by
     either adding zero trits or removing trits on the left as required.
 
-    Unless otherwise noted, when an operation returns a Trits object, it has
-    whatever length is necessary to fully represent the operation's result.
+    Unless otherwise noted, binary operations on Trits objects of unequal
+    length will extend the shorter operand by adding zero trits on the left to
+    match the length of the longer operand.
 
     Every sequence of trits represents an integer, which is the sum of the
     integer equivalent of each trit, times 3 to the power of the trit's index,
@@ -348,6 +349,36 @@ class Trits(object):
             elif t == TRITS[POS]:
                 return self
         return self
+
+    @classmethod
+    def match_length(cls, a, b):
+        """Return a 2-tuple of Trits a and b each having the same length.
+        
+        If the two operands are of unequal length, the shorter operand is
+        padded with zero trits on the left to make it the same length as the
+        other.
+        """
+        if len(a) == len(b):
+            return (a, b)
+        elif len(a) < len(b):
+            return (cls(a, len(b)), b)
+        else:
+            return (a, cls(b, len(a)))
+
+    def __and__(self, other):
+        """Return the tritwise AND of two trit sequences."""
+        a, b = Trits.match_length(self, other)
+        return Trits([x & y for x, y in zip(a, b)])
+
+    def __or__(self, other):
+        """Return the tritwise OR of two trit sequences."""
+        a, b = Trits.match_length(self, other)
+        return Trits([x | y for x, y in zip(a, b)])
+
+    def __xor__(self, other):
+        """Return the tritwise XOR of two trit sequences."""
+        a, b = Trits.match_length(self, other)
+        return Trits([x ^ y for x, y in zip(a, b)])
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
