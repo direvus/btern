@@ -229,9 +229,7 @@ class Trits(object):
     
     A Trits object may be initialised with an optional 'length' argument, in
     which case the value will be forced to have exactly 'length' trits, by
-    either adding zero trits or removing trits on the left as required.  If no
-    length is specified, the value will be represented using the minimum number
-    of trits.
+    either adding zero trits or removing trits on the left as required.
 
     Unless otherwise noted, when an operation returns a Trits object, it has
     whatever length is necessary to fully represent the operation's result.
@@ -323,6 +321,33 @@ class Trits(object):
 
     def __hex__(self):
         return hex(int(self))
+
+    def __neg__(self):
+        return Trits([-x for x in self.trits])
+
+    def __invert__(self):
+        return -self
+
+    def __pos__(self):
+        return self
+
+    def __abs__(self):
+        """Return the numeric absolute value.
+        
+        This operation is on the whole Trits sequence, not on each trit
+        individually, thus:
+
+        >>> abs(Trits('+-')) # == 2
+        Trits('+-')
+        >>> abs(Trits('-+')) # == -2
+        Trits('+-')
+        """
+        for t in self.trits:
+            if t == TRITS[NEG]:
+                return -self
+            elif t == TRITS[POS]:
+                return self
+        return self
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
