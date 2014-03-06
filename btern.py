@@ -380,6 +380,21 @@ class Trits(object):
         a, b = Trits.match_length(self, other)
         return Trits([x ^ y for x, y in zip(a, b)])
 
+    def __add__(self, other):
+        """Return the concatenation of a Trits with an iterable or Trit."""
+        if isinstance(other, Trit):
+            lst = [other]
+        else:
+            lst = list(other)
+        return Trits(self.trits + lst)
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __mul__(self, other):
+        """Return 'self' repeated 'other' times."""
+        return Trits(self.trits * other)
+
     def cmp(self, other):
         a, b = Trits.match_length(self, other)
         for x, y in zip(a, b):
