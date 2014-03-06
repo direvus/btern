@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 # coding=utf-8
 """
-Balanced Ternary
-================
+Trits and sequences of trits
+============================
 
-This library implements computations over values expressed in Balanced Ternary
-form.
+This module defines the Trit and Trits (Trit sequence) classes and provides for
+various basic operations on these types.
 
-Balanced Ternary is a numeral system with three symbols, equating to the
-decimal values -1, 0 and +1.  We use the characters -, 0 and + to represent
-these values respectively.
+A Trit is always one of the three possible basic units in balanced ternary,
+-1, 0, or 1.
 
 When performing logical operations with balanced ternary values, we use the
 Kleene ternary propositional logic system, where - represents False, +
 represents True, and 0 represents an indeterminate value, which is either True
-or False.
+or False (analogous to NULL in SQL).
 """
 import math
 

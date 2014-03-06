@@ -3,23 +3,23 @@
 
 
 import unittest
-import btern
-from btern import Trit, Trits, NEG, ZERO, POS, TRITS
+import trit
+from trit import Trit, Trits, NEG, ZERO, POS, TRITS
 
 
 class TestTrit(unittest.TestCase):
     def setUp(self):
-        self.unary = [TRITS[x] for x in btern.GLYPHS]
+        self.unary = [TRITS[x] for x in trit.GLYPHS]
         self.binary = [(x, y) for x in self.unary for y in self.unary]
 
     def test_init(self):
         assert len(TRITS) == 3
-        assert len(btern.INTEGERS) == 3
+        assert len(trit.INTEGERS) == 3
 
     def test_make(self):
-        trits = [Trit.make(x) for x in btern.INPUTS]
+        trits = [Trit.make(x) for x in trit.INPUTS]
         with self.assertRaises(ValueError):
-            trit = Trit.make('$')
+            Trit.make('$')
 
     def test_str(self):
         assert [str(x) for x in self.unary] == [NEG, ZERO, POS]
@@ -100,7 +100,7 @@ class TestTrit(unittest.TestCase):
 class TestTrits(unittest.TestCase):
     def setUp(self):
         # Set up all possible 3-trit sequences for unary operations.
-        glyphs = btern.GLYPHS
+        glyphs = trit.GLYPHS
         self.length = 3
         self.unary = [Trits(x + y + z)
                 for x in glyphs
