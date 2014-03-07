@@ -377,7 +377,7 @@ class TestUTF6t(unittest.TestCase):
                 '',
                 '0',
                 '~',
-                string.lowercase,
+                string.ascii_lowercase,
                 u'\u2713 \u2717',
                 ]
 
