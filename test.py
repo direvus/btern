@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # coding=utf-8
-
-
 import unittest
+import string
+
 import trit
+import integer
+import character
 from trit import Trit, Trits, NEG, ZERO, POS, TRITS
+from character import UTF6t
 
 
 class TestTrit(unittest.TestCase):
@@ -118,10 +121,9 @@ class TestTrits(unittest.TestCase):
 
     def test_init(self):
         with self.assertRaises(ValueError):
-            trits = Trits('')
-        with self.assertRaises(ValueError):
-            trits = Trits('0', 0)
+            trits = Trits('0', -1)
         assert len(self.unary) == 3 ** self.length
+        assert len(Trits('')) == 0
         assert str(Trits('', 4)) == '0000'
         assert str(Trits('+', 4)) == '000+'
         assert str(Trits('---0', 2)) == '-0'
@@ -322,3 +324,99 @@ class TestTrits(unittest.TestCase):
                 True,  True,  True,  True,  False,
                 False, False, False, True,  False,
                 True,  True,  True,  True,  True]
+
+
+class TestInt(unittest.TestCase):
+    def setUp(self):
+        self.ints = [
+                0,
+                0L,
+                1,
+                -1,
+                -7,
+                500077,
+                -2**32]
+
+    def test_init(self):
+        assert [str(integer.Int(x)) for x in self.ints] == [
+                '0',
+                '0',
+                '+',
+                '-',
+                '-+-',
+                '+0-+++-00-+0+',
+                '--+0-+-00+-+00+++++--']
+        assert False not in [int(integer.Int(x)) == x for x in self.ints]
+
+
+class TestUInt(unittest.TestCase):
+    def setUp(self):
+        self.ints = [
+                0,
+                0L,
+                1,
+                500077,
+                2**32]
+
+    def test_init(self):
+        assert [str(integer.UInt(x)) for x in self.ints] == [
+                '-',
+                '-',
+                '0',
+                '++00-0+++0-0',
+                '0-+--+-+++-0++0000+00']
+        assert False not in [int(integer.UInt(x)) == x for x in self.ints]
+        with self.assertRaises(ValueError):
+            integer.UInt(-7)
+
+    def test_length(self):
+        assert [str(integer.UInt(x, 6)) for x in self.ints] == [
+                '------',
+                '------',
+                '-----0',
+                '+++0-0',
+                '000+00']
+
+
+class TestUTF6t(unittest.TestCase):
+    def setUp(self):
+        self.strings = [
+                '',
+                '0',
+                '~',
+                string.lowercase,
+                u'\u2713 \u2717',
+                ]
+
+    def test_encode(self):
+        assert [str(UTF6t.encode(x)) for x in self.strings] == [
+                '',
+                '--0+0-',
+                '-00+--',
+                '-0-0+0-0-0++-0-+---0-+-0-0-+-+-0-+0-'
+                '-0-+00-0-+0+-0-++--0-++0-0-+++-00---'
+                '-00--0-00--+-00-0--00-00-00-0+-00-+-'
+                '-00-+0-00-++-000---000-0-000-+-0000-'
+                '-00000-0000+',
+                '+-000+--0000--0-0++-000+--00++',
+                ]
+
+    def test_decode(self):
+        assert self.strings == [
+                UTF6t.decode(str(UTF6t.encode(x))) for x in self.strings]
+        # Bad length
+        with self.assertRaises(ValueError):
+            UTF6t.decode('0000')
+        # Initial at end of stream
+        with self.assertRaises(ValueError):
+            UTF6t.decode('+00000')
+        # Continuation at beginning
+        with self.assertRaises(ValueError):
+            UTF6t.decode('0-----')
+        # Initial without final
+        with self.assertRaises(ValueError):
+            UTF6t.decode('+-----+-----')
+        # Continuation without initial
+        with self.assertRaises(ValueError):
+            UTF6t.decode('-+++++0-----')
+

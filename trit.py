@@ -16,6 +16,7 @@ represents True, and 0 represents an indeterminate value, which is either True
 or False (analogous to NULL in SQL).
 """
 import math
+import numbers
 
 
 NEG  = '-'
@@ -70,7 +71,7 @@ class Trit(object):
         """
         if isinstance(value, Trit):
             return value
-        elif isinstance(value, int) or isinstance(value, float):
+        elif isinstance(value, numbers.Real):
             if value == 0:
                 return TRITS[ZERO]
             elif value > 0:
@@ -97,7 +98,7 @@ class Trit(object):
         return hash(self.value)
 
     def __repr__(self):
-        return 'Trit({})'.format(int(self))
+        return 'Trit({!s})'.format(self)
 
     def __int__(self):
         return self.integer
@@ -224,7 +225,7 @@ class Trit(object):
 
 
 class Trits(object):
-    """An immutable ordered sequence of one or more trits.
+    """An immutable ordered sequence of trits.
     
     A Trits object may be initialised with an optional 'length' argument, in
     which case the value will be forced to have exactly 'length' trits, by
@@ -235,8 +236,8 @@ class Trits(object):
     match the length of the longer operand.
 
     Every sequence of trits represents an integer, which is the sum of the
-    integer equivalent of each trit, times 3 to the power of the trit's index,
-    starting from zero in the rightmost position.  E.g.,
+    integer equivalent of each trit, times 3 to the power of the trit's index
+    within the sequence, starting from zero in the rightmost position.  E.g.,
 
     For example, the trit sequence '-++' has the integer equivalent 'i' of:
 
@@ -248,12 +249,12 @@ class Trits(object):
       = -5
     """
     def __init__(self, trits, length=None):
-        if isinstance(trits, int):
+        self.trits = []
+        if isinstance(trits, numbers.Integral):
             if trits == 0:
                 self.trits = [TRITS[ZERO]]
             else:
                 integer = trits
-                self.trits = []
                 power = int_order(integer) - 1
                 while power >= 0:
                     if integer == 0 or int_order(integer) <= power:
@@ -265,10 +266,10 @@ class Trits(object):
                     self.trits.append(trit)
                     integer -= int(trit) * (3 ** power)
                     power -= 1
-        else:
+        elif trits is not None:
             self.trits = [Trit.make(x) for x in trits]
         if length is not None:
-            if length <= 0:
+            if length < 0:
                 raise ValueError(
                         "Invalid length argument '{!r}'.".format(length))
             if len(self.trits) < length:
@@ -276,9 +277,6 @@ class Trits(object):
                 self.trits = pad + self.trits
             elif len(self.trits) > length:
                 self.trits = self.trits[-length:]
-        elif len(self.trits) == 0:
-            raise ValueError(
-                    "Empty trits list is invalid without a length argument.")
         self.string = ''.join([str(x) for x in self.trits])
         self.integer = 0
         for i in range(len(self)):

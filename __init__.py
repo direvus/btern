@@ -12,4 +12,4 @@ decimal values -1, 0 and +1.  We use the characters -, 0 and + to represent
 these values respectively.
 """
 
-__all__ = ['trit']
+__all__ = ['trit','integer','character']
