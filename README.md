@@ -15,6 +15,13 @@ Kleene ternary propositional logic system, where - represents False, +
 represents True, and 0 represents an indeterminate value, which is either True
 or False.
 
+Background
+----------
+
+This library was written by Brendan Jurd, for purely educational and
+entertainment purposes.  It has no intended practical value, but was basically
+a speculative problem-solving exercise.
+
 License
 -------
 
