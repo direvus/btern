@@ -38,7 +38,7 @@ class UInt(trit.Trits):
                     value = trit.POS
                 trits.append(value)
             trits.reverse()
-        if length > len(trits):
+        if length is not None and length > len(trits):
             trits = ([trit.NEG] * (length - len(trits))) + trits
         trit.Trits.__init__(self, trits, length)
         # The sequence of trits may have been trimmed to 'length' by the
