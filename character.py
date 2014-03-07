@@ -91,12 +91,8 @@ class UTF6t(trit.Trits):
         for char in chars:
             if isinstance(char, numbers.Integral):
                 code = char
-            elif isinstance(char, basestring):
-                code = ord(char)
             else:
-                raise ValueError(
-                        "Cannot parse {!r} as a unicode character.".format(
-                            char))
+                code = ord(char)
             uint = str(integer.UInt(code))
             padding = (cls.DATA_SIZE - len(uint)) % cls.DATA_SIZE
             uint = (trit.NEG * padding) + uint

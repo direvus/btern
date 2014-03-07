@@ -393,6 +393,11 @@ class TestUTF6t(unittest.TestCase):
                 '-00000-0000+',
                 '+-000+--0000--0-0++-000+--00++',
                 ]
+        # Bogus element type
+        with self.assertRaises(TypeError):
+            UTF6t.encode([None])
+        with self.assertRaises(TypeError):
+            UTF6t.encode([3.14159])
 
     def test_decode(self):
         assert self.strings == [
