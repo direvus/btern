@@ -368,7 +368,6 @@ class TestUInt(unittest.TestCase):
     def test_length(self):
         assert [str(integer.UInt(x, 6)) for x in self.ints] == [
                 '------',
-                '------',
                 '-----0',
                 '+++0-0',
                 '000+00']
