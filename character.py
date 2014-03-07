@@ -69,8 +69,7 @@ from __future__ import division
 import math
 import numbers
 
-import trit
-import integer
+from . import trit, integer
 
 
 class UTF6t(trit.Trits):

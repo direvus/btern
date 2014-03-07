@@ -11,7 +11,7 @@ unsigned interpretation (UInt), they represent zero, one, and two.
 import math
 import numbers
 
-import trit
+from . import trit
 
 
 class Int(trit.Trits):

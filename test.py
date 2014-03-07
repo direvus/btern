@@ -3,11 +3,9 @@
 import unittest
 import string
 
-import trit
-import integer
-import character
-from trit import Trit, Trits, NEG, ZERO, POS, TRITS
-from character import UTF6t
+from . import trit, integer, character
+from .trit import Trit, Trits, NEG, ZERO, POS, TRITS
+from .character import UTF6t
 
 
 class TestTrit(unittest.TestCase):
