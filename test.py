@@ -330,7 +330,6 @@ class TestInt(unittest.TestCase):
     def setUp(self):
         self.ints = [
                 0,
-                0L,
                 1,
                 -1,
                 -7,
@@ -339,7 +338,6 @@ class TestInt(unittest.TestCase):
 
     def test_init(self):
         assert [str(integer.Int(x)) for x in self.ints] == [
-                '0',
                 '0',
                 '+',
                 '-',
@@ -353,14 +351,12 @@ class TestUInt(unittest.TestCase):
     def setUp(self):
         self.ints = [
                 0,
-                0L,
                 1,
                 500077,
                 2**32]
 
     def test_init(self):
         assert [str(integer.UInt(x)) for x in self.ints] == [
-                '-',
                 '-',
                 '0',
                 '++00-0+++0-0',
