@@ -133,7 +133,12 @@ class UTF6t(trit.Trits):
             lead = str(t)
             data = list(trits[i + cls.LEAD_SIZE:i + cls.TRYTE_SIZE])
             if lead == cls.FINAL:
-                result += unichr(int(integer.UInt(code + data)))
+                point = int(integer.UInt(code + data))
+                try:
+                    char = unichr(point)
+                except NameError:
+                    char = chr(point)
+                result += char
                 code = []
             else:
                 if lead == cls.CONTINUE and len(code) == 0:
