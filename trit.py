@@ -15,7 +15,6 @@ Kleene ternary propositional logic system, where - represents False, +
 represents True, and 0 represents an indeterminate value, which is either True
 or False (analogous to NULL in SQL).
 """
-import math
 import numbers
 
 
@@ -46,7 +45,7 @@ INPUTS = {
 
 
 class Trit(object):
-    """A ternary bit (trit) is the basic unit of information in ternary.
+    """A ternary digit (trit) is the basic unit of information in ternary.
 
     In balanced ternary, each trit represents one of the three values:
       * -1 (negative, false, low),
@@ -73,13 +72,13 @@ class Trit(object):
             return value
         elif isinstance(value, numbers.Real):
             if value == 0:
-                return TRITS[ZERO]
+                return TRIT_ZERO
             elif value > 0:
-                return TRITS[POS]
+                return TRIT_POS
             else:
-                return TRITS[NEG]
+                return TRIT_NEG
         elif value is None:
-            return TRITS[ZERO]
+            return TRIT_ZERO
 
         text = str(value).strip()
         if text in INPUTS:
@@ -128,11 +127,11 @@ class Trit(object):
         each other.
         """
         if self.value == NEG:
-            return TRITS[POS]
+            return TRIT_POS
         elif self.value == POS:
-            return TRITS[NEG]
+            return TRIT_NEG
         else:
-            return TRITS[ZERO]
+            return TRIT_ZERO
 
     def __pos__(self):
         """Unary plus is an identity function: return the trit."""
@@ -145,7 +144,7 @@ class Trit(object):
         trits yield themselves.
         """
         if self.value == NEG:
-            return TRITS[POS]
+            return TRIT_POS
         else:
             return self
 
@@ -178,11 +177,11 @@ class Trit(object):
         inputs are positive, otherwise zero.
         """
         if NEG in (self.value, other.value):
-            return TRITS[NEG]
+            return TRIT_NEG
         elif self.value == POS and other.value == POS:
-            return TRITS[POS]
+            return TRIT_POS
         else:
-            return TRITS[ZERO]
+            return TRIT_ZERO
 
     def __or__(self, other):
         """Return the tritwise OR of two trits.
@@ -191,11 +190,11 @@ class Trit(object):
         inputs are negative, otherwise zero.
         """
         if POS in (self.value, other.value):
-            return TRITS[POS]
+            return TRIT_POS
         elif self.value == NEG and other.value == NEG:
-            return TRITS[NEG]
+            return TRIT_NEG
         else:
-            return TRITS[ZERO]
+            return TRIT_ZERO
 
     def __xor__(self, other):
         """Return the tritwise XOR (exclusive-OR) of two trits.
@@ -204,15 +203,15 @@ class Trit(object):
         positive and the other negative, and negative otherwise.
         """
         if ZERO in (self.value, other.value):
-            return TRITS[ZERO]
+            return TRIT_ZERO
         elif self.value != other.value:
-            return TRITS[POS]
+            return TRIT_POS
         else:
-            return TRITS[NEG]
+            return TRIT_NEG
 
     def add(self, other):
         """Add two Trits and return a 2-tuple of (result, carry)."""
-        carry = TRITS[ZERO]
+        carry = TRIT_ZERO
         if self.value == ZERO:
             return (other, carry)
         elif other.value == ZERO:
@@ -221,69 +220,44 @@ class Trit(object):
             return (-self, self)
         else:
             # Values are unequal and neither is zero, must be -1 + 1.
-            return (TRITS[ZERO], carry)
+            return (TRIT_ZERO, carry)
+
+
+TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
+TRIT_NEG  = TRITS[NEG]
+TRIT_ZERO = TRITS[ZERO]
+TRIT_POS  = TRITS[POS]
 
 
 class Trits(object):
-    """An immutable ordered sequence of trits.
+    """An immutable, ordered sequence of trits.
     
-    A Trits object may be initialised with an optional 'length' argument, in
-    which case the value will be forced to have exactly 'length' trits, by
-    either adding zero trits or removing trits on the left as required.
+    The 'trits' argument must be an iterable of values which can be parsed into
+    Trit objects.  'trits' may also be None, or an empty iterable, if an empty
+    Trits object is desired.
+
+    If the optional 'length' argument is given, the Trits sequence will be
+    forced to have exactly 'length' trits, by either adding zero trits or
+    removing trits on the left as required.
 
     Unless otherwise noted, binary operations on Trits objects of unequal
     length will extend the shorter operand by adding zero trits on the left to
     match the length of the longer operand.
-
-    Every sequence of trits represents an integer, which is the sum of the
-    integer equivalent of each trit, times 3 to the power of the trit's index
-    within the sequence, starting from zero in the rightmost position.  E.g.,
-
-    For example, the trit sequence '-++' has the integer equivalent 'i' of:
-
-    i = -1 * (3 ** 2)
-      +  1 * (3 ** 1)
-      +  1 * (3 ** 0)
-      =  (-1 * 9) + (1 * 3) + (1 * 1)
-      = -9 + 3 + 1
-      = -5
     """
     def __init__(self, trits, length=None):
         self.trits = []
-        if isinstance(trits, numbers.Integral):
-            if trits == 0:
-                self.trits = [TRITS[ZERO]]
-            else:
-                integer = trits
-                power = int_order(integer) - 1
-                while power >= 0:
-                    if integer == 0 or int_order(integer) <= power:
-                        trit = TRITS[ZERO]
-                    elif integer < 0:
-                        trit = TRITS[NEG]
-                    else:
-                        trit = TRITS[POS]
-                    self.trits.append(trit)
-                    integer -= int(trit) * (3 ** power)
-                    power -= 1
-        elif trits is not None:
+        if trits is not None:
             self.trits = [Trit.make(x) for x in trits]
         if length is not None:
             if length < 0:
                 raise ValueError(
                         "Invalid length argument '{!r}'.".format(length))
             if len(self.trits) < length:
-                pad = [TRITS[ZERO]] * (length - len(self.trits))
+                pad = [TRIT_ZERO] * (length - len(self.trits))
                 self.trits = pad + self.trits
             elif len(self.trits) > length:
                 self.trits = self.trits[-length:]
         self.string = ''.join([str(x) for x in self.trits])
-        self.integer = 0
-        for i in range(len(self)):
-            if self[i] == TRITS[ZERO]:
-                continue
-            power = len(self) - 1 - i
-            self.integer += int(self[i]) * (3 ** power)
 
     def __str__(self):
         return self.string
@@ -311,15 +285,6 @@ class Trits(object):
     def __iter__(self):
         return iter(self.trits)
 
-    def __int__(self):
-        return self.integer
-
-    def __oct__(self):
-        return oct(int(self))
-
-    def __hex__(self):
-        return hex(int(self))
-
     def __neg__(self):
         return Trits([-x for x in self.trits])
 
@@ -341,9 +306,9 @@ class Trits(object):
         Trits('+-')
         """
         for t in self.trits:
-            if t == TRITS[NEG]:
+            if t == TRIT_NEG:
                 return -self
-            elif t == TRITS[POS]:
+            elif t == TRIT_POS:
                 return self
         return self
 
@@ -418,11 +383,3 @@ class Trits(object):
 
     def __ge__(self, other):
         return (self.cmp(other) >= 0)
-
-
-TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
-
-
-def int_order(integer):
-    """Return the number of trits required to represent 'integer'."""
-    return int(math.ceil(math.log(2 * abs(integer), 3)))

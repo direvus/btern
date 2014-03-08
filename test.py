@@ -4,8 +4,13 @@ import unittest
 import string
 
 from . import trit, integer, character
-from .trit import Trit, Trits, NEG, ZERO, POS, TRITS
+from .trit import Trit, Trits, GLYPHS, NEG, ZERO, POS
+from .trit import TRITS, TRIT_NEG, TRIT_ZERO, TRIT_POS
 from .character import UTF6t
+
+
+# The set of all possible 3-trit sequences
+TRIPLETS = [Trits([x, y, z]) for x in GLYPHS for y in GLYPHS for z in GLYPHS]
 
 
 class TestTrit(unittest.TestCase):
@@ -101,12 +106,8 @@ class TestTrit(unittest.TestCase):
 class TestTrits(unittest.TestCase):
     def setUp(self):
         # Set up all possible 3-trit sequences for unary operations.
-        glyphs = trit.GLYPHS
         self.length = 3
-        self.unary = [Trits(x + y + z)
-                for x in glyphs
-                for y in glyphs
-                for z in glyphs]
+        self.unary = TRIPLETS
         # Set up a selection of various sequences for binary operations.
         seqs = (
                 Trits('-'),
@@ -125,7 +126,6 @@ class TestTrits(unittest.TestCase):
         assert str(Trits('', 4)) == '0000'
         assert str(Trits('+', 4)) == '000+'
         assert str(Trits('---0', 2)) == '-0'
-        assert [i for i in range(-100, 100) if int(Trits(i)) != i] == []
 
     def test_str(self):
         assert [str(x) for x in self.unary] == [
@@ -171,21 +171,17 @@ class TestTrits(unittest.TestCase):
                 True, True, True, True, True,  True,  True, True,  True,
                 True, True, True, True, False, False, True, False, False,
                 True, True, True, True, False, False, True, False, False]
-        assert [(TRITS[POS] in x) for x in self.unary] == [
+        assert [(TRIT_POS in x) for x in self.unary] == [
                 False, False, True,  False, False, True, True, True, True,
                 False, False, True,  False, False, True, True, True, True,
                 True,  True,  True,  True,  True,  True, True, True, True]
 
     def test_iteration(self):
-        assert [x for x in self.unary[5]] == [
-                TRITS[NEG], TRITS[ZERO], TRITS[POS]]
+        assert [x for x in self.unary[5]] == [TRIT_NEG, TRIT_ZERO, TRIT_POS]
 
     def test_immutability(self):
         with self.assertRaises(TypeError):
-            self.unary[0][0] = TRITS[POS]
-
-    def test_int(self):
-        assert [int(x) for x in self.unary] == list(range(-13, 14))
+            self.unary[0][0] = TRIT_POS
 
     def test_neg(self):
         assert [str(-x) for x in self.unary] == [
@@ -238,7 +234,7 @@ class TestTrits(unittest.TestCase):
                 '--0+--',  '--0+-0',  '--0+-+',  '--0+---0+-',  '--0+-0000++',
                 '0000++-', '0000++0', '0000+++', '0000++--0+-', '0000++0000++']
         # Trits + Trit concatenation
-        assert [str(x + TRITS[POS]) for x in self.unary] == [
+        assert [str(x + TRIT_POS) for x in self.unary] == [
                 '---+', '--0+', '--++',
                 '-0-+', '-00+', '-0++',
                 '-+-+', '-+0+', '-+++',
@@ -344,6 +340,11 @@ class TestInt(unittest.TestCase):
                 '--+0-+-00+-+00+++++--']
         assert False not in [int(integer.Int(x)) == x for x in self.ints]
 
+    def test_int(self):
+        assert [int(integer.Int(x)) for x in TRIPLETS] == list(range(-13, 14))
+        assert False not in [
+                int(integer.Int(x)) == x for x in range(-100, 100)]
+
 
 class TestUInt(unittest.TestCase):
     def setUp(self):
@@ -369,6 +370,9 @@ class TestUInt(unittest.TestCase):
                 '-----0',
                 '+++0-0',
                 '000+00']
+
+    def test_int(self):
+        assert [int(integer.UInt(x)) for x in TRIPLETS] == list(range(27))
 
 
 class TestUTF6t(unittest.TestCase):
