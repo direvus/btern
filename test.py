@@ -358,6 +358,10 @@ class TestInt(unittest.TestCase):
         assert [int(Int(x) + Int(y)) for x, y in self.binary] == [
                 x + y for x, y in self.binary]
 
+    def test_sub(self):
+        assert [int(Int(x) - Int(y)) for x, y in self.binary] == [
+                x - y for x, y in self.binary]
+
 
 class TestUInt(unittest.TestCase):
     def setUp(self):

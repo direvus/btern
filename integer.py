@@ -93,6 +93,9 @@ class Int(IntMixin, trit.Trits):
             results.append(carry)
         return Int(reversed(results))
 
+    def __sub__(self, other):
+        return self.__add__(-other)
+
 
 class UInt(IntMixin, trit.Trits):
     def __init__(self, trits, length=None):
