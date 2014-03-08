@@ -66,7 +66,6 @@ UTF-8 cannot represent a code point with more than 31 bits, whereas UTF-6t can
 be extended indefinitely by simply adding more continuation trytes.
 """
 from __future__ import division
-import math
 import numbers
 
 from . import trit, integer
@@ -153,5 +152,5 @@ class UTF6t(trit.Trits):
         if len(code) != 0:
             raise ValueError(
                     "Invalid UTF-6t sequence: unterminated multi-tryte "
-                    "character at end of sequence.".format(i))
+                    "character at end of sequence.")
         return result

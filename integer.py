@@ -8,7 +8,6 @@ and operated on as integers.  In a signed interpretation (Int), the trit values
 -, 0 and + represent negative one, zero and positive one respectively.  In an
 unsigned interpretation (UInt), they represent zero, one, and two.
 """
-import math
 import numbers
 
 from . import trit
