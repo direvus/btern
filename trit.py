@@ -209,18 +209,32 @@ class Trit(object):
         else:
             return TRIT_NEG
 
-    def add(self, other):
-        """Add two Trits and return a 2-tuple of (result, carry)."""
-        carry = TRIT_ZERO
-        if self.value == ZERO:
-            return (other, carry)
+    def add(self, other, carry=None):
+        """Add two Trit objects with an optional carry-in Trit.
+        
+        Return a 2-tuple of Trit objects (sum, carry-out).
+        """
+        if carry is None:
+            carry = TRIT_ZERO
+        if carry == TRIT_ZERO:
+            if self.value == ZERO:
+                return (other, TRIT_ZERO)
+            elif other.value == ZERO:
+                return (self, TRIT_ZERO)
+            elif self != other:
+                return (TRIT_ZERO, TRIT_ZERO)
+            else:
+                return (-self, self)
         elif other.value == ZERO:
-            return (self, carry)
-        elif self == other:
-            return (-self, self)
+            return self.add(carry)
+        elif self.value == ZERO:
+            return other.add(carry)
+        elif self != other:
+            return (carry, TRIT_ZERO)
+        elif self != carry:
+            return (other, TRIT_ZERO)
         else:
-            # Values are unequal and neither is zero, must be -1 + 1.
-            return (TRIT_ZERO, carry)
+            return (TRIT_ZERO, self)
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}

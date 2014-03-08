@@ -6,6 +6,7 @@ import string
 from . import trit, integer, character
 from .trit import Trit, Trits, GLYPHS, NEG, ZERO, POS
 from .trit import TRITS, TRIT_NEG, TRIT_ZERO, TRIT_POS
+from .integer import Int, UInt
 from .character import UTF6t
 
 
@@ -17,6 +18,7 @@ class TestTrit(unittest.TestCase):
     def setUp(self):
         self.unary = [TRITS[x] for x in trit.GLYPHS]
         self.binary = [(x, y) for x in self.unary for y in self.unary]
+        self.ternary = [(x, y, z) for x, y in self.binary for z in self.unary]
 
     def test_init(self):
         assert len(TRITS) == 3
@@ -97,10 +99,16 @@ class TestTrit(unittest.TestCase):
             POS,  ZERO, NEG]
 
     def test_add(self):
-        assert [list(map(str, x.add(y))) for (x, y) in self.binary] == [
-            [POS,  NEG ], [NEG,  ZERO], [ZERO, ZERO],
-            [NEG,  ZERO], [ZERO, ZERO], [POS,  ZERO],
-            [ZERO, ZERO], [POS,  ZERO], [NEG,  POS ]]
+        assert [tuple(map(str, x.add(y, z))) for x, y, z in self.ternary] == [
+            ('0', '-'), ('+', '-'), ('-', '0'),
+            ('+', '-'), ('-', '0'), ('0', '0'),
+            ('-', '0'), ('0', '0'), ('+', '0'),
+            ('+', '-'), ('-', '0'), ('0', '0'),
+            ('-', '0'), ('0', '0'), ('+', '0'),
+            ('0', '0'), ('+', '0'), ('-', '+'),
+            ('-', '0'), ('0', '0'), ('+', '0'),
+            ('0', '0'), ('+', '0'), ('-', '+'),
+            ('+', '0'), ('-', '+'), ('0', '+')]
 
 
 class TestTrits(unittest.TestCase):
@@ -322,28 +330,33 @@ class TestTrits(unittest.TestCase):
 
 class TestInt(unittest.TestCase):
     def setUp(self):
-        self.ints = [
+        self.unary = [
                 0,
                 1,
                 -1,
                 -7,
                 500077,
                 -2**32]
+        self.binary = [(x, y) for x in self.unary for y in self.unary]
 
     def test_init(self):
-        assert [str(integer.Int(x)) for x in self.ints] == [
+        assert [str(Int(x)) for x in self.unary] == [
                 '0',
                 '+',
                 '-',
                 '-+-',
                 '+0-+++-00-+0+',
                 '--+0-+-00+-+00+++++--']
-        assert False not in [int(integer.Int(x)) == x for x in self.ints]
+        assert False not in [int(Int(x)) == x for x in self.unary]
 
     def test_int(self):
-        assert [int(integer.Int(x)) for x in TRIPLETS] == list(range(-13, 14))
+        assert [int(Int(x)) for x in TRIPLETS] == list(range(-13, 14))
         assert False not in [
-                int(integer.Int(x)) == x for x in range(-100, 100)]
+                int(Int(x)) == x for x in range(-100, 100)]
+
+    def test_add(self):
+        assert [int(Int(x) + Int(y)) for x, y in self.binary] == [
+                x + y for x, y in self.binary]
 
 
 class TestUInt(unittest.TestCase):
@@ -355,24 +368,24 @@ class TestUInt(unittest.TestCase):
                 2**32]
 
     def test_init(self):
-        assert [str(integer.UInt(x)) for x in self.ints] == [
+        assert [str(UInt(x)) for x in self.ints] == [
                 '-',
                 '0',
                 '++00-0+++0-0',
                 '0-+--+-+++-0++0000+00']
-        assert False not in [int(integer.UInt(x)) == x for x in self.ints]
+        assert False not in [int(UInt(x)) == x for x in self.ints]
         with self.assertRaises(ValueError):
-            integer.UInt(-7)
+            UInt(-7)
 
     def test_length(self):
-        assert [str(integer.UInt(x, 6)) for x in self.ints] == [
+        assert [str(UInt(x, 6)) for x in self.ints] == [
                 '------',
                 '-----0',
                 '+++0-0',
                 '000+00']
 
     def test_int(self):
-        assert [int(integer.UInt(x)) for x in TRIPLETS] == list(range(27))
+        assert [int(UInt(x)) for x in TRIPLETS] == list(range(27))
 
 
 class TestUTF6t(unittest.TestCase):

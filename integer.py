@@ -82,6 +82,17 @@ class Int(IntMixin, trit.Trits):
     def __repr__(self):
         return 'Int({})'.format(int(self))
 
+    def __add__(self, other):
+        a, b = trit.Trits.match_length(self, other)
+        results = []
+        carry = trit.TRIT_ZERO
+        for x, y in reversed(list(zip(a, b))):
+            result, carry = x.add(y, carry)
+            results.append(result)
+        if carry != trit.TRIT_ZERO:
+            results.append(carry)
+        return Int(reversed(results))
+
 
 class UInt(IntMixin, trit.Trits):
     def __init__(self, trits, length=None):
