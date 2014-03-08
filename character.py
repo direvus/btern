@@ -15,13 +15,13 @@ UTF-6t
 UTF-6t is based heavily on UTF-8.  It shares most of the features of UTF-8 and
 has a very similar structure.
 
-A UTF-6t value is made up of one or more trytes of 6 trits each.  Each tryte
-consists of one trit of metadata, followed by five trits of code point data.
-Thus, a maximum of four trytes (24 trits with 4 metadata trits and 20 data
-trits) are required to represent all 2,147,483,648 code points in the Unicode
-Character Set.  A maximum of three trytes are required to represent code points
-up to 0x10FFFF (1114111), which is the limit of UTF-16, also enforced for
-UTF-8.
+A UTF-6t code point is encoded into one or more trytes of 6 trits each.  Each
+tryte consists of one trit of metadata, followed by five trits of code point
+data.  Thus, a maximum of four trytes (24 trits with 4 metadata trits and 20
+data trits) are required to represent all 2,147,483,648 code points in the
+Unicode Character Set.  A maximum of three trytes are required to represent
+code points up to 0x10FFFF (1114111), which is the limit of UTF-16, also
+enforced for UTF-8.
 
 The first trit of each tryte indicates whether the tryte is:
   * the final (or only) tryte of a value (-),
@@ -44,7 +44,7 @@ As with UTF-8, not all sequences of trits are valid UTF-6t encodings:
     tryte (0) or a final tryte (-).
   * A continuation tryte (0) must always be followed by either another
     continuation tryte or a final tryte (-).  It must never be the first tryte
-    of a character.
+    of a code point.
 
 Comparison with UTF-8
 ---------------------
@@ -57,7 +57,7 @@ will yield values in their code point order.
 
 The main difference between UTF-6t and UTF-8 is that the first byte of a UTF-8
 sequence indicates the number of bytes remaining in the value, allowing a
-decoder to know the byte width of the character prior to examining the
+decoder to know the byte width of the code point prior to examining the
 continuation bytes.  UTF-6t does not have this (admittedly useful) property,
 and consequently there are certain failure modes we cannot detect.  For
 example, if an entire continuation tryte were missing from a multi-tryte value,
