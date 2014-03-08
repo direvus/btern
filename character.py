@@ -72,12 +72,42 @@ from . import trit, integer
 
 
 class UTF6t(trit.Trits):
+    """A sequence of trits encoded in UTF-6t.
+    
+    A UTF6t instance may be initialised with a string object, in which case we
+    treat it as a source string to be encoded using UTF-6t.  Note that this
+    behaviour differs from that of the parent initialiser, which treats strings
+    as sequences of characters to be parsed as trits.  To get the latter
+    behaviour, use list() or tuple() on the string before passing it to the
+    initialiser:
+
+    >>> UTF6t('--0-+-')
+    UTF6t('--0-+-')
+    >>> UTF6t(list('--0-+-'))
+    UTF6t('!')
+    
+    If the argument is not a string, we run the parent initialiser as normal
+    and then decode the resulting trit sequence to ensure that it is valid
+    UTF-6t.
+    """
     INITIAL  = trit.POS
     CONTINUE = trit.ZERO
     FINAL    = trit.NEG
     LEAD_SIZE  = 1
     DATA_SIZE  = 5
     TRYTE_SIZE = 6
+
+    def __init__(self, trits, length=None):
+        try:
+            strtype = basestring
+        except NameError:
+            strtype = str
+        if isinstance(trits, strtype):
+            super(UTF6t, self).__init__(self.encode(trits), length)
+            self.string = trits
+        else:
+            super(UTF6t, self).__init__(trits, length)
+            self.string = self.decode(self.trits)
 
     @classmethod
     def encode(cls, chars):
@@ -86,15 +116,15 @@ class UTF6t(trit.Trits):
         'chars' must be iterable, and its elements may be standard string
         characters, unicode characters, or integer code points.
         """
-        trits = ''
+        trits = []
         for char in chars:
             if isinstance(char, numbers.Integral):
                 code = char
             else:
                 code = ord(char)
-            uint = str(integer.UInt(code))
+            uint = list(integer.UInt(code))
             padding = (cls.DATA_SIZE - len(uint)) % cls.DATA_SIZE
-            uint = (trit.NEG * padding) + uint
+            uint = ([trit.NEG] * padding) + uint
             length = len(uint)
             for i in range(0, length, cls.DATA_SIZE):
                 if i == length - cls.DATA_SIZE:
@@ -102,8 +132,8 @@ class UTF6t(trit.Trits):
                 elif i == 0:
                     lead = cls.INITIAL
                 else:
-                    lead = trit.CONTINUE
-                trits += lead + uint[i:i + cls.DATA_SIZE]
+                    lead = cls.CONTINUE
+                trits.extend([lead] + uint[i:i + cls.DATA_SIZE])
         return cls(trits)
 
     @classmethod
@@ -154,3 +184,6 @@ class UTF6t(trit.Trits):
                     "Invalid UTF-6t sequence: unterminated multi-tryte "
                     "character at end of sequence.")
         return result
+
+    def __repr__(self):
+        return "UTF6t({!r})".format(self.string)

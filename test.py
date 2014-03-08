@@ -386,7 +386,7 @@ class TestUTF6t(unittest.TestCase):
                 ]
 
     def test_encode(self):
-        assert [str(UTF6t.encode(x)) for x in self.strings] == [
+        assert [str(Trits(UTF6t.encode(x))) for x in self.strings] == [
                 '',
                 '--0+0-',
                 '-00+--',
@@ -405,7 +405,7 @@ class TestUTF6t(unittest.TestCase):
 
     def test_decode(self):
         assert self.strings == [
-                UTF6t.decode(str(UTF6t.encode(x))) for x in self.strings]
+                UTF6t.decode(UTF6t.encode(x)) for x in self.strings]
         # Bad length
         with self.assertRaises(ValueError):
             UTF6t.decode('0000')
