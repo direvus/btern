@@ -83,6 +83,12 @@ class Int(IntMixin, trit.Trits):
         return 'Int({})'.format(int(self))
 
     def __add__(self, other):
+        """Add two Ints and return the sum as an Int.
+
+        Obviously I could just add the integer equivalents of the two Ints
+        together, and then encode the result as an Int, but that's no fun at
+        all.
+        """
         a, b = trit.Trits.match_length(self, other)
         results = []
         carry = trit.TRIT_ZERO
@@ -94,7 +100,22 @@ class Int(IntMixin, trit.Trits):
         return Int(reversed(results))
 
     def __sub__(self, other):
+        """Return the difference of two Ints as an Int."""
         return self.__add__(-other)
+
+    def __mul__(self, other):
+        """Return the product of two Ints as an Int."""
+        result = Int([trit.TRIT_ZERO])
+        # Short circuit if either operand happens to be zero.
+        if self == result or other == result:
+            return result
+        for i in range(len(self)):
+            if self[i] == trit.TRIT_ZERO:
+                continue
+            shift = [trit.TRIT_ZERO] * (len(self) - i - 1)
+            trits = [self[i] * x for x in other] + shift
+            result += Int(trits)
+        return result
 
 
 class UInt(IntMixin, trit.Trits):

@@ -110,6 +110,12 @@ class TestTrit(unittest.TestCase):
             ('0', '0'), ('+', '0'), ('-', '+'),
             ('+', '0'), ('-', '+'), ('0', '+')]
 
+    def test_mul(self):
+        assert [str(x * y) for x, y in self.binary] == [
+                POS,  ZERO, NEG,
+                ZERO, ZERO, ZERO,
+                NEG,  ZERO, POS]
+
 
 class TestTrits(unittest.TestCase):
     def setUp(self):
@@ -361,6 +367,10 @@ class TestInt(unittest.TestCase):
     def test_sub(self):
         assert [int(Int(x) - Int(y)) for x, y in self.binary] == [
                 x - y for x, y in self.binary]
+
+    def test_mul(self):
+        assert [int(Int(x) * Int(y)) for x, y in self.binary] == [
+                x * y for x, y in self.binary]
 
 
 class TestUInt(unittest.TestCase):

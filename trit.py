@@ -213,6 +213,9 @@ class Trit(object):
         """Add two Trit objects with an optional carry-in Trit.
         
         Return a 2-tuple of Trit objects (sum, carry-out).
+
+        This method isn't named __add__ because, having three inputs and two
+        outputs, it is not appropriate for doing the work of the + operator.
         """
         if carry is None:
             carry = TRIT_ZERO
@@ -235,6 +238,19 @@ class Trit(object):
             return (other, TRIT_ZERO)
         else:
             return (TRIT_ZERO, self)
+
+    def __mul__(self, other):
+        """Multiply two Trit objects and return the product as a Trit.
+        
+        Has the opposite set of outcomes as XOR, that is:
+        (a * b) == ~(a ^ b)
+        """
+        if self.value == ZERO or other.value == ZERO:
+            return TRIT_ZERO
+        elif self.value == other.value:
+            return TRIT_POS
+        else:
+            return TRIT_NEG
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
