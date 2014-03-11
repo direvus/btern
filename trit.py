@@ -396,6 +396,16 @@ class Trits(object):
                 return 1
         return 0
 
+    def is_zero(self):
+        """Return whether this sequence contains no non-zero trits.
+
+        Note that this returns True for empty sequences.
+        """
+        for t in self:
+            if t != TRIT_ZERO:
+                return False
+        return True
+
     def __lt__(self, other):
         return (self.cmp(other) < 0)
 

@@ -117,6 +117,37 @@ class Int(IntMixin, trit.Trits):
             result += Int(trits)
         return result
 
+    def __divmod__(self, other):
+        """Return the quotient and remainder of division of two Ints.
+
+        The result is given as a tuple (quotient, remainder), both elements are
+        Int objects.
+        """
+        zero = Int([trit.TRIT_ZERO])
+        if other.is_zero():
+            raise ZeroDivisionError("Division of {!r} by zero.".format(self))
+        # Several short-circuit opportunities:
+        # 0 / x = 0
+        if self.is_zero():
+            return (zero, zero)
+        # x / 1 = x
+        if other == Int([trit.TRIT_POS]):
+            return (self, zero)
+        # x / -1 = -x
+        if other == Int([trit.TRIT_NEG]):
+            return (-self, zero)
+        remain = Int(self)
+        decrement = Int(other)
+        step = Int([trit.TRIT_POS])
+        count = zero
+        if self.cmp(zero) != other.cmp(zero):
+            decrement = -decrement
+            step = -step
+        while abs(remain) > abs(other) or remain.cmp(zero) != other.cmp(zero):
+            remain -= decrement
+            count += step
+        return (count, remain)
+
 
 class UInt(IntMixin, trit.Trits):
     def __init__(self, trits, length=None):
