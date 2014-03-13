@@ -316,7 +316,7 @@ class Trits(object):
         return iter(self.trits)
 
     def __neg__(self):
-        return Trits([-x for x in self.trits])
+        return self.__class__([-x for x in self.trits])
 
     def __invert__(self):
         return -self
