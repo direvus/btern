@@ -342,6 +342,17 @@ class Trits(object):
                 return self
         return self
 
+    def trim(self):
+        """Return a copy of this sequence with leading zeroes removed.
+
+        If the sequence consists entirely of zeroes, or is empty, return an
+        empty sequence.
+        """
+        for i in range(len(self)):
+            if self[i] != TRIT_ZERO:
+                return self.__class__(self[i:])
+        return self.__class__([])
+
     @classmethod
     def match_length(cls, a, b):
         """Return a 2-tuple of Trits a and b each having the same length.
