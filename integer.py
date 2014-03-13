@@ -79,6 +79,14 @@ class Int(IntMixin, trit.Trits):
         """Return the number of trits required to represent 'integer'."""
         return int(math.ceil(math.log(2 * abs(integer), 3)))
 
+    def is_negative(self):
+        for t in self:
+            if t == trit.TRIT_NEG:
+                return True
+            if t == trit.TRIT_POS:
+                return False
+        return False
+
     def __repr__(self):
         return 'Int({})'.format(int(self))
 
@@ -122,8 +130,29 @@ class Int(IntMixin, trit.Trits):
 
         The result is given as a tuple (quotient, remainder), both elements are
         Int objects.
+
+        The behaviour of this function differs from that of Python's built-in
+        integer division for negative numbers.  While integer division gives
+        the floored quotient (rounded towards negative infinity), balanced
+        ternary integer division gives the truncated quotient (rounded towards
+        zero).
+
+        Consequently, Python integer division will never return a modulus
+        (remainder) with the opposite sign from the denominator, whereas
+        balanced ternary integer division may do so.
+
+        The inconsistency is unfortunate, but the whole point of a balanced
+        ternary system is symmetry between the positive and negative, and I
+        couldn't bring myself to break the symmetry just to conform to a
+        language convention.
+
+        >>> divmod(-5, 2)
+        (-3, 1)
+        >>> divmod(Int(-5), Int(2))
+        (-2, -1)
         """
         zero = Int([trit.TRIT_ZERO])
+        one = Int([trit.TRIT_POS])
         if other.is_zero():
             raise ZeroDivisionError("Division of {!r} by zero.".format(self))
         # Several short-circuit opportunities:
@@ -131,22 +160,41 @@ class Int(IntMixin, trit.Trits):
         if self.is_zero():
             return (zero, zero)
         # x / 1 = x
-        if other == Int([trit.TRIT_POS]):
+        if other == one:
             return (self, zero)
         # x / -1 = -x
         if other == Int([trit.TRIT_NEG]):
             return (-self, zero)
         remain = Int(self)
-        decrement = Int(other)
-        step = Int([trit.TRIT_POS])
+        increment = -other
         count = zero
-        if self.cmp(zero) != other.cmp(zero):
-            decrement = -decrement
-            step = -step
-        while abs(remain) > abs(other) or remain.cmp(zero) != other.cmp(zero):
-            remain -= decrement
-            count += step
-        return (count, remain)
+        flip = False
+        if self.is_negative() != other.is_negative():
+            flip = True
+            increment = -increment
+        target = abs(other)
+        while abs(remain) >= target:
+            remain += increment
+            count += one
+        if flip:
+            return (-count, remain)
+        else:
+            return (count, remain)
+
+    def __floordiv__(self, other):
+        """Return the quotient of Int division.
+
+        This is the equivalent of truncating (rounded towards zero) the
+        quotient of true division, see the docs for __divmod__ for more detail.
+        """
+        return self.__divmod__(other)[0]
+
+    def __mod__(self, other):
+        """Return the remainder of Int division.
+        
+        See the docs for __divmod__ for more information.
+        """
+        return self.__divmod__(other)[1]
 
 
 class UInt(IntMixin, trit.Trits):

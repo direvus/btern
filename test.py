@@ -378,6 +378,18 @@ class TestInt(unittest.TestCase):
         assert [int(Int(x) * Int(y)) for x, y in self.binary] == [
                 x * y for x, y in self.binary]
 
+    def test_div(self):
+        with self.assertRaises(ZeroDivisionError):
+            Int(1) // Int(0)
+        ints = range(-5, 6)
+        ops = [(x, y) for x in ints for y in ints if y != 0]
+        quotients = [Int(int(x.__truediv__(y))) for x, y in ops]
+        remains = [Int(x - (y * int(x.__truediv__(y)))) for x, y in ops]
+        divmods = list(zip(quotients, remains))
+        assert [Int(x) // Int(y) for x, y in ops] == quotients
+        assert [Int(x) % Int(y) for x, y in ops] == remains
+        assert [divmod(Int(x), Int(y)) for x, y in ops] == divmods
+
 
 class TestUInt(unittest.TestCase):
     def setUp(self):
