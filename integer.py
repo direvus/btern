@@ -43,7 +43,7 @@ from . import trit
 
 class IntMixin(object):
     def __int__(self):
-        return self.integer
+        raise NotImplemented
 
     def __oct__(self):
         return oct(int(self))
@@ -72,12 +72,7 @@ class Int(IntMixin, trit.Trits):
                     integer -= int(item) * (3 ** power)
                     power -= 1
         super(Int, self).__init__(trits, length)
-        self.integer = 0
-        for i in range(len(self)):
-            if self[i] == trit.TRIT_ZERO:
-                continue
-            power = len(self) - 1 - i
-            self.integer += int(self[i]) * (3 ** power)
+        self.integer = None
 
     @staticmethod
     def order(integer):
@@ -91,6 +86,16 @@ class Int(IntMixin, trit.Trits):
             if t == trit.TRIT_POS:
                 return False
         return False
+
+    def __int__(self):
+        if self.integer is None:
+            self.integer = 0
+            for i in range(len(self)):
+                if self[i] == trit.TRIT_ZERO:
+                    continue
+                power = len(self) - 1 - i
+                self.integer += int(self[i]) * (3 ** power)
+        return self.integer
 
     def __repr__(self):
         return 'Int({})'.format(int(self))
@@ -224,12 +229,17 @@ class UInt(IntMixin, trit.Trits):
         if length is not None and length > len(trits):
             trits = ([trit.TRIT_NEG] * (length - len(trits))) + trits
         super(UInt, self).__init__(trits, length)
-        self.integer = 0
-        for i in range(len(self)):
-            if self[i] == trit.TRIT_NEG:
-                continue
-            power = len(self) - 1 - i
-            self.integer += (int(self[i]) + 1) * (3 ** power)
+        self.integer = None
+
+    def __int__(self):
+        if self.integer is None:
+            self.integer = 0
+            for i in range(len(self)):
+                if self[i] == trit.TRIT_NEG:
+                    continue
+                power = len(self) - 1 - i
+                self.integer += (int(self[i]) + 1) * (3 ** power)
+        return self.integer
 
     def __repr__(self):
         return 'UInt({})'.format(self.integer)
