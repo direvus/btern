@@ -161,35 +161,31 @@ class Int(IntMixin, trit.Trits):
         >>> divmod(Int(-5), Int(2))
         (-2, -1)
         """
-        zero = Int([trit.TRIT_ZERO])
-        one = Int([trit.TRIT_POS])
         if other.is_zero():
             raise ZeroDivisionError("Division of {!r} by zero.".format(self))
         # Several short-circuit opportunities:
         # 0 / x = 0
         if self.is_zero():
-            return (zero, zero)
+            return (INT_ZERO, INT_ZERO)
         # x / 1 = x
-        if other == one:
-            return (self, zero)
+        if other == INT_ONE:
+            return (self, INT_ZERO)
         # x / -1 = -x
         if other == Int([trit.TRIT_NEG]):
-            return (-self, zero)
+            return (-self, INT_ZERO)
+
+        if other.is_negative():
+            quotient, remain = self.__divmod__(-other)
+            return (-quotient, remain)
+        if self.is_negative():
+            quotient, remain = (-self).__divmod__(other)
+            return (-quotient, -remain)
         remain = Int(self)
-        increment = -other
-        count = zero
-        flip = False
-        if self.is_negative() != other.is_negative():
-            flip = True
-            increment = -increment
-        target = abs(other)
-        while abs(remain) >= target:
-            remain += increment
-            count += one
-        if flip:
-            return (-count, remain)
-        else:
-            return (count, remain)
+        quotient = INT_ZERO
+        while remain >= other:
+            remain -= other
+            quotient += INT_ONE
+        return (quotient, remain)
 
     def __floordiv__(self, other):
         """Return the quotient of Int division.
@@ -243,3 +239,12 @@ class UInt(IntMixin, trit.Trits):
 
     def __repr__(self):
         return 'UInt({})'.format(self.integer)
+
+
+INT_ZERO    = Int([trit.TRIT_ZERO])
+INT_ONE     = Int([trit.TRIT_POS])
+INT_NEG_ONE = Int([trit.TRIT_NEG])
+
+UINT_ZERO    = UInt([trit.TRIT_ZERO])
+UINT_ONE     = UInt([trit.TRIT_POS])
+UINT_TWO     = UInt([trit.TRIT_NEG])
