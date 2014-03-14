@@ -11,6 +11,11 @@ unsigned interpretation (UInt), they represent zero, one, and two -- in UInt we
 are essentially using balanced ternary symbols to encode unbalanced (standard)
 ternary data.
 
+    Trit  Signed  Unsigned
+       -      -1         0
+       0       0         1
+       +       1         2
+
 Every sequence of trits represents an integer, which is the sum of the integer
 equivalent of each trit, times 3 to the power of the trit's index within the
 sequence, starting from zero in the rightmost position.
@@ -18,17 +23,17 @@ sequence, starting from zero in the rightmost position.
 For example, the signed integer trit sequence '-+0' has the integer equivalent
 'i' of:
 
-i = (-1 * 3**2) + (1 * 3**1) + (0 * 3**0)
-  = (-1 * 9) + (1 * 3)
-  = -9 + 3
-  = -6
+    i = (-1 * 3**2) + (1 * 3**1) + (0 * 3**0)
+      = (-1 * 9) + (1 * 3)
+      = -9 + 3
+      = -6
 
 Whereas, the same trit sequence '-+0' as an unsigned integer has the integer
 value:
 
-i = (0 * 3**2) + (2 * 3**1) + (1 * 3**0)
-  = (2 * 3) + (1 * 1)
-  = 7
+    i = (0 * 3**2) + (2 * 3**1) + (1 * 3**0)
+      = (2 * 3) + (1 * 1)
+      = 7
 """
 import math
 import numbers
