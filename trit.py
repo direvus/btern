@@ -97,7 +97,7 @@ class Trit(object):
         return hash(self.value)
 
     def __repr__(self):
-        return 'Trit({!s})'.format(self)
+        return 'Trit({!r})'.format(self.value)
 
     def __int__(self):
         return self.integer
@@ -279,9 +279,14 @@ class Trits(object):
         if trits is not None:
             self.trits = [Trit.make(x) for x in trits]
         if length is not None:
+            if not isinstance(length, numbers.Integral):
+                raise TypeError(
+                        "Invalid length argument {!r}; "
+                        "length must be an integer.".format(length))
             if length < 0:
                 raise ValueError(
-                        "Invalid length argument '{!r}'.".format(length))
+                        "Invalid length argument {}; "
+                        "length must be non-negative.".format(length))
             if len(self.trits) < length:
                 pad = [TRIT_ZERO] * (length - len(self.trits))
                 self.trits = pad + self.trits
@@ -293,7 +298,7 @@ class Trits(object):
         return self.string
 
     def __repr__(self):
-        return "{}('{}')".format(self.__class__.__name__, self.string)
+        return "{}({!r})".format(self.__class__.__name__, str(self))
 
     def __hash__(self):
         return hash(self.string)
