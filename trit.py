@@ -324,24 +324,6 @@ class Trits(object):
     def __pos__(self):
         return self
 
-    def __abs__(self):
-        """Return the numeric absolute value.
-        
-        This operation is on the whole Trits sequence, not on each trit
-        individually, thus:
-
-        >>> abs(Trits('+-')) # == 2
-        Trits('+-')
-        >>> abs(Trits('-+')) # == -2
-        Trits('+-')
-        """
-        for t in self.trits:
-            if t == TRIT_NEG:
-                return -self
-            elif t == TRIT_POS:
-                return self
-        return self
-
     def trim(self):
         """Return a copy of this sequence with leading zeroes removed.
 

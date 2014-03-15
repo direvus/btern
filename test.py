@@ -209,12 +209,6 @@ class TestTrits(unittest.TestCase):
                 '0--', '0-0', '0-+', '00-', '000', '00+', '0+-', '0+0', '0++',
                 '+--', '+-0', '+-+', '+0-', '+00', '+0+', '++-', '++0', '+++']
 
-    def test_abs(self):
-        assert [str(abs(x)) for x in self.unary] == [
-                '+++', '++0', '++-', '+0+', '+00', '+0-', '+-+', '+-0', '+--',
-                '0++', '0+0', '0+-', '00+', '000', '00+', '0+-', '0+0', '0++',
-                '+--', '+-0', '+-+', '+0-', '+00', '+0+', '++-', '++0', '+++']
-
     def test_trim(self):
         assert [str(x.trim()) for x in self.unary] == [
                 '---', '--0', '--+', '-0-', '-00', '-0+', '-+-', '-+0', '-++',
@@ -366,6 +360,12 @@ class TestInt(unittest.TestCase):
         assert False not in [
                 int(Int(x)) == x for x in range(-100, 100)]
 
+    def test_abs(self):
+        assert [str(abs(Int(x))) for x in TRIPLETS] == [
+                '+++', '++0', '++-', '+0+', '+00', '+0-', '+-+', '+-0', '+--',
+                '0++', '0+0', '0+-', '00+', '000', '00+', '0+-', '0+0', '0++',
+                '+--', '+-0', '+-+', '+0-', '+00', '+0+', '++-', '++0', '+++']
+
     def test_add(self):
         assert [int(Int(x) + Int(y)) for x, y in self.binary] == [
                 x + y for x, y in self.binary]
@@ -418,6 +418,9 @@ class TestUInt(unittest.TestCase):
 
     def test_int(self):
         assert [int(UInt(x)) for x in TRIPLETS] == list(range(27))
+
+    def test_abs(self):
+        assert [abs(UInt(x)) for x in TRIPLETS] == [UInt(x) for x in TRIPLETS]
 
 
 class TestUTF6t(unittest.TestCase):

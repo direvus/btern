@@ -100,6 +100,15 @@ class Int(IntMixin, trit.Trits):
     def __repr__(self):
         return 'Int({})'.format(int(self))
 
+    def __abs__(self):
+        """Return the absolute value of this Int."""
+        for t in self.trits:
+            if t == trit.TRIT_NEG:
+                return -self
+            elif t == trit.TRIT_POS:
+                return self
+        return self
+
     def __add__(self, other):
         """Add two Ints and return the sum as an Int.
 
@@ -239,6 +248,9 @@ class UInt(IntMixin, trit.Trits):
 
     def __repr__(self):
         return 'UInt({})'.format(self.integer)
+
+    def __abs__(self):
+        return self
 
 
 INT_ZERO    = Int([trit.TRIT_ZERO])
