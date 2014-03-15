@@ -8,6 +8,7 @@ from .trit import Trit, Trits, GLYPHS, NEG, ZERO, POS
 from .trit import TRITS, TRIT_NEG, TRIT_ZERO, TRIT_POS
 from .integer import Int, UInt
 from .character import UTF6t
+from .processor import Register
 
 
 # The set of all possible 3-trit sequences
@@ -470,3 +471,30 @@ class TestUTF6t(unittest.TestCase):
         with self.assertRaises(ValueError):
             UTF6t.decode('-+++++0-----')
 
+
+class TestRegister(unittest.TestCase):
+    def setUp(self):
+        self.unary = [Register(x, 3) for x in TRIPLETS]
+
+    def test_init(self):
+        with self.assertRaises(TypeError):
+            Register([], None)
+        with self.assertRaises(ValueError):
+            Register([], 0)
+        assert len(str(Register([], 6))) == 6
+
+    def test_set(self):
+        r = Register([], 6)
+        # Assignment to out-of-range index
+        with self.assertRaises(IndexError):
+            r[6] = TRIT_POS
+        # Slice assignment that would alter the sequence length
+        with self.assertRaises(ValueError):
+            r[:] = [TRIT_POS]
+
+        r[0] = TRIT_POS; assert str(r) == '+00000'
+        r[-1] = TRIT_NEG; assert str(r) == '+0000-'
+        r[-2:] = '-0'; assert str(r) == '+000-0'
+        r[:3] = '-+-'; assert str(r) == '-+-0-0'
+        r[:] = '000+++'; assert str(r) == '000+++'
+        r[2:4] = '--'; assert str(r) == '00--++'
