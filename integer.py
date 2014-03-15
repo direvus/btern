@@ -43,7 +43,7 @@ from . import trit
 
 class IntMixin(object):
     def __int__(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     def __oct__(self):
         return oct(int(self))
