@@ -275,9 +275,9 @@ class Trits(object):
     match the length of the longer operand.
     """
     def __init__(self, trits, length=None):
-        self.trits = []
+        self.trits = ()
         if trits is not None:
-            self.trits = [Trit.make(x) for x in trits]
+            self.trits = tuple((Trit.make(x) for x in trits))
         if length is not None:
             if not isinstance(length, numbers.Integral):
                 raise TypeError(
@@ -288,11 +288,11 @@ class Trits(object):
                         "Invalid length argument {}; "
                         "length must be non-negative.".format(length))
             if len(self.trits) < length:
-                pad = [TRIT_ZERO] * (length - len(self.trits))
+                pad = (TRIT_ZERO,) * (length - len(self.trits))
                 self.trits = pad + self.trits
             elif len(self.trits) > length:
                 self.trits = self.trits[-length:]
-        self.string = ''.join([str(x) for x in self.trits])
+        self.string = ''.join((str(x) for x in self.trits))
 
     def __str__(self):
         return self.string
@@ -301,7 +301,7 @@ class Trits(object):
         return "{}({!r})".format(self.__class__.__name__, str(self))
 
     def __hash__(self):
-        return hash(self.string)
+        return hash(self.trits)
 
     def __len__(self):
         return len(self.trits)
@@ -373,10 +373,10 @@ class Trits(object):
     def __add__(self, other):
         """Return the concatenation of a Trits with an iterable or Trit."""
         if isinstance(other, Trit):
-            lst = [other]
+            value = (other,)
         else:
-            lst = list(other)
-        return Trits(self.trits + lst)
+            value = tuple(other)
+        return Trits(self.trits + value)
 
     def __radd__(self, other):
         return self.__add__(other)

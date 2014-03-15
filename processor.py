@@ -24,6 +24,7 @@ class Register(trit.Trits):
                     "Invalid length argument {}; "
                     "length must be positive.".format(length))
         super(Register, self).__init__(trits, length)
+        self.trits = list(self.trits)
         self.length = length
 
     def __str__(self):
