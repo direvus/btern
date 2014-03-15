@@ -97,9 +97,6 @@ class Int(IntMixin, trit.Trits):
                 self.integer += int(self[i]) * (3 ** power)
         return self.integer
 
-    def __repr__(self):
-        return 'Int({})'.format(int(self))
-
     def __abs__(self):
         """Return the absolute value of this Int."""
         for t in self.trits:
@@ -245,9 +242,6 @@ class UInt(IntMixin, trit.Trits):
                 power = len(self) - 1 - i
                 self.integer += (int(self[i]) + 1) * (3 ** power)
         return self.integer
-
-    def __repr__(self):
-        return 'UInt({})'.format(self.integer)
 
     def __abs__(self):
         return self

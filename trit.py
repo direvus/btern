@@ -293,7 +293,7 @@ class Trits(object):
         return self.string
 
     def __repr__(self):
-        return "Trits('{}')".format(self.string)
+        return "{}('{}')".format(self.__class__.__name__, self.string)
 
     def __hash__(self):
         return hash(self.string)

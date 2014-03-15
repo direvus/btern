@@ -184,6 +184,3 @@ class UTF6t(trit.Trits):
                     "Invalid UTF-6t sequence: unterminated multi-tryte "
                     "character at end of sequence.")
         return result
-
-    def __repr__(self):
-        return "UTF6t({!r})".format(self.string)
