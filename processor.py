@@ -92,6 +92,7 @@ class Processor(object):
         self.instructions = {}
         for ins in instructions:
             self.instructions[ins.opcode] = ins
+        self.stop = False
 
     def fetch(self):
         """Retrieve the next instruction from the program."""
@@ -106,16 +107,16 @@ class Processor(object):
         raise NotImplementedError
 
     def run(self):
-        """Continue the instruction cycle, until the halt flag is set."""
-        self.halt = False
-        while not self.halt:
+        """Continue the instruction cycle, until the stop flag is set."""
+        self.stop = False
+        while not self.stop:
             self.fetch()
             self.increment()
             self.execute()
 
     def halt(self, *args):
         """Cause the processor to cease running."""
-        self.halt = True
+        self.stop = True
 
 
 class T3(Processor):
@@ -166,11 +167,13 @@ class T3(Processor):
                     for z in trit.GLYPHS}
         self.dr = self.registers[trit.Trits('000')]
         self.program = Register([], self.PROGRAM_SIZE)
+        self.outputs = []
         self.reset()
 
     def reset(self):
         self.ip.put(self.ADDRESS_MIN)
         self.ir.clear()
+        self.outputs = []
         for address in self.registers:
             self.registers[address].clear()
 
@@ -259,8 +262,14 @@ class T3(Processor):
         self.registers[self.get_operand(data)].clear()
 
     def output(self, data):
-        """Write the contents of a register to stdout."""
-        print(self.get_register(self.get_operand(data)))
+        """Output the contents of a register.
+        
+        The contents are printed to stdout and also appended as a string to the
+        'outputs' list.
+        """
+        content = str(self.get_register(self.get_operand(data)))
+        self.outputs.append(content)
+        print(content)
 
     def put_low(self, data):
         """Write the operand to the lower trits of the default register."""

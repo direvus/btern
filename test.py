@@ -3,7 +3,7 @@
 import unittest
 import string
 
-from . import trit, integer, character
+from . import trit, integer, character, processor
 from .trit import Trit, Trits, GLYPHS, NEG, ZERO, POS
 from .trit import TRITS, TRIT_NEG, TRIT_ZERO, TRIT_POS
 from .integer import Int, UInt
@@ -498,3 +498,74 @@ class TestRegister(unittest.TestCase):
         r[:3] = '-+-'; assert str(r) == '-+-0-0'
         r[:] = '000+++'; assert str(r) == '000+++'
         r[2:4] = '--'; assert str(r) == '00--++'
+
+    def test_put(self):
+        r = Register([], 6)
+        r.put('-'); assert str(r) == '00000-'
+        r.put('+-0+0-+'); assert str(r) == '-0+0-+'
+
+
+class TestProcessor(unittest.TestCase):
+    def run_program(self, instructions, proc=None):
+        if proc is None:
+            proc = processor.T3()
+        proc.set_program(''.join(instructions))
+        proc.run()
+        assert proc.ip == UInt(len(instructions) + 1, proc.ADDRESS_SIZE)
+        return proc
+
+    def test_halt(self):
+        # The default T3 program (all zeroes) should halt at first instruction.
+        self.run_program([])
+
+    def test_bad_opcode(self):
+        proc = processor.T3()
+        with self.assertRaises(ValueError):
+            proc.set_program('---')
+            proc.run()
+
+    def test_program_length(self):
+        proc = processor.T3()
+        proc.set_program('0' * proc.PROGRAM_SIZE)
+        with self.assertRaises(ValueError):
+            proc.set_program('0' * (proc.PROGRAM_SIZE + 1))
+
+    def test_put(self):
+        proc = self.run_program(('-++-0-', '+--+0+'))
+        assert proc.dr == Trits('+0+-0-')
+
+    def test_output(self):
+        proc = self.run_program(('-++-0-', '+--+0+', '0++000'))
+        assert proc.outputs == ['+0+-0-']
+
+    def test_save(self):
+        proc = self.run_program(('-++-0-', '+--+0+', '00+---'))
+        assert proc.registers[Trits('---')] == Trits('+0+-0-')
+
+    def test_load(self):
+        proc = processor.T3()
+        proc.registers[Trits('+++')].put('+0+-0-')
+        self.run_program(('00-+++',), proc)
+        assert proc.dr == Trits('+0+-0-')
+
+    def test_clear(self):
+        proc = self.run_program(('+--+-+', '-++-+-', '0++000', '0--000'))
+        assert proc.dr == Trits('000000')
+        assert proc.outputs == ['+-+-+-']
+
+    def test_add(self):
+        proc = self.run_program(('-++00+', '00+00+', '0+-00+'))
+        assert proc.dr == Trits('0000+-')
+
+    def test_sub(self):
+        proc = self.run_program(('-++00+', '00+00+', '0--000', '0-+00+'))
+        assert proc.dr == Trits('00000-')
+
+    def test_jump_zero(self):
+        proc = self.run_program(('0+0--+', '000000', '-++00+'))
+        assert proc.dr == Trits('00000+')
+
+    def test_jump_nonzero(self):
+        proc = self.run_program((
+            '-++00+', '00+00+', '-+++++', '0-+00+', '0-0-0-'))
+        assert proc.dr == Trits('000000')
