@@ -260,7 +260,7 @@ class T3(Processor):
 
     def output(self, data):
         """Write the contents of a register to stdout."""
-        print self.get_register(self.get_operand(data))
+        print(self.get_register(self.get_operand(data)))
 
     def put_low(self, data):
         """Write the operand to the lower trits of the default register."""
