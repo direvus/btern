@@ -52,6 +52,10 @@ class Register(trit.Trits):
     def clear(self):
         self.put([])
 
+    def get_trits(self):
+        """Return the contents of this Register as a Trits object."""
+        return trit.Trits(self)
+
 
 class Instruction(object):
     """A single instruction that is executable by a Processor.
@@ -88,7 +92,6 @@ class Processor(object):
         self.instructions = {}
         for ins in instructions:
             self.instructions[ins.opcode] = ins
-        self.halt = False
 
     def fetch(self):
         """Retrieve the next instruction from the program."""
@@ -104,6 +107,7 @@ class Processor(object):
 
     def run(self):
         """Continue the instruction cycle, until the halt flag is set."""
+        self.halt = False
         while not self.halt:
             self.fetch()
             self.increment()
@@ -125,24 +129,33 @@ class T3(Processor):
     produce a result store it in the default register.  The other 26 registers
     --- through 00-, and 00+ through +++, are general use registers.
 
-    The program memory likewise consists of 27 instruction registers of 6 trits
-    each.
+    The program memory likewise consists of 27 instructions of 6 trits each,
+    addressed --- through +++.
     """
     OPCODE_SIZE = 3
     ADDRESS_SIZE = 3
     INSTRUCTION_SIZE = 6
-    REGISTER_COUNT = 27
     REGISTER_SIZE = 6
-    PROGRAM_SIZE = 162
-    INSTRUCTIONS = (
-            ('000', Processor.halt),
-            )
+    PROGRAM_SIZE = 27 * 6
     ADDRESS_MIN = trit.Trits('---')
     ADDRESS_MAX = trit.Trits('+++')
+    INSTRUCTIONS = (
+            ('-++', 'put_low'),
+            ('0--', 'clear'),
+            ('0-0', 'jump_nonzero'),
+            ('0-+', 'sub'),
+            ('00-', 'load'),
+            ('000', 'halt'),
+            ('00+', 'save'),
+            ('0+-', 'add'),
+            ('0+0', 'jump_zero'),
+            ('0++', 'output'),
+            ('+--', 'put_high'),
+            )
 
     def __init__(self):
         super(T3, self).__init__((
-            Instruction(trit.Trits(a), self.INSTRUCTION_SIZE, b)
+            Instruction(trit.Trits(a), self.INSTRUCTION_SIZE, getattr(T3, b))
                 for a, b in self.INSTRUCTIONS))
         self.ip = Register([], self.ADDRESS_SIZE)
         self.ir = Register([], self.INSTRUCTION_SIZE)
@@ -151,34 +164,110 @@ class T3(Processor):
                     for x in trit.GLYPHS
                     for y in trit.GLYPHS
                     for z in trit.GLYPHS}
-        self.program = {
-                trit.Trits([x, y, z]): Register([], self.INSTRUCTION_SIZE)
-                    for x in trit.GLYPHS
-                    for y in trit.GLYPHS
-                    for z in trit.GLYPHS}
-        self.dr = self.registers['000']
+        self.dr = self.registers[trit.Trits('000')]
+        self.program = Register([], self.PROGRAM_SIZE)
         self.reset()
 
     def reset(self):
-        self.ip[:] = self.ADDRESS_MIN
+        self.ip.put(self.ADDRESS_MIN)
         self.ir.clear()
         for address in self.registers:
             self.registers[address].clear()
 
-    def get_ip_address(self):
-        return trit.Trits(self.ip)
-
     def fetch(self):
-        self.ir.put(self.program[self.get_ip_address()])
+        address = int(integer.UInt(self.ip)) * self.INSTRUCTION_SIZE
+        instruction = self.program[address:address+self.INSTRUCTION_SIZE]
+        self.ir.put(instruction)
 
     def increment(self):
-        if self.get_ip_address() == self.ADDRESS_MAX:
-            value = self.ADDRESS_MIN
-        else:
-            value = integer.Int(self.ip) + integer.Int('+')
-        self.ip.put(value)
+        self.ip.put(integer.Int(self.ip) + integer.Int('+'))
 
     def execute(self):
         opcode = self.ir[:self.OPCODE_SIZE]
-        operand = self.ir[self.OPCODE_SIZE:]
-        self.instructions[opcode].execute(self, operand)
+        if opcode not in self.instructions:
+            raise ValueError(
+                    "Invalid instruction {!r}: "
+                    "unrecognised opcode.".format(str(self.ir)))
+        self.instructions[opcode].execute(self, self.ir)
+
+    def set_program(self, program):
+        """Write instructions to the program memory.
+
+        Clear the entire program memory, then write the given program code to
+        the program register in order, beginning at ---.
+        """
+        if len(program) > self.PROGRAM_SIZE:
+            raise ValueError(
+                    "Invalid program: "
+                    "length {} exceeds total program memory {}.".format(
+                        len(program), self.PROGRAM_SIZE))
+        self.program.clear()
+        self.program[:len(program)] = program
+
+    def get_operand(self, data):
+        """Return the remainder of an instruction after the opcode."""
+        return trit.Trits(data[self.OPCODE_SIZE:])
+
+    def get_register(self, address):
+        """Return the contents of the register at 'address'."""
+        return self.registers[address].get_trits()
+
+    def load(self, data):
+        """Copy the contents of a register into the default register.
+        
+        'Load 000' is a no-op.
+        """
+        address = self.get_operand(data)
+        content = self.get_register(address)
+        self.dr.put(content)
+
+    def save(self, data):
+        """Copy the contents of the default register into a register.
+        
+        'Save 000' is a no-op.
+        """
+        content = self.dr.get_trits()
+        address = self.get_operand(data)
+        self.registers[address].put(content)
+
+    def add(self, data):
+        """Add the contents of a register to the default register."""
+        a = integer.Int(self.dr)
+        b = integer.Int(self.get_register(self.get_operand(data)))
+        self.dr.put(a + b)
+
+    def sub(self, data):
+        """Subtract the contents of a register from the default register."""
+        a = integer.Int(self.dr)
+        b = integer.Int(self.get_register(self.get_operand(data)))
+        self.dr.put(a - b)
+
+    def jump_zero(self, data):
+        """Jump to a program address, if the default register is zero."""
+        if self.dr.is_zero():
+            address = self.get_operand(data)
+            self.ip.put(address)
+
+    def jump_nonzero(self, data):
+        """Jump to a program address, if the default register is not zero."""
+        if not self.dr.is_zero():
+            address = self.get_operand(data)
+            self.ip.put(address)
+
+    def clear(self, data):
+        """Set all the trits of a register to zero."""
+        self.registers[self.get_operand(data)].clear()
+
+    def output(self, data):
+        """Write the contents of a register to stdout."""
+        print self.get_register(self.get_operand(data))
+
+    def put_low(self, data):
+        """Write the operand to the lower trits of the default register."""
+        operand = self.get_operand(data)
+        self.dr[-len(operand):] = operand
+
+    def put_high(self, data):
+        """Write the operand to the higher trits of the default register."""
+        operand = self.get_operand(data)
+        self.dr[:len(operand)] = operand
