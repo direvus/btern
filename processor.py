@@ -65,9 +65,10 @@ class Instruction(object):
       * a size; the number of trits in the instruction including the opcode,
       * a function; a callable taking two arguments, being the Processor
         executing the instruction, and the entire instruction including the
-        opcode and any operands.
+        opcode and any operands,
+      * optionally a name; a human-readable label for the instruction.
     """
-    def __init__(self, opcode, size, function):
+    def __init__(self, opcode, size, function, name=None):
         if size < len(opcode):
             raise ValueError(
                     "Invalid Instruction size {}; must be at least the "
@@ -75,6 +76,12 @@ class Instruction(object):
         self.opcode = opcode
         self.size = size
         self.function = function
+        self.name = name
+
+    def __str__(self):
+        if self.name is None:
+            return str(self.opcode)
+        return self.name
 
     def execute(self, processor, data):
         self.function(processor, data)
@@ -141,23 +148,28 @@ class T3(Processor):
     ADDRESS_MIN = trit.Trits('---')
     ADDRESS_MAX = trit.Trits('+++')
     INSTRUCTIONS = (
-            ('-++', 'put_low'),
-            ('0--', 'clear'),
-            ('0-0', 'jump_nonzero'),
-            ('0-+', 'sub'),
-            ('00-', 'load'),
-            ('000', 'halt'),
-            ('00+', 'save'),
-            ('0+-', 'add'),
-            ('0+0', 'jump_zero'),
-            ('0++', 'output'),
-            ('+--', 'put_high'),
+            ('-++', 'putL', 'put_low'),
+            ('0--', 'clrR', 'clear'),
+            ('0-0', 'jmpN', 'jump_nonzero'),
+            ('0-+', 'subR', 'sub'),
+            ('00-', 'lodR', 'load'),
+            ('000', 'halt', 'halt'),
+            ('00+', 'savR', 'save'),
+            ('0+-', 'addR', 'add'),
+            ('0+0', 'jmp0', 'jump_zero'),
+            ('0++', 'outR', 'output'),
+            ('+--', 'putH', 'put_high'),
             )
 
-    def __init__(self):
-        super(T3, self).__init__((
-            Instruction(trit.Trits(a), self.INSTRUCTION_SIZE, getattr(T3, b))
-                for a, b in self.INSTRUCTIONS))
+    def __init__(self, verbose=False):
+        instructions = ((Instruction(
+                trit.Trits(code),
+                self.INSTRUCTION_SIZE,
+                getattr(T3, func),
+                name)
+            for code, name, func in self.INSTRUCTIONS))
+        super(T3, self).__init__(instructions)
+        self.verbose = verbose
         self.ip = Register([], self.ADDRESS_SIZE)
         self.ir = Register([], self.INSTRUCTION_SIZE)
         self.registers = {
@@ -191,6 +203,10 @@ class T3(Processor):
             raise ValueError(
                     "Invalid instruction {!r}: "
                     "unrecognised opcode.".format(str(self.ir)))
+        instruction = self.instructions[opcode]
+        if self.verbose:
+            print('{} {} {}'.format(
+                    self.ir, instruction, self.get_operand(self.ir)))
         self.instructions[opcode].execute(self, self.ir)
 
     def set_program(self, program):
