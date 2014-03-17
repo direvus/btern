@@ -11,10 +11,11 @@ unsigned interpretation (UInt), they represent zero, one, and two -- in UInt we
 are essentially using balanced ternary symbols to encode unbalanced (standard)
 ternary data.
 
-    Trit  Signed  Unsigned
-       -      -1         0
-       0       0         1
-       +       1         2
+| Trit | Signed | Unsigned |
+| ---- | -----: | -------: |
+|  -   |   -1   |     0    |
+|  0   |    0   |     1    |
+|  +   |    1   |     2    |
 
 Every sequence of trits represents an integer, which is the sum of the integer
 equivalent of each trit, times 3 to the power of the trit's index within the
