@@ -148,6 +148,7 @@ class T3(Processor):
     ADDRESS_MIN = trit.Trits('---')
     ADDRESS_MAX = trit.Trits('+++')
     INSTRUCTIONS = (
+            ('-+0', 'shfR', 'shift_right'),
             ('-++', 'putL', 'put_low'),
             ('0--', 'clrR', 'clear'),
             ('0-0', 'jmpN', 'jump_nonzero'),
@@ -159,6 +160,7 @@ class T3(Processor):
             ('0+0', 'jmp0', 'jump_zero'),
             ('0++', 'outR', 'output'),
             ('+--', 'putH', 'put_high'),
+            ('+-0', 'shfL', 'shift_left'),
             )
 
     def __init__(self, verbose=False):
@@ -296,3 +298,15 @@ class T3(Processor):
         """Write the operand to the higher trits of the default register."""
         operand = self.get_operand(data)
         self.dr[:len(operand)] = operand
+
+    def shift_left(self, data):
+        """Shift the contents of a register one place to the left."""
+        address = self.get_operand(data)
+        content = self.get_register(address)
+        self.registers[address].put(content << 1)
+
+    def shift_right(self, data):
+        """Shift the contents of a register one place to the right."""
+        address = self.get_operand(data)
+        content = self.get_register(address)
+        self.registers[address].put(content >> 1)

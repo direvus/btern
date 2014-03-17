@@ -602,3 +602,11 @@ class TestProcessor(unittest.TestCase):
         proc = self.run_program((
             '-++00+', '00+00+', '-+++++', '0-+00+', '0-0-0-'))
         assert proc.dr == Trits('000000')
+
+    def test_shift_left(self):
+        proc = self.run_program(('+-----', '-+++++', '+-0000'))
+        assert proc.dr == Trits('--+++0')
+
+    def test_shift_right(self):
+        proc = self.run_program(('+-----', '-+++++', '-+0000'))
+        assert proc.dr == Trits('0---++')
