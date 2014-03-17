@@ -381,6 +381,12 @@ class Trits(object):
     def __radd__(self, other):
         return self.__add__(other)
 
+    def __lshift__(self, other):
+        return self + ((TRIT_ZERO,) * other)
+
+    def __rshift__(self, other):
+        return self[:-other]
+
     def __mul__(self, other):
         """Return 'self' repeated 'other' times."""
         return Trits(self.trits * other)
