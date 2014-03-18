@@ -610,3 +610,25 @@ class TestProcessor(unittest.TestCase):
     def test_shift_right(self):
         proc = self.run_program(('+-----', '-+++++', '-+0000'))
         assert proc.dr == Trits('0---++')
+
+    def test_not(self):
+        proc = self.run_program(('+----0', '-++0++', '00+00+', '--+00+'))
+        assert proc.dr == Trits('++00--')
+
+    def test_and(self):
+        proc = self.run_program((
+            '+--++0', '-++0--', '00+00+',
+            '+--+0-', '-++0+-', '+-+00+'))
+        assert proc.dr == Trits('+0-0--')
+
+    def test_or(self):
+        proc = self.run_program((
+            '+--++0', '-++0--', '00+00+',
+            '+--+0-', '-++0+-', '-+-00+'))
+        assert proc.dr == Trits('++00+-')
+
+    def test_xor(self):
+        proc = self.run_program((
+            '+--++0', '-++0--', '00+00+',
+            '+--+0-', '-++0+-', '++-00+'))
+        assert proc.dr == Trits('-000+-')

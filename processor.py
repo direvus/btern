@@ -148,6 +148,8 @@ class T3(Processor):
     ADDRESS_MIN = trit.Trits('---')
     ADDRESS_MAX = trit.Trits('+++')
     INSTRUCTIONS = (
+            ('--+', 'notR', 'log_not'),
+            ('-+-', 'or R', 'log_or'),
             ('-+0', 'shfR', 'shift_right'),
             ('-++', 'putL', 'put_low'),
             ('0--', 'clrR', 'clear'),
@@ -161,6 +163,8 @@ class T3(Processor):
             ('0++', 'outR', 'output'),
             ('+--', 'putH', 'put_high'),
             ('+-0', 'shfL', 'shift_left'),
+            ('+-+', 'andR', 'log_and'),
+            ('++-', 'xorR', 'log_xor'),
             )
 
     def __init__(self, verbose=False):
@@ -300,13 +304,54 @@ class T3(Processor):
         self.dr[:len(operand)] = operand
 
     def shift_left(self, data):
-        """Shift the contents of a register one place to the left."""
+        """Shift the contents of a register one place to the left.
+        
+        Write the result to the default register.
+        """
         address = self.get_operand(data)
         content = self.get_register(address)
-        self.registers[address].put(content << 1)
+        self.dr.put(content << 1)
 
     def shift_right(self, data):
-        """Shift the contents of a register one place to the right."""
+        """Shift the contents of a register one place to the right.
+        
+        Write the result to the default register.
+        """
         address = self.get_operand(data)
         content = self.get_register(address)
-        self.registers[address].put(content >> 1)
+        self.dr.put(content >> 1)
+
+    def log_and(self, data):
+        """Tritwise logical AND operation.
+        
+        Compute the tritwise logical AND of the default register and the
+        register addressed by the operand, and write the result to the default
+        register.
+        """
+        self.dr.put(self.dr & self.get_register(self.get_operand(data)))
+
+    def log_or(self, data):
+        """Tritwise logical OR operation.
+        
+        Compute the tritwise logical OR of the default register and the
+        register addressed by the operand, and write the result to the default
+        register.
+        """
+        self.dr.put(self.dr | self.get_register(self.get_operand(data)))
+
+    def log_xor(self, data):
+        """Tritwise logical XOR operation.
+        
+        Compute the tritwise logical XOR (exclusive OR) of the default register
+        and the register addressed by the operand, and write the result to the
+        default register.
+        """
+        self.dr.put(self.dr ^ self.get_register(self.get_operand(data)))
+
+    def log_not(self, data):
+        """Tritwise logical NOT operation.
+        
+        Compute the tritwise logical NOT of the register addressed by the
+        operand, and write the result to the default register.
+        """
+        self.dr.put(~self.get_register(self.get_operand(data)))
