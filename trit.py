@@ -64,9 +64,11 @@ class Trit(object):
         integer or a float, we return a Trit according to whether the number is
         negative, zero, or positive.
 
-        Otherwise we treat 'value' and string and try to parse it.  If it
-        matches one of the keys in INPUTS then it yields a Trit.  If not,
-        the value is not recognised and we raise a ValueError.
+        If 'value' is None, we return the zero Trit.
+
+        Otherwise we treat 'value' as a string and try to parse it.  If it
+        matches one of the keys in INPUTS then it yields a Trit.  If not, the
+        value is not recognised and we raise a ValueError.
         """
         if isinstance(value, Trit):
             return value
