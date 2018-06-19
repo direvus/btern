@@ -230,7 +230,7 @@ class UInt(IntMixin, trit.Trits):
                 trits.append(value)
             trits.reverse()
         if length is not None and length > len(trits):
-            trits = ([trit.TRIT_NEG] * (length - len(trits))) + trits
+            trits = ([trit.TRIT_NEG] * (length - len(trits))) + list(trits)
         super(UInt, self).__init__(trits, length)
         self.integer = None
 
