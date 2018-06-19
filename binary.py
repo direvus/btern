@@ -28,7 +28,7 @@ from . import trit, integer
 
 def encode(source):
     result = b''
-    for i in xrange(0, len(source), 5):
+    for i in range(0, len(source), 5):
         value = integer.UInt(source[i:i+5], 5)
         result += chr(value)
     return result
@@ -36,7 +36,7 @@ def encode(source):
 
 def decode(binary):
     trits = trit.Trits('')
-    for i in xrange(len(binary)):
+    for i in range(len(binary)):
         value = ord(binary[i])
         if value > 242:
             raise ValueError(
