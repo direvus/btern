@@ -3,7 +3,7 @@
 import unittest
 import string
 
-from . import trit, integer, character, processor
+from . import trit, integer, character, processor, binary
 from .trit import Trit, Trits, GLYPHS, NEG, ZERO, POS
 from .trit import TRITS, TRIT_NEG, TRIT_ZERO, TRIT_POS
 from .integer import Int, UInt
@@ -632,3 +632,34 @@ class TestProcessor(unittest.TestCase):
             '+--++0', '-++0--', '00+00+',
             '+--+0-', '-++0+-', '++-00+'))
         assert proc.dr == Trits('-000+-')
+
+
+class TestBinaryEncode(unittest.TestCase):
+    def test_encode(self):
+        tests = [
+                ('', b''),
+                ('-', b'\x00'),
+                ('-----', b'\x00'),
+                ('00000', b'\x79'),
+                ('+++++', b'\xf2'),
+                ('-0++-', b'\x33'),
+                ('-0++--0++-', b'\x33\x33'),
+                ('-0++-0', b'\x33\x01'),
+                ('-0-0+0-0-0++-0-+---0-+-0-0-+-+-0-+0', b'\x20\x5b\xdb\xa3\x39\x65\x22'),
+                ]
+        assert [binary.encode(x) for x, y in tests] == [y for x, y in tests]
+
+    def test_decode(self):
+        tests = [
+                (b'', ''),
+                (b'\x00', '-----'),
+                (b'\x79', '00000'),
+                (b'\xf2', '+++++'),
+                (b'\x33', '-0++-'),
+                (b'\x33\x33', '-0++--0++-'),
+                (b'\x33\x01', '-0++-----0'),
+                ]
+        assert [binary.decode(x) for x, y in tests] == [Trits(y) for x, y in tests]
+
+        with self.assertRaises(ValueError):
+            binary.decode('\x33\x01\xf3')

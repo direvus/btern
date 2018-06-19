@@ -30,6 +30,8 @@ Modules
     interpretation (UInt).
   * **character** provides for interpreting sequences of trits as character
     strings, including a simple Unicode Transformation Format (UTF6t).
+  * **binary** provides a fairly compact binary encoding for sequences of
+    trits.
   * **processor** provides for simulating a balanced ternary computer.  It
     includes a class for fixed-width sequences of trits (Register), a class for
     a machine code instruction (Instruction), an abstract class for building
