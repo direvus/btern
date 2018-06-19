@@ -27,19 +27,20 @@ from . import trit, integer
 
 
 def encode(source):
-    result = b''
+    result = bytearray()
     for i in range(0, len(source), 5):
         value = integer.UInt(source[i:i+5], 5)
-        result += chr(value)
-    return result
+        result.append(int(value))
+    return bytes(result)
 
 
-def decode(binary):
-    trits = trit.Trits('')
+def decode(source):
+    result = trit.Trits('')
+    binary = bytearray(source)
     for i in range(len(binary)):
-        value = ord(binary[i])
+        value = binary[i]
         if value > 242:
             raise ValueError(
                     "Invalid byte at position {}: {:#02x}".format(i, value))
-        trits += integer.UInt(value, 5)
-    return trits
+        result += integer.UInt(value, 5)
+    return result

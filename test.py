@@ -662,4 +662,4 @@ class TestBinaryEncode(unittest.TestCase):
         assert [binary.decode(x) for x, y in tests] == [Trits(y) for x, y in tests]
 
         with self.assertRaises(ValueError):
-            binary.decode('\x33\x01\xf3')
+            binary.decode(b'\x33\x01\xf3')
