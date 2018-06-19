@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/direvus/btern.png?branch=master)](https://travis-ci.org/direvus/btern)
+[![codecov](https://codecov.io/gh/direvus/btern/branch/master/graph/badge.svg)](https://codecov.io/gh/direvus/btern)
+
 
 Balanced Ternary
 ================
