@@ -30,17 +30,46 @@ class TestTrit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Trit.make('$')
 
+        ints = [-1, 0, 1]
+        trits = [Trit.make(x) for x in ints]
+        assert trits == [TRIT_NEG, TRIT_ZERO, TRIT_POS]
+
+        assert Trit.make(None) == TRIT_ZERO
+
     def test_str(self):
         assert [str(x) for x in self.unary] == [NEG, ZERO, POS]
+        assert [x.__unicode__() for x in self.unary] == [NEG, ZERO, POS]
+
+    def test_repr(self):
+        assert [repr(x) for x in self.unary] == [
+                "Trit('-')",
+                "Trit('0')",
+                "Trit('+')",
+                ]
 
     def test_int(self):
         assert [int(x) for x in self.unary] == [-1, 0, 1]
+        assert [x.__index__() for x in self.unary] == [-1, 0, 1]
+
+    def test_oct(self):
+        assert [oct(x) for x in self.unary] == [oct(x) for x in (-1, 0, 1)]
+        assert [x.__oct__() for x in self.unary] == [oct(x) for x in (-1, 0, 1)]
+
+    def test_hex(self):
+        assert [hex(x) for x in self.unary] == [hex(x) for x in (-1, 0, 1)]
+        assert [x.__hex__() for x in self.unary] == [hex(x) for x in (-1, 0, 1)]
 
     def test_bool(self):
         assert [bool(x) for x in self.unary] == [False, False, True]
 
+    def test_nonzero(self):
+        assert [x.__nonzero__() for x in self.unary] == [False, False, True]
+
     def test_negate(self):
         assert [str(-x) for x in self.unary] == [POS, ZERO, NEG]
+
+    def test_pos(self):
+        assert [x.__pos__() for x in self.unary] == [TRIT_NEG, TRIT_ZERO, TRIT_POS]
 
     def test_abs(self):
         assert [str(abs(x)) for x in self.unary] == [POS, ZERO, POS]

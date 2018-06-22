@@ -104,6 +104,9 @@ class Trit(object):
     def __int__(self):
         return self.integer
 
+    def __index__(self):
+        return int(self)
+
     def __oct__(self):
         return oct(int(self))
 
