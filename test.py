@@ -576,14 +576,36 @@ class TestRegister(unittest.TestCase):
         r.put('+-0+0-+'); assert str(r) == '-0+0-+'
 
 
+class TestInstruction(unittest.TestCase):
+    def test_bad_instruction_size(self):
+        with self.assertRaises(ValueError):
+            inst = processor.Instruction('--', 1, id)
+
+    def test_instruction_str(self):
+        inst = processor.Instruction('-', 1, id)
+        assert str(inst) == '-'
+
+        inst = processor.Instruction('-', 1, id, 'ident')
+        assert str(inst) == 'ident'
+
+
 class TestProcessor(unittest.TestCase):
     def run_program(self, instructions, proc=None):
         if proc is None:
-            proc = processor.T3()
+            proc = processor.T3(True)
         proc.set_program(''.join(instructions))
         proc.run()
         assert proc.ip == UInt(len(instructions) + 1, proc.ADDRESS_SIZE)
         return proc
+
+    def test_abstract_processor(self):
+        proc = processor.Processor([])
+        with self.assertRaises(NotImplementedError):
+            proc.fetch()
+        with self.assertRaises(NotImplementedError):
+            proc.increment()
+        with self.assertRaises(NotImplementedError):
+            proc.execute()
 
     def test_halt(self):
         # The default T3 program (all zeroes) should halt at first instruction.
