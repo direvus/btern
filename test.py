@@ -389,10 +389,26 @@ class TestInt(unittest.TestCase):
                 '--+0-+-00+-+00+++++--']
         assert False not in [int(Int(x)) == x for x in self.unary]
 
+        # Attempt to use IntMixin directly should fail
+        with self.assertRaises(NotImplementedError):
+            int(integer.IntMixin())
+
     def test_int(self):
         assert [int(Int(x)) for x in TRIPLETS] == list(range(-13, 14))
         assert False not in [
                 int(Int(x)) == x for x in range(-100, 100)]
+
+    def test_oct(self):
+        assert False not in [
+                oct(Int(x)) == oct(x) for x in range(-100, 100)]
+        assert False not in [
+                Int(x).__oct__() == oct(x) for x in range(-100, 100)]
+
+    def test_hex(self):
+        assert False not in [
+                hex(Int(x)) == hex(x) for x in range(-100, 100)]
+        assert False not in [
+                Int(x).__hex__() == hex(x) for x in range(-100, 100)]
 
     def test_abs(self):
         assert [str(abs(Int(x))) for x in TRIPLETS] == [
