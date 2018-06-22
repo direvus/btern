@@ -465,6 +465,21 @@ class TestUTF6t(unittest.TestCase):
                 '~',
                 string.ascii_lowercase,
                 u'\u2713 \u2717',
+                u'\uff76',
+                ]
+
+    def test_init(self):
+        assert [str(Trits(UTF6t(x))) for x in self.strings] == [
+                '',
+                '--0+0-',
+                '-00+--',
+                '-0-0+0-0-0++-0-+---0-+-0-0-+-+-0-+0-'
+                '-0-+00-0-+0+-0-++--0-++0-0-+++-00---'
+                '-00--0-00--+-00-0--00-00-00-0+-00-+-'
+                '-00-+0-00-++-000---000-0-000-+-0000-'
+                '-00000-0000+',
+                '+-000+--0000--0-0++-000+--00++',
+                '+----00--+++--0-00',
                 ]
 
     def test_encode(self):
@@ -478,7 +493,14 @@ class TestUTF6t(unittest.TestCase):
                 '-00-+0-00-++-000---000-0-000-+-0000-'
                 '-00000-0000+',
                 '+-000+--0000--0-0++-000+--00++',
+                '+----00--+++--0-00',
                 ]
+
+        # List of integer code points
+        result = str(Trits(UTF6t.encode([0x2713, 0x20, 0x2717])))
+        expect = '+-000+--0000--0-0++-000+--00++'
+        assert result == expect
+
         # Bogus element type
         with self.assertRaises(TypeError):
             UTF6t.encode([None])
