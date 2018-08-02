@@ -6,7 +6,7 @@ Balanced ternary binary encoding
 
 Tools for encoding balanced ternary data into binary formats and back again.
 
-The encoded scheme used here uses 8-bit segments to represent 5-trit segments.
+The encoding scheme used here uses 8-bit segments to represent 5-trit segments.
 Each 5-trit segment is mapped to an 8-bit binary value which corresponds to its
 value as an unsigned integer.
 
