@@ -1,5 +1,6 @@
 .*.sw?
 *.py[co]
 
+.coverage
 .venv/
 __pycache__/
