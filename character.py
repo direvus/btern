@@ -68,7 +68,8 @@ be extended indefinitely by simply adding more continuation trytes.
 from __future__ import division
 import numbers
 
-from . import trit, integer
+import integer
+import trit
 
 
 class UTF6t(trit.Trits):

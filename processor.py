@@ -2,8 +2,8 @@
 # coding=utf-8
 import numbers
 
-from . import trit
-from . import integer
+import trit
+import integer
 
 
 class Register(trit.Trits):

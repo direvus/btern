@@ -23,7 +23,8 @@ gives:
 If a trit sequence is not evenly divisible into 5-trit segments, the final
 segment is padded to 5 trits by adding '-' trits to the left.
 """
-from . import trit, integer
+import integer
+import trit
 
 
 def encode(source):

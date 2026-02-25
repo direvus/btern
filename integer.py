@@ -39,7 +39,7 @@ value:
 import math
 import numbers
 
-from . import trit
+import trit
 
 
 class IntMixin(object):

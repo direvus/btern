@@ -1,2 +1,5 @@
 .*.sw?
 *.py[co]
+
+.venv/
+__pycache__/
