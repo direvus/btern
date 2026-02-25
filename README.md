@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/direvus/btern.png?branch=master)](https://travis-ci.org/direvus/btern)
+![python package build status](https://github.com/direvus/btern/actions/workflows/python-package.yml/badge.svg)
 [![codecov](https://codecov.io/gh/direvus/btern/branch/master/graph/badge.svg)](https://codecov.io/gh/direvus/btern)
 
 
