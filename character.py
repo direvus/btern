@@ -74,7 +74,7 @@ import trit
 
 class UTF6t(trit.Trits):
     """A sequence of trits encoded in UTF-6t.
-    
+
     A UTF6t instance may be initialised with a string object, in which case we
     treat it as a source string to be encoded using UTF-6t.  Note that this
     behaviour differs from that of the parent initialiser, which treats strings
@@ -86,16 +86,16 @@ class UTF6t(trit.Trits):
     UTF6t('--0-+-')
     >>> UTF6t(list('--0-+-'))
     UTF6t('!')
-    
+
     If the argument is not a string, we run the parent initialiser as normal
     and then decode the resulting trit sequence to ensure that it is valid
     UTF-6t.
     """
-    INITIAL  = trit.POS
+    INITIAL = trit.POS
     CONTINUE = trit.ZERO
-    FINAL    = trit.NEG
-    LEAD_SIZE  = 1
-    DATA_SIZE  = 5
+    FINAL = trit.NEG
+    LEAD_SIZE = 1
+    DATA_SIZE = 5
     TRYTE_SIZE = 6
 
     def __init__(self, trits, length=None):
@@ -140,7 +140,7 @@ class UTF6t(trit.Trits):
     @classmethod
     def decode(cls, trits):
         """Return the string value from UTF-6t encoded 'trits'.
-        
+
         'trits' can be a UTF6t instance, or any other iterable of trits.  Each
         element of the iterable must be a Trit instance, or something which is
         coerceable to Trit.

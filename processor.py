@@ -61,7 +61,7 @@ class Instruction(object):
     """A single instruction that is executable by a Processor.
 
     Each Instruction has:
-      * an opcode; a sequence of trits to identify the instruction, 
+      * an opcode; a sequence of trits to identify the instruction,
       * a size; the number of trits in the instruction including the opcode,
       * a function; a callable taking two arguments, being the Processor
         executing the instruction, and the entire instruction including the
@@ -239,7 +239,7 @@ class T3(Processor):
 
     def load(self, data):
         """Copy the contents of a register into the default register.
-        
+
         'Load 000' is a no-op.
         """
         address = self.get_operand(data)
@@ -248,7 +248,7 @@ class T3(Processor):
 
     def save(self, data):
         """Copy the contents of the default register into a register.
-        
+
         'Save 000' is a no-op.
         """
         content = self.dr.get_trits()
@@ -285,7 +285,7 @@ class T3(Processor):
 
     def output(self, data):
         """Output the contents of a register.
-        
+
         The contents are printed to stdout and also appended as a string to the
         'outputs' list.
         """
@@ -305,7 +305,7 @@ class T3(Processor):
 
     def shift_left(self, data):
         """Shift the contents of a register one place to the left.
-        
+
         Write the result to the default register.
         """
         address = self.get_operand(data)
@@ -314,7 +314,7 @@ class T3(Processor):
 
     def shift_right(self, data):
         """Shift the contents of a register one place to the right.
-        
+
         Write the result to the default register.
         """
         address = self.get_operand(data)
@@ -323,7 +323,7 @@ class T3(Processor):
 
     def log_and(self, data):
         """Tritwise logical AND operation.
-        
+
         Compute the tritwise logical AND of the default register and the
         register addressed by the operand, and write the result to the default
         register.
@@ -332,7 +332,7 @@ class T3(Processor):
 
     def log_or(self, data):
         """Tritwise logical OR operation.
-        
+
         Compute the tritwise logical OR of the default register and the
         register addressed by the operand, and write the result to the default
         register.
@@ -341,7 +341,7 @@ class T3(Processor):
 
     def log_xor(self, data):
         """Tritwise logical XOR operation.
-        
+
         Compute the tritwise logical XOR (exclusive OR) of the default register
         and the register addressed by the operand, and write the result to the
         default register.
@@ -350,7 +350,7 @@ class T3(Processor):
 
     def log_not(self, data):
         """Tritwise logical NOT operation.
-        
+
         Compute the tritwise logical NOT of the register addressed by the
         operand, and write the result to the default register.
         """

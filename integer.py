@@ -207,7 +207,7 @@ class Int(IntMixin, trit.Trits):
 
     def __mod__(self, other):
         """Return the remainder of Int division.
-        
+
         See the docs for __divmod__ for more information.
         """
         return self.__divmod__(other)[1]
@@ -251,10 +251,10 @@ class UInt(IntMixin, trit.Trits):
         return self
 
 
-INT_ZERO    = Int([trit.TRIT_ZERO])
-INT_ONE     = Int([trit.TRIT_POS])
+INT_ZERO = Int([trit.TRIT_ZERO])
+INT_ONE = Int([trit.TRIT_POS])
 INT_NEG_ONE = Int([trit.TRIT_NEG])
 
-UINT_ZERO    = UInt([trit.TRIT_ZERO])
-UINT_ONE     = UInt([trit.TRIT_POS])
-UINT_TWO     = UInt([trit.TRIT_NEG])
+UINT_ZERO = UInt([trit.TRIT_ZERO])
+UINT_ONE = UInt([trit.TRIT_POS])
+UINT_TWO = UInt([trit.TRIT_NEG])

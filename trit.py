@@ -18,9 +18,9 @@ or False (analogous to NULL in SQL).
 import numbers
 
 
-NEG  = '-'
+NEG = '-'
 ZERO = '0'
-POS  = '+'
+POS = '+'
 
 GLYPHS = (NEG, ZERO, POS)
 INTEGERS = {
@@ -115,7 +115,7 @@ class Trit(object):
 
     def __bool__(self):
         """Return the boolean truth value of this trit.
-        
+
         Only the positive trit is considered True in the boolean (two-valued
         logic) sense, the other trits are False.
         """
@@ -127,7 +127,7 @@ class Trit(object):
 
     def __neg__(self):
         """Return the negation of this Trit.
-        
+
         The zero Trit negates itself, the positive and negative trits negate
         each other.
         """
@@ -144,7 +144,7 @@ class Trit(object):
 
     def __abs__(self):
         """Return the absolute value (value without any sign) of this trit.
-        
+
         The negative trit yields the positive trit, while the positive and zero
         trits yield themselves.
         """
@@ -177,7 +177,7 @@ class Trit(object):
 
     def __and__(self, other):
         """Return the tritwise AND of two trits.
-        
+
         The result is negative if either input is negative, positive if both
         inputs are positive, otherwise zero.
         """
@@ -190,7 +190,7 @@ class Trit(object):
 
     def __or__(self, other):
         """Return the tritwise OR of two trits.
-        
+
         The result is positive if either input is positive, negative if both
         inputs are negative, otherwise zero.
         """
@@ -216,7 +216,7 @@ class Trit(object):
 
     def add(self, other, carry=None):
         """Add two Trit objects with an optional carry-in Trit.
-        
+
         Return a 2-tuple of Trit objects (sum, carry-out).
 
         This method isn't named __add__ because, having three inputs and two
@@ -246,7 +246,7 @@ class Trit(object):
 
     def __mul__(self, other):
         """Multiply two Trit objects and return the product as a Trit.
-        
+
         Has the opposite set of outcomes as XOR, that is:
         (a * b) == ~(a ^ b)
         """
@@ -259,14 +259,14 @@ class Trit(object):
 
 
 TRITS = {x: Trit(x) for x in (NEG, ZERO, POS)}
-TRIT_NEG  = TRITS[NEG]
+TRIT_NEG = TRITS[NEG]
 TRIT_ZERO = TRITS[ZERO]
-TRIT_POS  = TRITS[POS]
+TRIT_POS = TRITS[POS]
 
 
 class Trits(object):
     """An immutable, ordered sequence of trits.
-    
+
     The 'trits' argument must be an iterable of values which can be parsed into
     Trit objects.  'trits' may also be None, or an empty iterable, if an empty
     Trits object is desired.
@@ -348,7 +348,7 @@ class Trits(object):
     @classmethod
     def match_length(cls, a, b):
         """Return a 2-tuple of Trits a and b each having the same length.
-        
+
         If the two operands are of unequal length, the shorter operand is
         padded with zero trits on the left to make it the same length as the
         other.

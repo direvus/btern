@@ -167,7 +167,7 @@ class TestTrits(unittest.TestCase):
 
     def test_init(self):
         with self.assertRaises(ValueError):
-            trits = Trits('0', -1)
+            Trits('0', -1)
         assert len(self.unary) == 3 ** self.length
         assert len(Trits('')) == 0
         assert str(Trits('', 4)) == '0000'
@@ -595,23 +595,31 @@ class TestRegister(unittest.TestCase):
         with self.assertRaises(ValueError):
             r[:] = [TRIT_POS]
 
-        r[0] = TRIT_POS; assert str(r) == '+00000'
-        r[-1] = TRIT_NEG; assert str(r) == '+0000-'
-        r[-2:] = '-0'; assert str(r) == '+000-0'
-        r[:3] = '-+-'; assert str(r) == '-+-0-0'
-        r[:] = '000+++'; assert str(r) == '000+++'
-        r[2:4] = '--'; assert str(r) == '00--++'
+        r[0] = TRIT_POS
+        assert str(r) == '+00000'
+        r[-1] = TRIT_NEG
+        assert str(r) == '+0000-'
+        r[-2:] = '-0'
+        assert str(r) == '+000-0'
+        r[:3] = '-+-'
+        assert str(r) == '-+-0-0'
+        r[:] = '000+++'
+        assert str(r) == '000+++'
+        r[2:4] = '--'
+        assert str(r) == '00--++'
 
     def test_put(self):
         r = Register([], 6)
-        r.put('-'); assert str(r) == '00000-'
-        r.put('+-0+0-+'); assert str(r) == '-0+0-+'
+        r.put('-')
+        assert str(r) == '00000-'
+        r.put('+-0+0-+')
+        assert str(r) == '-0+0-+'
 
 
 class TestInstruction(unittest.TestCase):
     def test_bad_instruction_size(self):
         with self.assertRaises(ValueError):
-            inst = processor.Instruction('--', 1, id)
+            processor.Instruction('--', 1, id)
 
     def test_instruction_str(self):
         inst = processor.Instruction('-', 1, id)
