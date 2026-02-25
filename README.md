@@ -1,5 +1,4 @@
 ![python package build status](https://github.com/direvus/btern/actions/workflows/python-package.yml/badge.svg)
-[![codecov](https://codecov.io/gh/direvus/btern/branch/master/graph/badge.svg)](https://codecov.io/gh/direvus/btern)
 
 
 Balanced Ternary
