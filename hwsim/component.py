@@ -116,3 +116,75 @@ def not_gate():
                     'Nand.a': 'in',
                     'Nand.b': 'in',
                     })
+
+
+def and_gate():
+    """The AND gate performs logical conjunction of the inputs.
+
+    The output is true if and only if both inputs are true.
+
+    It consists of two NAND gates. The first performs NAND on the two inputs,
+    and the second performs NOT on the result.
+
+    (a AND b) == NOT (a NAND b)
+    """
+    return Component(
+            ('a', 'b'),
+            ('out',),
+            {'Nand': NAND, 'Not': not_gate},
+            {
+                    'out': 'Not.out',
+                    'Not.in': 'Nand.out',
+                    'Nand.a': 'a',
+                    'Nand.b': 'b',
+                    })
+
+
+def or_gate():
+    """The OR gate performs logical disjunction of the inputs.
+
+    The output is true if either (or both) of the inputs are true.
+
+    It consists of two NOT gates and one NAND gate (three NANDs total). The
+    two NOT gates first negate each of the inputs, and the NAND gate takes the
+    inverted inputs and produces the final result.
+
+    (a OR b) == ((NOT a) NAND (NOT b))
+    """
+    return Component(
+            ('a', 'b'),
+            ('out',),
+            {'Nand': NAND, 'NotA': not_gate, 'NotB': not_gate},
+            {
+                    'out': 'Nand.out',
+                    'Nand.a': 'NotA.out',
+                    'Nand.b': 'NotB.out',
+                    'NotA.in': 'a',
+                    'NotB.in': 'b',
+                    })
+
+
+def xor_gate():
+    """The XOR gate performs logical exclusive disjunction of the inputs.
+
+    The output is true if either one of the inputs is true, but not both.
+
+    It consists of one OR, one NAND and one AND gate (six NANDs total). The two
+    inputs are both separately passed to the OR gate and the NAND gate, and the
+    AND gate finally combines the results of those two to produce the output.
+
+    (a XOR b) == (a OR b) AND (a NAND b)
+    """
+    return Component(
+            ('a', 'b'),
+            ('out',),
+            {'Nand': NAND, 'Or': or_gate, 'And': and_gate},
+            {
+                    'out': 'And.out',
+                    'And.a': 'Or.out',
+                    'And.b': 'Nand.out',
+                    'Or.a': 'a',
+                    'Or.b': 'b',
+                    'Nand.a': 'a',
+                    'Nand.b': 'b',
+                    })
