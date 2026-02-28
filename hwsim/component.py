@@ -283,3 +283,67 @@ def isz_gate():
                 'Not.in': 'NNot.out',
                 'NNot.in': 'in',
                 })
+
+
+def mux_gate():
+    """The MUX gate is a 3-way multiplexer.
+
+    It selects one of its three data inputs, based on the value of a fourth
+    'selector' input, and produces the selected input signal on its output.
+
+    The three data inputs are named 'a', 'b' and 'c', and the selector input is
+    named 's'. The input value is selected as follows:
+
+    |  s  | out |
+    |=====|=====|
+    |  -  |  a  |
+    |  0  |  b  |
+    |  +  |  c  |
+
+    The complete truth table for all four inputs is:
+
+    |   | c | - | - | - | 0 | 0 | 0 | + | + | + |
+    |   | s | - | 0 | + | - | 0 | + | - | 0 | + |
+    | a | b |   |   |   |   |   |   |   |   |   |
+    |===|===|===|===|===|===|===|===|===|===|===|
+    | - | - | - | - | - | - | - | 0 | - | - | + |
+    | - | 0 | - | 0 | - | - | 0 | 0 | - | 0 | + |
+    | - | + | - | + | - | - | + | 0 | - | + | + |
+    | 0 | - | 0 | - | - | 0 | - | 0 | 0 | - | + |
+    | 0 | 0 | 0 | 0 | - | 0 | 0 | 0 | 0 | 0 | + |
+    | 0 | + | 0 | + | - | 0 | + | 0 | 0 | + | + |
+    | + | - | + | - | - | + | - | 0 | + | - | + |
+    | + | 0 | + | 0 | - | + | 0 | 0 | + | 0 | + |
+    | + | + | + | + | - | + | + | 0 | + | + | + |
+    """
+    return Component(
+            ('a', 'b', 'c', 's'),
+            ('out',),
+            {
+                'OrABC': or_gate,
+                'OrAB': or_gate,
+                'AndA': and_gate,
+                'AndB': and_gate,
+                'AndC': and_gate,
+                'NNot': NNOT,
+                'ISZ': isz_gate,
+                'PNot1': PNOT,
+                'PNot2': PNOT,
+            },
+            {
+                    'out': 'OrABC.out',
+                    'OrABC.a': 'OrAB.out',
+                    'OrABC.b': 'AndC.out',
+                    'OrAB.a': 'AndA.out',
+                    'OrAB.b': 'AndB.out',
+                    'AndA.a': 'a',
+                    'AndA.b': 'NNot.out',
+                    'NNot.in': 's',
+                    'AndB.a': 'b',
+                    'AndB.b': 'ISZ.out',
+                    'ISZ.in': 's',
+                    'AndC.a': 'c',
+                    'AndC.b': 'PNot2.out',
+                    'PNot2.in': 'PNot1.out',
+                    'PNot1.in': 's',
+                    })
