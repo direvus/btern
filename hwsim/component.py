@@ -112,11 +112,11 @@ class PNot(Primitive):
     For positive or negative input, it works just like a normal NOT gate, but
     for zero input, it produces a positive output:
 
-    | in | out |
-    |====|=====|
-    |  - |  +  |
-    |  0 |  +  |
-    |  + |  -  |
+    | in  | out |
+    |=====|=====|
+    |  -  |  +  |
+    |  0  |  +  |
+    |  +  |  -  |
     """
     def __init__(self):
         super().__init__(('in',), ('out',))
@@ -132,11 +132,11 @@ class NNot(Primitive):
     For positive or negative input, it works just like a normal NOT gate, but
     for zero input, it produces a negative output:
 
-    | in | out |
-    |====|=====|
-    |  - |  +  |
-    |  0 |  -  |
-    |  + |  -  |
+    | in  | out |
+    |=====|=====|
+    |  -  |  +  |
+    |  0  |  -  |
+    |  +  |  -  |
     """
     def __init__(self):
         super().__init__(('in',), ('out',))
@@ -155,6 +155,12 @@ PNOT = PNot()
 
 def not_gate():
     """The NOT gate performs logical negation of the input.
+
+    | in  | out |
+    |=====|=====|
+    |  -  |  +  |
+    |  0  |  0  |
+    |  +  |  -  |
 
     It contains a single NAND. The input of the NOT gate is routed to both
     inputs of the NAND.
@@ -249,11 +255,11 @@ def isz_gate():
 
     The output is positive if the input value is zero, and negative otherwise.
 
-    | in | out |
-    |====|=====|
-    |  - |  -  |
-    |  0 |  +  |
-    |  + |  -  |
+    | in  | out |
+    |=====|=====|
+    |  -  |  -  |
+    |  0  |  +  |
+    |  +  |  -  |
 
     It consists of two NNOTs, one PNOT, and one AND gate, for a total of
     4 primitive gates.
