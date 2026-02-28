@@ -76,6 +76,17 @@ class Component(Primitive):
 
 
 class Nand(Primitive):
+    """The NAND gate produces the inverse conjunction of its inputs.
+
+    The NAND operation is equivalent to performing an AND operation, and then
+    inverting its result:
+
+    |   | - | 0 | + |
+    |===|===|===|===|
+    | - | + | + | + |
+    | 0 | + | 0 | 0 |
+    | + | + | 0 | - |
+    """
     def __init__(self):
         super().__init__(('a', 'b'), ('out',))
 
@@ -95,8 +106,51 @@ class Nand(Primitive):
             return (ZERO,)
 
 
-# The Nand gate has get_outputs as a pure function, so use it as a singleton
+class PNot(Primitive):
+    """The PNOT gate produces the positively-biased inverse of its input.
+
+    For positive or negative input, it works just like a normal NOT gate, but
+    for zero input, it produces a positive output:
+
+    | in | out |
+    |====|=====|
+    |  - |  +  |
+    |  0 |  +  |
+    |  + |  -  |
+    """
+    def __init__(self):
+        super().__init__(('in',), ('out',))
+
+    def get_outputs(self, inputs):
+        inp = inputs['in']
+        return (NEG,) if inp == POS else (POS,)
+
+
+class NNot(Primitive):
+    """The NNOT gate produces the negatively-biased inverse of its input.
+
+    For positive or negative input, it works just like a normal NOT gate, but
+    for zero input, it produces a negative output:
+
+    | in | out |
+    |====|=====|
+    |  - |  +  |
+    |  0 |  -  |
+    |  + |  -  |
+    """
+    def __init__(self):
+        super().__init__(('in',), ('out',))
+
+    def get_outputs(self, inputs):
+        inp = inputs['in']
+        return (POS,) if inp == NEG else (NEG,)
+
+
+# The primitive gates have get_outputs as a pure function, and have no mutable
+# attributes, so prepare singletons for them.
 NAND = Nand()
+NNOT = NNot()
+PNOT = PNot()
 
 
 def not_gate():
@@ -188,3 +242,38 @@ def xor_gate():
                     'Nand.a': 'a',
                     'Nand.b': 'b',
                     })
+
+
+def isz_gate():
+    """The ISZ gate tests whether the input is zero.
+
+    The output is positive if the input value is zero, and negative otherwise.
+
+    | in | out |
+    |====|=====|
+    |  - |  -  |
+    |  0 |  +  |
+    |  + |  -  |
+
+    It consists of two NNOTs, one PNOT, and one AND gate, for a total of
+    4 primitive gates.
+
+    ISZ a == (PNOT a) AND (NOT NNOT a)
+    """
+    return Component(
+            ('in',),
+            ('out',),
+            {
+                'PNot': PNOT,
+                'NNot': NNOT,
+                'Not': NNOT,
+                'And': and_gate,
+            },
+            {
+                'out': 'And.out',
+                'And.a': 'PNot.out',
+                'And.b': 'Not.out',
+                'PNot.in': 'in',
+                'Not.in': 'NNot.out',
+                'NNot.in': 'in',
+                })
