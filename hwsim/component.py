@@ -250,6 +250,33 @@ def xor_gate():
                     })
 
 
+def nxor_gate():
+    """The NXOR gate performs negative exclusive disjunction of the inputs.
+
+    The output is positive if the inputs are either both positive, or both
+    negative.
+
+    It consists of one OR, and two NAND gates (five NANDs total). The two
+    inputs are both separately passed to the OR gate and one NAND gate, and the
+    final NAND gate combines the results of those two to produce the output.
+
+    (a NXOR b) == (a OR b) NAND (a NAND b)
+    """
+    return Component(
+            ('a', 'b'),
+            ('out',),
+            {'NandAB': NAND, 'OrAB': or_gate, 'NandOut': NAND},
+            {
+                    'out': 'NandOut.out',
+                    'NandOut.a': 'OrAB.out',
+                    'NandOut.b': 'NandAB.out',
+                    'OrAB.a': 'a',
+                    'OrAB.b': 'b',
+                    'NandAB.a': 'a',
+                    'NandAB.b': 'b',
+                    })
+
+
 def isz_gate():
     """The ISZ gate tests whether the input is zero.
 

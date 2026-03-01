@@ -90,6 +90,16 @@ def test_hwsim_xor(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(BINARY, (POS, ZERO, NEG, ZERO, ZERO, ZERO, NEG, ZERO, POS))))
+def test_hwsim_nxor(inputs, expected):
+    comp = component.nxor_gate()
+
+    (out,) = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(UNARY, (NEG, POS, NEG))))
 def test_hwsim_isz(inputs, expected):
     comp = component.isz_gate()
