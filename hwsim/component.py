@@ -451,3 +451,4 @@ def mux_gate():
                 'PNot2.in': 'PNot1.out',
                 'PNot1.in': 's',
                 })
+

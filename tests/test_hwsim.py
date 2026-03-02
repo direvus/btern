@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import component
+from hwsim import component, arithmetic
 
 from trit import ZERO, POS, NEG
 
@@ -146,4 +146,34 @@ def test_hwsim_mux(inputs, expected):
     comp = component.mux_gate()
 
     (out,) = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(BINARY, (POS, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, NEG))))
+def test_hwsim_sum(inputs, expected):
+    comp = arithmetic.sum_gate()
+
+    out, = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(BINARY, (
+            (POS, NEG),
+            (NEG, ZERO),
+            (ZERO, ZERO),
+            (NEG, ZERO),
+            (ZERO, ZERO),
+            (POS, ZERO),
+            (ZERO, ZERO),
+            (POS, ZERO),
+            (NEG, POS),
+            ))))
+def test_hwsim_half_adder(inputs, expected):
+    comp = arithmetic.half_adder()
+
+    out = comp.evaluate(inputs)
     assert out == expected

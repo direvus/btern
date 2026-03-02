@@ -62,9 +62,27 @@ def ncons(a, b):
     return ZERO
 
 
+def nxor(a, b):
+    if a == ZERO or b == ZERO:
+        return ZERO
+    return POS if a == b else NEG
+
+
 INPUTS = tuple((a, b) for a in (NEG, ZERO, POS) for b in (NEG, ZERO, POS))
 UNARY = (buffer, _not, pnot, nnot)
-BINARY = (nand, nor, nany, ncons)
+BINARY = (nand, nor, nany, ncons, nxor)
+
+COST = {
+        'buffer': 0,
+        '_not': 1,
+        'pnot': 1,
+        'nnot': 1,
+        'nand': 1,
+        'nor': 1,
+        'nany': 1,
+        'ncons': 1,
+        'nxor': 4,
+        }
 
 
 def test_gates_uubu(pre_a, pre_b, com, post, inputs, expected):
@@ -126,12 +144,12 @@ def find_gates(name, expected):
     if found:
         return
 
-    best = 10
+    best = float('Infinity')
     for funcs in product(UNARY, UNARY, UNARY, UNARY, BINARY, BINARY, UNARY,
                          UNARY, BINARY, UNARY):
         if test_gates_10(*funcs, INPUTS, expected):
             found = True
-            score = len([x for x in funcs if x != buffer])
+            score = sum([COST[x.__name__] for x in funcs])
             if score <= best:
                 print(f"  Match {score} found with "
                       f"{[x.__name__ for x in funcs]}")
