@@ -75,7 +75,7 @@ class Component(Primitive):
         return tuple(self.get_value(inputs, x) for x in self.outputs)
 
 
-class Nand(Primitive):
+class NAnd(Primitive):
     """The NAND gate produces the inverse conjunction of its inputs.
 
     The NAND operation is equivalent to performing an AND operation, and then
@@ -146,11 +146,64 @@ class NNot(Primitive):
         return (POS,) if inp == NEG else (NEG,)
 
 
+class NAny(Primitive):
+    """The NANY gate produces the inverse ANY of its inputs.
+
+    For cases where either input is zero, it produces the NOT of its other
+    input. Where one input is positive and the other negative, it produces
+    zero. Otherwise, when both inputs are the same, it produces the inverse of
+    that value.
+
+    |   | - | 0 | + |
+    |===|===|===|===|
+    | - | + | + | 0 |
+    | 0 | + | 0 | - |
+    | + | 0 | - | - |
+    """
+    def __init__(self):
+        super().__init__(('a', 'b',), ('out',))
+
+    def get_outputs(self, inputs):
+        a = inputs['a']
+        b = inputs['b']
+        if a == NEG:
+            return (ZERO,) if b == POS else (POS,)
+        if a == POS:
+            return (ZERO,) if b == NEG else (NEG,)
+        if b == ZERO:
+            return (ZERO,)
+        return (POS,) if b == NEG else (NEG,)
+
+
+class NCons(Primitive):
+    """The NCONS gate produces the inverse consensus of its inputs.
+
+    For cases where both inputs have the same value, it produces the inverse of
+    that value. In all other cases, it produces zero.
+
+    |   | - | 0 | + |
+    |===|===|===|===|
+    | - | + | 0 | 0 |
+    | 0 | 0 | 0 | 0 |
+    | + | 0 | 0 | - |
+    """
+    def __init__(self):
+        super().__init__(('a', 'b',), ('out',))
+
+    def get_outputs(self, inputs):
+        a = inputs['a']
+        b = inputs['b']
+        if a == b and a != ZERO:
+            return (NEG,) if a == POS else (POS,)
+        return (ZERO,)
+
+
 # The primitive gates have get_outputs as a pure function, and have no mutable
 # attributes, so prepare singletons for them.
-NAND = Nand()
+NAND = NAnd()
 NNOT = NNot()
 PNOT = PNot()
+NANY = NAny()
 
 
 def not_gate():

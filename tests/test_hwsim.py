@@ -22,7 +22,7 @@ QUATERNARY = tuple((a, b, c, d)
         "inputs,expected",
         list(zip(BINARY, (POS, POS, POS, POS, ZERO, ZERO, POS, ZERO, NEG))))
 def test_hwsim_nand(inputs, expected):
-    comp = component.Nand()
+    comp = component.NAnd()
 
     (out,) = comp.evaluate(inputs)
     assert out == expected
@@ -43,6 +43,27 @@ def test_hwsim_pnot(inputs, expected):
         list(zip(UNARY, (POS, NEG, NEG))))
 def test_hwsim_nnot(inputs, expected):
     comp = component.NNot()
+
+    (out,) = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(BINARY, (POS, POS, ZERO, POS, ZERO, NEG, ZERO, NEG, NEG))))
+def test_hwsim_nany(inputs, expected):
+    comp = component.NAny()
+
+    (out,) = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(BINARY, (
+            POS, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, NEG))))
+def test_hwsim_ncons(inputs, expected):
+    comp = component.NCons()
 
     (out,) = comp.evaluate(inputs)
     assert out == expected
