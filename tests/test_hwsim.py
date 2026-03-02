@@ -187,3 +187,23 @@ def test_hwsim_half_adder(inputs, expected):
 
     out = comp.evaluate(inputs)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(TRINARY, (
+            (ZERO, NEG), (POS, NEG), (NEG, ZERO),
+            (POS, NEG), (NEG, ZERO), (ZERO, ZERO),
+            (NEG, ZERO), (ZERO, ZERO), (POS, ZERO),
+            (POS, NEG), (NEG, ZERO), (ZERO, ZERO),
+            (NEG, ZERO), (ZERO, ZERO), (POS, ZERO),
+            (ZERO, ZERO), (POS, ZERO), (NEG, POS),
+            (NEG, ZERO), (ZERO, ZERO), (POS, ZERO),
+            (ZERO, ZERO), (POS, ZERO), (NEG, POS),
+            (POS, ZERO), (NEG, POS), (ZERO, POS),
+            ))))
+def test_hwsim_full_adder(inputs, expected):
+    comp = arithmetic.full_adder()
+
+    out = comp.evaluate(inputs)
+    assert out == expected

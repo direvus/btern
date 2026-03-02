@@ -84,3 +84,29 @@ def half_adder():
                 'NCons.a': 'a',
                 'NCons.b': 'b',
                 })
+
+
+def full_adder():
+    """The full adder performs addition over three input trits.
+
+    It takes three inputs 'a', 'b' and 'c', and produces two outputs 'sum' and
+    'carry'.
+    """
+    return Component(
+            ('a', 'b', 'c'),
+            ('sum', 'carry'),
+            {
+                'AddAB': half_adder,
+                'AddABC': half_adder,
+                'Any': any_gate,
+                },
+            {
+                'sum': 'AddABC.sum',
+                'carry': 'Any.out',
+                'AddABC.a': 'AddAB.sum',
+                'AddABC.b': 'c',
+                'AddAB.a': 'a',
+                'AddAB.b': 'b',
+                'Any.a': 'AddAB.carry',
+                'Any.b': 'AddABC.carry',
+                })
