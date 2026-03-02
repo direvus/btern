@@ -73,7 +73,7 @@ def test_hwsim_ncons(inputs, expected):
         "inputs,expected",
         list(zip(UNARY, (POS, ZERO, NEG))))
 def test_hwsim_not(inputs, expected):
-    comp = component.not_gate()
+    comp = component.Not()
 
     (out,) = comp.evaluate(inputs)
     assert out == expected

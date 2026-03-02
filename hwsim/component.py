@@ -106,6 +106,28 @@ class NAnd(Primitive):
             return (ZERO,)
 
 
+class Not(Primitive):
+    """The NOT gate produces the inverse of its input.
+
+    For positive or negative input, it produces the opposite value. For zero
+    input, it produces zero.
+
+    | in  | out |
+    |=====|=====|
+    |  -  |  +  |
+    |  0  |  0  |
+    |  +  |  -  |
+    """
+    def __init__(self):
+        super().__init__(('in',), ('out',))
+
+    def get_outputs(self, inputs):
+        inp = inputs['in']
+        if inp == ZERO:
+            return (ZERO,)
+        return (NEG,) if inp == POS else (POS,)
+
+
 class PNot(Primitive):
     """The PNOT gate produces the positively-biased inverse of its input.
 
@@ -144,6 +166,32 @@ class NNot(Primitive):
     def get_outputs(self, inputs):
         inp = inputs['in']
         return (POS,) if inp == NEG else (NEG,)
+
+
+class NOr(Primitive):
+    """The NOR gate produces the inverse disjunction of its inputs.
+
+    Where either (or both) inputs are positive, it produces a negative. Where
+    both inputs are negative, it produces a positive. In any other case, it
+    produces zero.
+
+    |   | - | 0 | + |
+    |===|===|===|===|
+    | - | + | 0 | - |
+    | 0 | 0 | 0 | - |
+    | + | - | - | - |
+    """
+    def __init__(self):
+        super().__init__(('a', 'b',), ('out',))
+
+    def get_outputs(self, inputs):
+        a = inputs['a']
+        b = inputs['b']
+        if a == POS or b == POS:
+            return (NEG,)
+        if a == NEG and b == NEG:
+            return (POS,)
+        return (ZERO,)
 
 
 class NAny(Primitive):
@@ -200,35 +248,13 @@ class NCons(Primitive):
 
 # The primitive gates have get_outputs as a pure function, and have no mutable
 # attributes, so prepare singletons for them.
-NAND = NAnd()
+NOT = Not()
 NNOT = NNot()
 PNOT = PNot()
+NAND = NAnd()
+NOR = NOr()
 NANY = NAny()
-
-
-def not_gate():
-    """The NOT gate performs logical negation of the input.
-
-    | in  | out |
-    |=====|=====|
-    |  -  |  +  |
-    |  0  |  0  |
-    |  +  |  -  |
-
-    It contains a single NAND. The input of the NOT gate is routed to both
-    inputs of the NAND.
-
-    (NOT a) == (a NAND a)
-    """
-    return Component(
-            ('in',),
-            ('out',),
-            {'Nand': NAND},
-            {
-                    'out': 'Nand.out',
-                    'Nand.a': 'in',
-                    'Nand.b': 'in',
-                    })
+NCONS = NCons()
 
 
 def and_gate():
@@ -236,15 +262,12 @@ def and_gate():
 
     The output is true if and only if both inputs are true.
 
-    It consists of two NAND gates. The first performs NAND on the two inputs,
-    and the second performs NOT on the result.
-
     (a AND b) == NOT (a NAND b)
     """
     return Component(
             ('a', 'b'),
             ('out',),
-            {'Nand': NAND, 'Not': not_gate},
+            {'Nand': NAND, 'Not': NOT},
             {
                     'out': 'Not.out',
                     'Not.in': 'Nand.out',
@@ -258,22 +281,17 @@ def or_gate():
 
     The output is true if either (or both) of the inputs are true.
 
-    It consists of two NOT gates and one NAND gate (three NANDs total). The
-    two NOT gates first negate each of the inputs, and the NAND gate takes the
-    inverted inputs and produces the final result.
-
-    (a OR b) == ((NOT a) NAND (NOT b))
+    (a OR b) == NOT (a NOR b)
     """
     return Component(
             ('a', 'b'),
             ('out',),
-            {'Nand': NAND, 'NotA': not_gate, 'NotB': not_gate},
+            {'Nor': NOR, 'Not': NOT},
             {
-                    'out': 'Nand.out',
-                    'Nand.a': 'NotA.out',
-                    'Nand.b': 'NotB.out',
-                    'NotA.in': 'a',
-                    'NotB.in': 'b',
+                    'out': 'Not.out',
+                    'Not.in': 'Nor.out',
+                    'Nor.a': 'a',
+                    'Nor.b': 'b',
                     })
 
 
@@ -282,24 +300,26 @@ def xor_gate():
 
     The output is true if either one of the inputs is true, but not both.
 
-    It consists of one OR, one NAND and one AND gate (six NANDs total). The two
-    inputs are both separately passed to the OR gate and the NAND gate, and the
-    AND gate finally combines the results of those two to produce the output.
+    It consists of four primitive gates: a NAND, a NOT and two NORS. Both
+    inputs are separately passed to a NAND gate and a NOR gate, the result of
+    the NAND is inverted, and those two results are passed to a NOR gate to
+    produce the final output.
 
-    (a XOR b) == (a OR b) AND (a NAND b)
+    (a XOR b) == (NOT (a NAND b)) NOR (a NOR b)
     """
     return Component(
             ('a', 'b'),
             ('out',),
-            {'Nand': NAND, 'Or': or_gate, 'And': and_gate},
+            {'Nand': NAND, 'NorAB': NOR, 'Not': NOT, 'NorOut': NOR},
             {
-                    'out': 'And.out',
-                    'And.a': 'Or.out',
-                    'And.b': 'Nand.out',
-                    'Or.a': 'a',
-                    'Or.b': 'b',
+                    'out': 'NorOut.out',
+                    'NorOut.a': 'Not.out',
+                    'NorOut.b': 'NorAB.out',
+                    'Not.in': 'Nand.out',
                     'Nand.a': 'a',
                     'Nand.b': 'b',
+                    'NorAB.a': 'a',
+                    'NorAB.b': 'b',
                     })
 
 
@@ -309,22 +329,24 @@ def nxor_gate():
     The output is positive if the inputs are either both positive, or both
     negative.
 
-    It consists of one OR, and two NAND gates (five NANDs total). The two
-    inputs are both separately passed to the OR gate and one NAND gate, and the
-    final NAND gate combines the results of those two to produce the output.
+    It consists of four primitive gates: two NANDs, a NOR and a NOT. Both
+    inputs are separately passed to a NAND gate and a NOR gate, the result of
+    the NOR is inverted, and those two results are passed to a NAND gate to
+    produce the final output.
 
-    (a NXOR b) == (a OR b) NAND (a NAND b)
+    (a NXOR b) == (NOT (a NOR b)) NAND (a NAND b)
     """
     return Component(
             ('a', 'b'),
             ('out',),
-            {'NandAB': NAND, 'OrAB': or_gate, 'NandOut': NAND},
+            {'NandAB': NAND, 'NandOut': NAND, 'Nor': NOR, 'Not': NOT},
             {
                     'out': 'NandOut.out',
-                    'NandOut.a': 'OrAB.out',
+                    'NandOut.a': 'Not.out',
                     'NandOut.b': 'NandAB.out',
-                    'OrAB.a': 'a',
-                    'OrAB.b': 'b',
+                    'Not.in': 'Nor.out',
+                    'Nor.a': 'a',
+                    'Nor.b': 'b',
                     'NandAB.a': 'a',
                     'NandAB.b': 'b',
                     })
@@ -405,7 +427,7 @@ def mux_gate():
                 'NandA': NAND,
                 'NandB': NAND,
                 'NandC': NAND,
-                'NotAB': not_gate,
+                'NotAB': NOT,
                 'NNot': NNOT,
                 'ISZ': isz_gate,
                 'PNot1': PNOT,
