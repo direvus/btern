@@ -1,4 +1,4 @@
-from hwsim.component import Component, NANY, NCONS, NOT, PNOT, nxor_gate
+from hwsim.component import Component, any_gate, NCONS, NOT
 
 
 def sum_gate():
@@ -24,22 +24,21 @@ def sum_gate():
             ('a', 'b'),
             ('out',),
             {
-                'NAny': NANY,
-                'NXor': nxor_gate,
-                'Not': NOT,
-                'PNot': PNOT,
-                'NXorOut': nxor_gate,
+                'Any1': any_gate,
+                'Any2': any_gate,
+                'Any3': any_gate,
+                'NCons': NCONS,
                 },
             {
-                'out': 'NXorOut.out',
-                'NXorOut.a': 'Not.out',
-                'NXorOut.b': 'PNot.out',
-                'Not.in': 'NAny.out',
-                'PNot.in': 'NXor.out',
-                'NAny.a': 'a',
-                'NAny.b': 'b',
-                'NXor.a': 'a',
-                'NXor.b': 'b',
+                'out': 'Any3.out',
+                'Any3.a': 'NCons.out',
+                'Any3.b': 'Any2.out',
+                'Any2.a': 'NCons.out',
+                'Any2.b': 'Any1.out',
+                'Any1.a': 'a',
+                'Any1.b': 'b',
+                'NCons.a': 'a',
+                'NCons.b': 'b',
                 })
 
 

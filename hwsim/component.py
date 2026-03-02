@@ -295,6 +295,27 @@ def or_gate():
                     })
 
 
+def any_gate():
+    """The ANY gate detects an overall bias of the inputs.
+
+    The output is zero if the inputs are positive and negative, or both zero.
+    Otherwise, the output is positive if there is any positive signal in the
+    inputs, or negative if there is any negative signal.
+
+    (a ANY b) == NOT (a NANY b)
+    """
+    return Component(
+            ('a', 'b'),
+            ('out',),
+            {'NAny': NANY, 'Not': NOT},
+            {
+                    'out': 'Not.out',
+                    'Not.in': 'NAny.out',
+                    'NAny.a': 'a',
+                    'NAny.b': 'b',
+                    })
+
+
 def xor_gate():
     """The XOR gate performs logical exclusive disjunction of the inputs.
 

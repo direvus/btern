@@ -101,6 +101,16 @@ def test_hwsim_or(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(BINARY, (NEG, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, POS))))
+def test_hwsim_any(inputs, expected):
+    comp = component.any_gate()
+
+    (out,) = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(BINARY, (NEG, ZERO, POS, ZERO, ZERO, ZERO, POS, ZERO, NEG))))
 def test_hwsim_xor(inputs, expected):
     comp = component.xor_gate()
