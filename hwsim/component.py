@@ -29,7 +29,7 @@ class Primitive:
 
 
 class Component(Primitive):
-    def __init__(self, inputs: int = 2, outputs: int = 1, components=None,
+    def __init__(self, inputs: tuple, outputs: tuple, components=None,
                  connections=None):
         super().__init__(inputs, outputs)
 
@@ -52,6 +52,10 @@ class Component(Primitive):
 
         if name in self.connections:
             source = self.connections[name]
+            # Literal trit values are treated as a constant source
+            if source in (ZERO, POS, NEG):
+                return source
+
             if source in self.inputs:
                 return inputs[source]
 
