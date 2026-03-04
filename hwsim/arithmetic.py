@@ -164,7 +164,7 @@ def not12():
 def and12():
     return Component(
             ('a[12]', 'b[12]'),
-            ('out[12]'),
+            ('out[12]',),
             {
                 'And0': and_gate,
                 'And1': and_gate,

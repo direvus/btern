@@ -229,3 +229,25 @@ def test_hwsim_not12(inputs, expected):
 
     out = comp.evaluate(inputs)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                '000000000000000000000000',
+                '------------------------',
+                '++++++++++++++++++++++++',
+                '---000+++-0+-0+-0+-0+-0+',
+                ),
+            (
+                tuple('000000000000'),
+                tuple('------------'),
+                tuple('++++++++++++'),
+                tuple('----00-0+-0+'),
+                ))))
+def test_hwsim_and12(inputs, expected):
+    comp = arithmetic.and12()
+
+    out = comp.evaluate(inputs)
+    assert out == expected
