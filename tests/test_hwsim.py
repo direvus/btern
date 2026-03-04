@@ -1,8 +1,8 @@
 import pytest
 
 from hwsim import component, arithmetic
-
 from trit import ZERO, POS, NEG
+
 
 N = NEG
 Z = ZERO
@@ -204,6 +204,28 @@ def test_hwsim_half_adder(inputs, expected):
             ))))
 def test_hwsim_full_adder(inputs, expected):
     comp = arithmetic.full_adder()
+
+    out = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                '000000000000',
+                '------------',
+                '++++++++++++',
+                '000---0+-00-',
+                ),
+            (
+                tuple('000000000000'),
+                tuple('++++++++++++'),
+                tuple('------------'),
+                tuple('000+++0-+00+'),
+                ))))
+def test_hwsim_not12(inputs, expected):
+    comp = arithmetic.not12()
 
     out = comp.evaluate(inputs)
     assert out == expected

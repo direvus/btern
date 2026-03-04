@@ -1,7 +1,11 @@
+import re
 from collections import defaultdict
 
 
 from trit import ZERO, POS, NEG
+
+
+BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')
 
 
 class Primitive:
@@ -9,8 +13,27 @@ class Primitive:
     outputs = tuple()
 
     def __init__(self, inputs, outputs):
-        self.inputs = tuple(inputs)
-        self.outputs = tuple(outputs)
+        items = []
+        for name in inputs:
+            m = BUS_RE.match(name)
+            if m:
+                name = m.group(1)
+                size = int(m.group(2))
+                items.extend([f'{name}[{i}]' for i in range(size)])
+            else:
+                items.append(name)
+        self.inputs = tuple(items)
+
+        items = []
+        for name in outputs:
+            m = BUS_RE.match(name)
+            if m:
+                name = m.group(1)
+                size = int(m.group(2))
+                items.extend([f'{name}[{i}]' for i in range(size)])
+            else:
+                items.append(name)
+        self.outputs = tuple(items)
 
     def get_outputs(self, inputs):
         raise NotImplementedError()
@@ -20,7 +43,7 @@ class Primitive:
             values = tuple()
 
         inputs = defaultdict(lambda x: ZERO)
-        if isinstance(values, (list, tuple)):
+        if isinstance(values, (list, tuple, str)):
             inputs.update(zip(self.inputs, values))
         else:
             inputs.update(values)
@@ -476,4 +499,3 @@ def mux_gate():
                 'PNot2.in': 'PNot1.out',
                 'PNot1.in': 's',
                 })
-
