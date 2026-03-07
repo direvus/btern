@@ -211,6 +211,16 @@ def test_hwsim_full_adder(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(UNARY, ((ZERO, ZERO), (POS, ZERO), (NEG, POS)))))
+def test_hwsim_inc(inputs, expected):
+    comp = arithmetic.inc()
+
+    out = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(
             (
                 '000000000000',
@@ -225,7 +235,7 @@ def test_hwsim_full_adder(inputs, expected):
                 tuple('000+++0-+00+'),
                 ))))
 def test_hwsim_not12(inputs, expected):
-    comp = arithmetic.not12()
+    comp = component.not12()
 
     out = comp.evaluate(inputs)
     assert out == expected
@@ -247,7 +257,7 @@ def test_hwsim_not12(inputs, expected):
                 tuple('----00-0+-0+'),
                 ))))
 def test_hwsim_and12(inputs, expected):
-    comp = arithmetic.and12()
+    comp = component.and12()
 
     out = comp.evaluate(inputs)
     assert out == expected

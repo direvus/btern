@@ -4,11 +4,15 @@ from itertools import product
 from trit import NEG, ZERO, POS
 
 
-TARGETS = {
+BINARY_TARGETS = {
         'XOR': (NEG, ZERO, POS, ZERO, ZERO, ZERO, POS, ZERO, NEG),
         'NXOR': (POS, ZERO, NEG, ZERO, ZERO, ZERO, NEG, ZERO, POS),
         'sum': (POS, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, NEG),
         'carry': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
+        }
+UNARY_TARGETS = {
+        'CLU': (ZERO, POS, NEG),
+        'inc_carry': (ZERO, ZERO, POS),
         }
 
 
@@ -122,7 +126,7 @@ def test_gates_10(pre1a, pre1b, pre2a, pre2b, com1, com2, post1, post2, com3,
     return True
 
 
-def find_gates(name, expected):
+def find_binary_gates(name, expected):
     print(f"Finding gates for {name}:")
 
     found = False
@@ -158,6 +162,35 @@ def find_gates(name, expected):
         print(f"No matches found for {name}")
 
 
+def find_unary_gates(name, expected):
+    print(f"Finding gates for {name}:")
+
+    inputs = ((NEG, NEG), (ZERO, ZERO), (POS, POS))
+    best = float('Infinity')
+    for funcs in product(UNARY, UNARY, BINARY, UNARY):
+        score = sum([COST[x.__name__] for x in funcs])
+        if test_gates_uubu(*funcs, inputs, expected):
+            if score <= best:
+                print(f"  Match {score} found with "
+                      f"{[x.__name__ for x in funcs]}")
+                best = score
+
+    for funcs in product(UNARY, UNARY, UNARY, UNARY, BINARY, BINARY, UNARY,
+                         UNARY, BINARY, UNARY):
+        if test_gates_10(*funcs, inputs, expected):
+            found = True
+            score = sum([COST[x.__name__] for x in funcs])
+            if score <= best:
+                print(f"  Match {score} found with "
+                      f"{[x.__name__ for x in funcs]}")
+                best = score
+    if not found:
+        print(f"No matches found for {name}")
+
+
 if __name__ == '__main__':
-    for name, expected in TARGETS.items():
-        find_gates(name, expected)
+    for name, expected in BINARY_TARGETS.items():
+        find_binary_gates(name, expected)
+
+    for name, expected in UNARY_TARGETS.items():
+        find_unary_gates(name, expected)
