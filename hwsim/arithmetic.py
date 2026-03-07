@@ -157,3 +157,75 @@ def inc():
                 'NOr.a': 'in',
                 'NOr.b': 'PNot.out',
                 })
+
+
+def inc12():
+    """A 12-trit incrementer.
+
+    It takes a 12-trit input bus 'in', and produces a 12-trit output bus 'out'.
+
+    The output is equal to the input plus one. Overflow wraps around to the
+    lowest negative value.
+
+    For example:
+    |       in      |       out     |
+    |===============|===============|
+    | ------ ------ | ------ -----0 |
+    | 000000 000000 | 000000 00000+ |
+    | ++++++ ++++++ | ------ ------ |
+    | 000000 000+++ | 000000 00+--- |
+    """
+    return Component(
+            ('in[12]',),
+            ('out[12]',),
+            {
+                'Inc': inc,
+                'Add1': half_adder,
+                'Add2': half_adder,
+                'Add3': half_adder,
+                'Add4': half_adder,
+                'Add5': half_adder,
+                'Add6': half_adder,
+                'Add7': half_adder,
+                'Add8': half_adder,
+                'Add9': half_adder,
+                'Add10': half_adder,
+                'Add11': sum_gate,
+                },
+            {
+                'out[0]': 'Inc.sum',
+                'Inc.in': 'in[0]',
+                'out[1]': 'Add1.sum',
+                'Add1.a': 'Inc.carry',
+                'Add1.b': 'in[1]',
+                'out[2]': 'Add2.sum',
+                'Add2.a': 'Add1.carry',
+                'Add2.b': 'in[2]',
+                'out[3]': 'Add3.sum',
+                'Add3.a': 'Add2.carry',
+                'Add3.b': 'in[3]',
+                'out[4]': 'Add4.sum',
+                'Add4.a': 'Add3.carry',
+                'Add4.b': 'in[4]',
+                'out[5]': 'Add5.sum',
+                'Add5.a': 'Add4.carry',
+                'Add5.b': 'in[5]',
+                'out[6]': 'Add6.sum',
+                'Add6.a': 'Add5.carry',
+                'Add6.b': 'in[6]',
+                'out[7]': 'Add7.sum',
+                'Add7.a': 'Add6.carry',
+                'Add7.b': 'in[7]',
+                'out[8]': 'Add8.sum',
+                'Add8.a': 'Add7.carry',
+                'Add8.b': 'in[8]',
+                'out[9]': 'Add9.sum',
+                'Add9.a': 'Add8.carry',
+                'Add9.b': 'in[9]',
+                'out[10]': 'Add10.sum',
+                'Add10.a': 'Add9.carry',
+                'Add10.b': 'in[10]',
+                'out[11]': 'Add11.out',
+                'Add11.a': 'Add10.carry',
+                'Add11.b': 'in[11]',
+                })
