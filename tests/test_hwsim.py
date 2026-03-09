@@ -221,6 +221,16 @@ def test_hwsim_inc(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(UNARY, ((POS, NEG), (NEG, ZERO), (ZERO, ZERO)))))
+def test_hwsim_dec(inputs, expected):
+    comp = arithmetic.dec()
+
+    out = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(
             (
                 '000000000000',

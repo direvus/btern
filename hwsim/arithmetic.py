@@ -159,6 +159,52 @@ def inc():
                 })
 
 
+def dec():
+    """A single-trit decrementer.
+
+    It takes one input 'in', and produces two outputs 'sum' and 'carry'.
+
+    The 'sum' output is equal to the value of 'in' minus one, with a negative
+    input wrapping around to a positive output.
+
+    The 'carry' output is negative when the input is negative, and otherwise it
+    is zero.
+
+    | in  | sum | carry |
+    |=====|=====|=======|
+    |  -  |  +  |   -   |
+    |  0  |  -  |   0   |
+    |  +  |  0  |   0   |
+    """
+    return Component(
+            ('in',),
+            ('sum', 'carry'),
+            {
+                'Not': NOT,
+                'PNot': PNOT,
+                'NNot': NNOT,
+                'NAnd': NAND,
+                'NOr': NOR,
+                'NAnySum': NANY,
+                'NAnyCar': NANY,
+                },
+            {
+                'sum': 'NAnySum.out',
+                'carry': 'NAnyCar.out',
+                'NAnySum.a': 'NOr.out',
+                'NAnySum.b': 'PNot.out',
+                'NAnyCar.a': 'NAnd.out',
+                'NAnyCar.b': 'Not.out',
+                'NOr.a': 'in',
+                'NOr.b': 'NNot.out',
+                'NNot.in': 'in',
+                'Not.in': 'in',
+                'PNot.in': 'Not.out',
+                'NAnd.a': 'Not.out',
+                'NAnd.b': 'in',
+                })
+
+
 def inc12():
     """A 12-trit incrementer.
 

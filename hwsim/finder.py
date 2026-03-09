@@ -12,7 +12,9 @@ BINARY_TARGETS = {
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),
+        'CLD': (POS, NEG, ZERO),
         'inc_carry': (ZERO, ZERO, POS),
+        'dec_carry': (NEG, ZERO, ZERO),
         }
 
 
