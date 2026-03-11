@@ -278,6 +278,79 @@ def inc12():
                 })
 
 
+def dec12():
+    """A 12-trit decrementer.
+
+    It takes a 12-trit input bus 'in', and produces a 12-trit output bus 'out'.
+
+    The output is equal to the input minus one. Overflow wraps around to the
+    highest positive value.
+
+    For example:
+
+    |       in      |       out     |
+    |===============|===============|
+    | ++++++ ++++++ | ++++++ +++++0 |
+    | 000000 000000 | 000000 00000- |
+    | ------ ------ | ++++++ ++++++ |
+    | 000000 000+++ | 000000 000++0 |
+    """
+    return Component(
+            ('in[12]',),
+            ('out[12]',),
+            {
+                'Dec': dec,
+                'Add1': half_adder,
+                'Add2': half_adder,
+                'Add3': half_adder,
+                'Add4': half_adder,
+                'Add5': half_adder,
+                'Add6': half_adder,
+                'Add7': half_adder,
+                'Add8': half_adder,
+                'Add9': half_adder,
+                'Add10': half_adder,
+                'Add11': sum_gate,
+                },
+            {
+                'out[0]': 'Dec.sum',
+                'Dec.in': 'in[0]',
+                'out[1]': 'Add1.sum',
+                'Add1.a': 'in[1]',
+                'Add1.b': 'Dec.carry',
+                'out[2]': 'Add2.sum',
+                'Add2.a': 'in[2]',
+                'Add2.b': 'Add1.carry',
+                'out[3]': 'Add3.sum',
+                'Add3.a': 'in[3]',
+                'Add3.b': 'Add2.carry',
+                'out[4]': 'Add4.sum',
+                'Add4.a': 'in[4]',
+                'Add4.b': 'Add3.carry',
+                'out[5]': 'Add5.sum',
+                'Add5.a': 'in[5]',
+                'Add5.b': 'Add4.carry',
+                'out[6]': 'Add6.sum',
+                'Add6.a': 'in[6]',
+                'Add6.b': 'Add5.carry',
+                'out[7]': 'Add7.sum',
+                'Add7.a': 'in[7]',
+                'Add7.b': 'Add6.carry',
+                'out[8]': 'Add8.sum',
+                'Add8.a': 'in[8]',
+                'Add8.b': 'Add7.carry',
+                'out[9]': 'Add9.sum',
+                'Add9.a': 'in[9]',
+                'Add9.b': 'Add8.carry',
+                'out[10]': 'Add10.sum',
+                'Add10.a': 'in[10]',
+                'Add10.b': 'Add9.carry',
+                'out[11]': 'Add11.out',
+                'Add11.a': 'in[11]',
+                'Add11.b': 'Add10.carry',
+                })
+
+
 def add12():
     """A 12-trit addition chip.
 

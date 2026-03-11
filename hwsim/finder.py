@@ -9,6 +9,8 @@ BINARY_TARGETS = {
         'NXOR': (POS, ZERO, NEG, ZERO, ZERO, ZERO, NEG, ZERO, POS),
         'sum': (POS, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, NEG),
         'carry': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
+        'sub': (ZERO, NEG, POS, POS, ZERO, NEG, NEG, POS, ZERO),
+        'sub_carry': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),
