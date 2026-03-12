@@ -149,7 +149,7 @@ def isz_gate():
 
 
 def mux_gate():
-    """The MUX gate is a 3-way multiplexer.
+    """The MUX gate is a single trit, 3-way multiplexer.
 
     It selects one of its three data inputs, based on the value of a fourth
     'selector' input, and produces the selected input signal on its output.
@@ -315,4 +315,101 @@ def and12():
                 'And10.b': 'b[10]',
                 'And11.a': 'a[11]',
                 'And11.b': 'b[11]',
+                })
+
+
+def mux12():
+    """A 12 trit, 3-way multiplexer.
+
+    It selects one of its three data input buses, based on the value of a
+    fourth 'selector' input, and produces the selected input bus values on its
+    output bus.
+
+    The three data input buses are named 'a', 'b' and 'c', and the selector
+    input is named 's'. The output value is determined as follows:
+
+    |  s  | out |
+    |=====|=====|
+    |  -  |  a  |
+    |  0  |  b  |
+    |  +  |  c  |
+    """
+    return Component(
+            ('a[12]', 'b[12]', 'c[12]', 's'),
+            ('out[12]',),
+            {
+                'Mux0': mux_gate,
+                'Mux1': mux_gate,
+                'Mux2': mux_gate,
+                'Mux3': mux_gate,
+                'Mux4': mux_gate,
+                'Mux5': mux_gate,
+                'Mux6': mux_gate,
+                'Mux7': mux_gate,
+                'Mux8': mux_gate,
+                'Mux9': mux_gate,
+                'Mux10': mux_gate,
+                'Mux11': mux_gate,
+                },
+            {
+                'out[0]': 'Mux0.out',
+                'Mux0.a': 'a[0]',
+                'Mux0.b': 'b[0]',
+                'Mux0.c': 'c[0]',
+                'Mux0.s': 's',
+                'out[1]': 'Mux1.out',
+                'Mux1.a': 'a[1]',
+                'Mux1.b': 'b[1]',
+                'Mux1.c': 'c[1]',
+                'Mux1.s': 's',
+                'out[2]': 'Mux2.out',
+                'Mux2.a': 'a[2]',
+                'Mux2.b': 'b[2]',
+                'Mux2.c': 'c[2]',
+                'Mux2.s': 's',
+                'out[3]': 'Mux3.out',
+                'Mux3.a': 'a[3]',
+                'Mux3.b': 'b[3]',
+                'Mux3.c': 'c[3]',
+                'Mux3.s': 's',
+                'out[4]': 'Mux4.out',
+                'Mux4.a': 'a[4]',
+                'Mux4.b': 'b[4]',
+                'Mux4.c': 'c[4]',
+                'Mux4.s': 's',
+                'out[5]': 'Mux5.out',
+                'Mux5.a': 'a[5]',
+                'Mux5.b': 'b[5]',
+                'Mux5.c': 'c[5]',
+                'Mux5.s': 's',
+                'out[6]': 'Mux6.out',
+                'Mux6.a': 'a[6]',
+                'Mux6.b': 'b[6]',
+                'Mux6.c': 'c[6]',
+                'Mux6.s': 's',
+                'out[7]': 'Mux7.out',
+                'Mux7.a': 'a[7]',
+                'Mux7.b': 'b[7]',
+                'Mux7.c': 'c[7]',
+                'Mux7.s': 's',
+                'out[8]': 'Mux8.out',
+                'Mux8.a': 'a[8]',
+                'Mux8.b': 'b[8]',
+                'Mux8.c': 'c[8]',
+                'Mux8.s': 's',
+                'out[9]': 'Mux9.out',
+                'Mux9.a': 'a[9]',
+                'Mux9.b': 'b[9]',
+                'Mux9.c': 'c[9]',
+                'Mux9.s': 's',
+                'out[10]': 'Mux10.out',
+                'Mux10.a': 'a[10]',
+                'Mux10.b': 'b[10]',
+                'Mux10.c': 'c[10]',
+                'Mux10.s': 's',
+                'out[11]': 'Mux11.out',
+                'Mux11.a': 'a[11]',
+                'Mux11.b': 'b[11]',
+                'Mux11.c': 'c[11]',
+                'Mux11.s': 's',
                 })
