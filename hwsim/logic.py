@@ -129,27 +129,22 @@ def isz_gate():
     |  0  |  +  |
     |  +  |  -  |
 
-    It consists of two NNOTs, one PNOT, and one AND gate, for a total of
-    4 primitive gates.
-
-    ISZ a == (PNOT a) AND (NOT NNOT a)
+    ISZ(a) == PNOT(NAND(¬in, in))
     """
     return Component(
             ('in',),
             ('out',),
             {
                 'PNot': PNOT,
-                'NNot': NNOT,
-                'Not': NNOT,
-                'And': and_gate,
+                'Not': NOT,
+                'NAnd': NAND,
             },
             {
-                'out': 'And.out',
-                'And.a': 'PNot.out',
-                'And.b': 'Not.out',
-                'PNot.in': 'in',
-                'Not.in': 'NNot.out',
-                'NNot.in': 'in',
+                'out': 'PNot.out',
+                'PNot.in': 'NAnd.out',
+                'NAnd.a': 'in',
+                'NAnd.b': 'Not.out',
+                'Not.in': 'in',
                 })
 
 
