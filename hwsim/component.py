@@ -9,31 +9,25 @@ BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')
 
 
 class Primitive:
-    inputs = tuple()
-    outputs = tuple()
+    """Primitive is the base class for all components.
+
+    The Primitive class can be subclassed directly to create basic logic gates
+    with individual input and output trits, where the output is defined in
+    software.
+
+    Direct subclasses of Primitive must not contain any mutable attributes, and
+    would typically be used with a singleton pattern.
+
+    For more complex behaviour, or linking multiple Primitive components
+    together, use the Component class.
+    """
+    buses: dict | None = None
+    inputs: tuple = tuple()
+    outputs: tuple = tuple()
 
     def __init__(self, inputs, outputs):
-        items = []
-        for name in inputs:
-            m = BUS_RE.match(name)
-            if m:
-                name = m.group(1)
-                size = int(m.group(2))
-                items.extend([f'{name}[{i}]' for i in range(size)])
-            else:
-                items.append(name)
-        self.inputs = tuple(items)
-
-        items = []
-        for name in outputs:
-            m = BUS_RE.match(name)
-            if m:
-                name = m.group(1)
-                size = int(m.group(2))
-                items.extend([f'{name}[{i}]' for i in range(size)])
-            else:
-                items.append(name)
-        self.outputs = tuple(items)
+        self.inputs = tuple(inputs)
+        self.outputs = tuple(outputs)
 
     def get_outputs(self, inputs):
         raise NotImplementedError()
@@ -54,20 +48,67 @@ class Primitive:
 class Component(Primitive):
     def __init__(self, inputs: tuple, outputs: tuple, components=None,
                  connections=None):
-        super().__init__(inputs, outputs)
+        self.buses = {}
+        input_items = []
+        output_items = []
+        for name in inputs:
+            m = BUS_RE.match(name)
+            if m:
+                name = m.group(1)
+                size = int(m.group(2))
+                input_items.extend([f'{name}[{i}]' for i in range(size)])
+                self.buses[name] = size
+            else:
+                input_items.append(name)
+
+        for name in outputs:
+            m = BUS_RE.match(name)
+            if m:
+                name = m.group(1)
+                size = int(m.group(2))
+                output_items.extend([f'{name}[{i}]' for i in range(size)])
+                self.buses[name] = size
+            else:
+                output_items.append(name)
+
+        super().__init__(input_items, output_items)
 
         self.cache = {}
         self.components = {}
         self.connections = {}
         if components:
+            # Each member of 'components' should be either an instance that
+            # inherits Primitive, or a callable that returns the same.
             for name, item in components.items():
-                if isinstance(item, Primitive):
-                    self.components[name] = item
-                else:
-                    self.components[name] = item()
+                comp = item
+                if not isinstance(item, Primitive):
+                    comp = item()
+                self.components[name] = comp
+                if comp.buses:
+                    for bus, size in comp.buses.items():
+                        self.buses[f'{name}.{bus}'] = size
 
         if connections:
-            self.connections.update(connections)
+            for dest, source in connections.items():
+                self.add_connection(dest, source)
+
+    def add_connection(self, dest: str, source: str):
+        if dest not in self.buses:
+            self.connections[dest] = source
+            return
+
+        size = self.buses[dest]
+        if source in self.buses:
+            if self.buses[source] != size:
+                raise ValueError(
+                    f"Connection {dest} <- {source} is not "
+                    "valid, both endpoints are buses but have "
+                    "different sizes")
+            for i in range(size):
+                self.connections[f'{dest}[{i}]'] = f'{source}[{i}]'
+        else:
+            for i in range(size):
+                self.connections[f'{dest}[{i}]'] = source
 
     def get_value(self, inputs: dict, name: str):
         if name in self.inputs:

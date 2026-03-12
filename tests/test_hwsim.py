@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import component, arithmetic, logic
+from hwsim import component, arithmetic, logic, cpu
 from trit import ZERO, POS, NEG
 
 
@@ -356,6 +356,22 @@ def test_hwsim_add12(inputs, expected):
                 ))))
 def test_hwsim_mux12(inputs, expected):
     comp = logic.mux12()
+
+    out = comp.evaluate(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0++'),
+                ),
+            (
+                tuple('-0+-0+-0+-0+'),
+                ))))
+def test_hwsim_alu(inputs, expected):
+    comp = cpu.alu()
 
     out = comp.evaluate(inputs)
     assert out == expected
