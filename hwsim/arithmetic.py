@@ -1,5 +1,6 @@
 from hwsim.component import (
-        Component, any_gate, NCONS, NAND, NOR, NANY, NOT, PNOT, NNOT)
+        Component, NCONS, NAND, NOR, NANY, NOT, PNOT, NNOT)
+from hwsim.logic import any_gate
 
 
 def sum_gate():
