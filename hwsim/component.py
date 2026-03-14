@@ -9,7 +9,7 @@ BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')
 
 
 class Primitive:
-    """Primitive is the base class for all components.
+    """Primitive is the abstract base class for all components.
 
     The Primitive class can be subclassed directly to create basic logic gates
     with individual input and output trits, where the output is defined in
@@ -18,8 +18,8 @@ class Primitive:
     Direct subclasses of Primitive must not contain any mutable attributes, and
     would typically be used with a singleton pattern.
 
-    For more complex behaviour, or linking multiple Primitive components
-    together, use the Component class.
+    For more complex behaviour, or linking multiple components together, use
+    the Component class.
     """
     buses: dict | None = None
     inputs: tuple = tuple()
@@ -32,17 +32,13 @@ class Primitive:
     def get_outputs(self, inputs):
         raise NotImplementedError()
 
-    def evaluate(self, values=None):
-        if values is None:
-            values = tuple()
+    def tick(self) -> bool:
+        """Update the component in response to a clock pulse.
 
-        inputs = defaultdict(lambda x: ZERO)
-        if isinstance(values, (list, tuple, str)):
-            inputs.update(zip(self.inputs, values))
-        else:
-            inputs.update(values)
-
-        return self.get_outputs(inputs)
+        Return True if the component's state has changed as a result of the
+        tick, and False if it has remained exactly the same.
+        """
+        return False
 
 
 class Component(Primitive):
@@ -78,11 +74,13 @@ class Component(Primitive):
         self.connections = {}
         if components:
             # Each member of 'components' should be either an instance that
-            # inherits Primitive, or a callable that returns the same.
+            # inherits Primitive, or a callable that returns such an instance.
             for name, item in components.items():
                 comp = item
-                if not isinstance(item, Primitive):
+                if not isinstance(comp, Primitive):
+                    # Not already an instance, try invoking it as a callable
                     comp = item()
+                assert isinstance(comp, Primitive)
                 self.components[name] = comp
                 if comp.buses:
                     for bus, size in comp.buses.items():
@@ -94,6 +92,8 @@ class Component(Primitive):
 
     def add_connection(self, dest: str, source: str):
         if dest not in self.buses:
+            # Simple case with no buses involved, this is just a single trit
+            # connection.
             self.connections[dest] = source
             return
 
@@ -101,46 +101,71 @@ class Component(Primitive):
         if source in self.buses:
             if self.buses[source] != size:
                 raise ValueError(
-                    f"Connection {dest} <- {source} is not "
-                    "valid, both endpoints are buses but have "
-                    "different sizes")
+                    f"Invalid connection {dest} <- {source}: "
+                    "both endpoints are buses but have different sizes")
             for i in range(size):
                 self.connections[f'{dest}[{i}]'] = f'{source}[{i}]'
         else:
             for i in range(size):
                 self.connections[f'{dest}[{i}]'] = source
 
-    def get_value(self, inputs: dict, name: str):
-        if name in self.inputs:
-            return inputs[name]
+    def get_value(self, name: str) -> str:
+        # Literal trit values are treated as a constant source
+        if name in (ZERO, POS, NEG):
+            return name
+
+        if name in self.cache:
+            return self.cache[name]
 
         if name in self.connections:
             source = self.connections[name]
-            # Literal trit values are treated as a constant source
-            if source in (ZERO, POS, NEG):
-                return source
+            if '.' in source:
+                comp, _ = source.split('.')
+                self.evaluate_subcomponent(comp)
+                value = self.cache[source]
+                self.cache[name] = value
+                return value
+            return self.get_value(source)
 
-            if source in self.inputs:
-                return inputs[source]
+        raise ValueError(f"'{name}' does not exist in this component")
 
-            if source in self.cache:
-                return self.cache[source]
+    def invalidate_cache(self, name: str):
+        prefix = f'{name}.'
+        self.cache = {k: v for k, v in self.cache.items
+                 if k != name and not k.startswith(prefix)}
 
-            sub, _ = source.split('.')
-            self.evaluate_subcomponent(inputs, sub)
-            return self.cache[source]
+    def update(self):
+        return False
 
-    def evaluate_subcomponent(self, inputs, name: str):
+    def update_subcomponents(self):
+        changed = False
+        for name, comp in self.components.items():
+            if comp.tick():
+                changed = True
+            self.invalidate_cache(name)
+        return changed
+
+    def tick(self) -> bool:
+        changed = False
+        if self.update():
+            changed = True
+        if self.update_subcomponents():
+            changed = True
+        return changed
+
+    def evaluate_subcomponent(self, name: str) -> tuple:
         comp = self.components[name]
-        subinputs = {}
-        for n in comp.inputs:
-            subinputs[n] = self.get_value(inputs, f'{name}.{n}')
-        outs = comp.get_outputs(subinputs)
+        inputs = tuple(self.get_value(f'{name}.{x}') for x in comp.inputs)
+        outputs = comp.get_outputs(inputs)
         self.cache.update({
-            f'{name}.{n}': outs[i] for i, n in enumerate(comp.outputs)})
+            f'{name}.{comp.outputs[i]}': x for i, x in enumerate(outputs)})
+        return outputs
 
-    def get_outputs(self, inputs):
-        return tuple(self.get_value(inputs, x) for x in self.outputs)
+    def get_outputs(self, inputs: tuple) -> tuple:
+        self.cache.update({
+                name: inputs[i]
+                for i, name in enumerate(self.inputs)})
+        return tuple(self.get_value(name) for name in self.outputs)
 
 
 class NAnd(Primitive):
@@ -164,8 +189,7 @@ class NAnd(Primitive):
         The result is positive if either input is negative, negative if both
         inputs are positive, and otherwise zero.
         """
-        a = inputs['a']
-        b = inputs['b']
+        a, b = inputs
         if a == NEG or b == NEG:
             return (POS,)
         elif a == POS and b == POS:
@@ -190,7 +214,7 @@ class Not(Primitive):
         super().__init__(('in',), ('out',))
 
     def get_outputs(self, inputs):
-        inp = inputs['in']
+        (inp,) = inputs
         if inp == ZERO:
             return (ZERO,)
         return (NEG,) if inp == POS else (POS,)
@@ -212,7 +236,7 @@ class PNot(Primitive):
         super().__init__(('in',), ('out',))
 
     def get_outputs(self, inputs):
-        inp = inputs['in']
+        (inp,) = inputs
         return (NEG,) if inp == POS else (POS,)
 
 
@@ -232,7 +256,7 @@ class NNot(Primitive):
         super().__init__(('in',), ('out',))
 
     def get_outputs(self, inputs):
-        inp = inputs['in']
+        (inp,) = inputs
         return (POS,) if inp == NEG else (NEG,)
 
 
@@ -253,8 +277,7 @@ class NOr(Primitive):
         super().__init__(('a', 'b',), ('out',))
 
     def get_outputs(self, inputs):
-        a = inputs['a']
-        b = inputs['b']
+        a, b = inputs
         if a == POS or b == POS:
             return (NEG,)
         if a == NEG and b == NEG:
@@ -280,8 +303,7 @@ class NAny(Primitive):
         super().__init__(('a', 'b',), ('out',))
 
     def get_outputs(self, inputs):
-        a = inputs['a']
-        b = inputs['b']
+        a, b = inputs
         if a == NEG:
             return (ZERO,) if b == POS else (POS,)
         if a == POS:
@@ -307,8 +329,7 @@ class NCons(Primitive):
         super().__init__(('a', 'b',), ('out',))
 
     def get_outputs(self, inputs):
-        a = inputs['a']
-        b = inputs['b']
+        a, b = inputs
         if a == b and a != ZERO:
             return (NEG,) if a == POS else (POS,)
         return (ZERO,)
@@ -323,3 +344,17 @@ NAND = NAnd()
 NOR = NOr()
 NANY = NAny()
 NCONS = NCons()
+
+
+class DataFlipFlop(Component):
+    """The data flip flop has a single trit internal state value.
+
+    It takes two inputs, 'in' and 'load', and has one output 'out'. The output
+    always produces the current internal state of the flip flop.
+
+    When the flip flop receives a clock pulse, it updates its internal value
+    according to the 'in' and 'load' signals. When 'load' is zero, the internal
+    value is retained as-is. When 'load' is negative, the internal value is
+    inverted. When 'load' is positive, the value of 'in' is stored in the
+    internal value, replacing its current content.
+    """

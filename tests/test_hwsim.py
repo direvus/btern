@@ -24,7 +24,7 @@ QUATERNARY = tuple((a, b, c, d)
 def test_hwsim_nand(inputs, expected):
     comp = component.NAnd()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -34,7 +34,7 @@ def test_hwsim_nand(inputs, expected):
 def test_hwsim_pnot(inputs, expected):
     comp = component.PNot()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -44,7 +44,7 @@ def test_hwsim_pnot(inputs, expected):
 def test_hwsim_nnot(inputs, expected):
     comp = component.NNot()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -54,7 +54,7 @@ def test_hwsim_nnot(inputs, expected):
 def test_hwsim_nany(inputs, expected):
     comp = component.NAny()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -65,7 +65,7 @@ def test_hwsim_nany(inputs, expected):
 def test_hwsim_ncons(inputs, expected):
     comp = component.NCons()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -75,7 +75,7 @@ def test_hwsim_ncons(inputs, expected):
 def test_hwsim_not(inputs, expected):
     comp = component.Not()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -85,7 +85,7 @@ def test_hwsim_not(inputs, expected):
 def test_hwsim_and(inputs, expected):
     comp = logic.and_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -95,7 +95,7 @@ def test_hwsim_and(inputs, expected):
 def test_hwsim_or(inputs, expected):
     comp = logic.or_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -105,7 +105,7 @@ def test_hwsim_or(inputs, expected):
 def test_hwsim_any(inputs, expected):
     comp = logic.any_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -115,7 +115,7 @@ def test_hwsim_any(inputs, expected):
 def test_hwsim_xor(inputs, expected):
     comp = logic.xor_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -125,7 +125,7 @@ def test_hwsim_xor(inputs, expected):
 def test_hwsim_nxor(inputs, expected):
     comp = logic.nxor_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -135,7 +135,7 @@ def test_hwsim_nxor(inputs, expected):
 def test_hwsim_isz(inputs, expected):
     comp = logic.isz_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -155,7 +155,7 @@ def test_hwsim_isz(inputs, expected):
 def test_hwsim_mux(inputs, expected):
     comp = logic.mux_gate()
 
-    (out,) = comp.evaluate(inputs)
+    (out,) = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -165,7 +165,7 @@ def test_hwsim_mux(inputs, expected):
 def test_hwsim_sum(inputs, expected):
     comp = arithmetic.sum_gate()
 
-    out, = comp.evaluate(inputs)
+    out, = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -185,7 +185,7 @@ def test_hwsim_sum(inputs, expected):
 def test_hwsim_half_adder(inputs, expected):
     comp = arithmetic.half_adder()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -205,7 +205,7 @@ def test_hwsim_half_adder(inputs, expected):
 def test_hwsim_full_adder(inputs, expected):
     comp = arithmetic.full_adder()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -215,7 +215,7 @@ def test_hwsim_full_adder(inputs, expected):
 def test_hwsim_inc(inputs, expected):
     comp = arithmetic.inc()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -225,7 +225,7 @@ def test_hwsim_inc(inputs, expected):
 def test_hwsim_dec(inputs, expected):
     comp = arithmetic.dec()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -247,7 +247,7 @@ def test_hwsim_dec(inputs, expected):
 def test_hwsim_not12(inputs, expected):
     comp = logic.not12()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -269,7 +269,7 @@ def test_hwsim_not12(inputs, expected):
 def test_hwsim_and12(inputs, expected):
     comp = logic.and12()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -289,7 +289,7 @@ def test_hwsim_and12(inputs, expected):
 def test_hwsim_inc12(inputs, expected):
     comp = arithmetic.inc12()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -315,7 +315,7 @@ def test_hwsim_inc12(inputs, expected):
 def test_hwsim_dec12(inputs, expected):
     comp = arithmetic.dec12()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -337,7 +337,7 @@ def test_hwsim_dec12(inputs, expected):
 def test_hwsim_add12(inputs, expected):
     comp = arithmetic.add12()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -357,7 +357,7 @@ def test_hwsim_add12(inputs, expected):
 def test_hwsim_mux12(inputs, expected):
     comp = logic.mux12()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
 
 
@@ -393,5 +393,5 @@ def test_hwsim_mux12(inputs, expected):
 def test_hwsim_alu(inputs, expected):
     comp = cpu.alu()
 
-    out = comp.evaluate(inputs)
+    out = comp.get_outputs(inputs)
     assert out == expected
