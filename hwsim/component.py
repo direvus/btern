@@ -1,8 +1,12 @@
 import re
-from collections import defaultdict
+from collections.abc import Callable, Iterable
+from typing import Literal
 
 
 from trit import ZERO, POS, NEG
+
+Trit = Literal[NEG, ZERO, POS]
+Trits = Iterable[Trit]
 
 
 BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')
@@ -22,14 +26,14 @@ class Primitive:
     the Component class.
     """
     buses: dict | None = None
-    inputs: tuple = tuple()
-    outputs: tuple = tuple()
+    inputs: tuple[str] = tuple()
+    outputs: tuple[str] = tuple()
 
-    def __init__(self, inputs, outputs):
+    def __init__(self, inputs: Iterable[str], outputs: Iterable[str]):
         self.inputs = tuple(inputs)
         self.outputs = tuple(outputs)
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         raise NotImplementedError()
 
     def tick(self) -> bool:
@@ -41,9 +45,16 @@ class Primitive:
         return False
 
 
+ComponentCompatible = Primitive | Callable
+
+
 class Component(Primitive):
-    def __init__(self, inputs: tuple, outputs: tuple, components=None,
-                 connections=None):
+    def __init__(
+            self,
+            inputs: Iterable[str],
+            outputs: Iterable[str],
+            components: dict[str, ComponentCompatible] | None = None,
+            connections: dict[str, str] | None = None):
         self.buses = {}
         input_items = []
         output_items = []
@@ -73,7 +84,7 @@ class Component(Primitive):
         self.components = {}
         self.connections = {}
         if components:
-            # Each member of 'components' should be either an instance that
+            # Each value of 'components' should be either an instance that
             # inherits Primitive, or a callable that returns such an instance.
             for name, item in components.items():
                 comp = item
@@ -109,7 +120,7 @@ class Component(Primitive):
             for i in range(size):
                 self.connections[f'{dest}[{i}]'] = source
 
-    def get_value(self, name: str) -> str:
+    def get_value(self, name: str) -> Trit:
         # Literal trit values are treated as a constant source
         if name in (ZERO, POS, NEG):
             return name
@@ -129,15 +140,16 @@ class Component(Primitive):
 
         raise ValueError(f"'{name}' does not exist in this component")
 
-    def invalidate_cache(self, name: str):
+    def invalidate_cache(self, name: str) -> None:
         prefix = f'{name}.'
-        self.cache = {k: v for k, v in self.cache.items
-                 if k != name and not k.startswith(prefix)}
+        self.cache = {
+                k: v for k, v in self.cache.items
+                if k != name and not k.startswith(prefix)}
 
-    def update(self):
+    def update(self) -> bool:
         return False
 
-    def update_subcomponents(self):
+    def update_subcomponents(self) -> bool:
         changed = False
         for name, comp in self.components.items():
             if comp.tick():
@@ -153,7 +165,7 @@ class Component(Primitive):
             changed = True
         return changed
 
-    def evaluate_subcomponent(self, name: str) -> tuple:
+    def evaluate_subcomponent(self, name: str) -> Trits:
         comp = self.components[name]
         inputs = tuple(self.get_value(f'{name}.{x}') for x in comp.inputs)
         outputs = comp.get_outputs(inputs)
@@ -161,12 +173,12 @@ class Component(Primitive):
             f'{name}.{comp.outputs[i]}': x for i, x in enumerate(outputs)})
         return outputs
 
-    def set_inputs(self, inputs: tuple) -> None:
+    def set_inputs(self, inputs: Trits) -> None:
         self.cache.update({
                 name: inputs[i]
                 for i, name in enumerate(self.inputs)})
 
-    def get_outputs(self, inputs: tuple) -> tuple:
+    def get_outputs(self, inputs: Trits) -> Trits:
         self.set_inputs(inputs)
         return tuple(self.get_value(name) for name in self.outputs)
 
@@ -186,7 +198,7 @@ class NAnd(Primitive):
     def __init__(self):
         super().__init__(('a', 'b'), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         """Return the logical NAND of 'a' and 'b'.
 
         The result is positive if either input is negative, negative if both
@@ -216,7 +228,7 @@ class Not(Primitive):
     def __init__(self):
         super().__init__(('in',), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         (inp,) = inputs
         if inp == ZERO:
             return (ZERO,)
@@ -238,7 +250,7 @@ class PNot(Primitive):
     def __init__(self):
         super().__init__(('in',), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         (inp,) = inputs
         return (NEG,) if inp == POS else (POS,)
 
@@ -258,7 +270,7 @@ class NNot(Primitive):
     def __init__(self):
         super().__init__(('in',), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         (inp,) = inputs
         return (POS,) if inp == NEG else (NEG,)
 
@@ -279,7 +291,7 @@ class NOr(Primitive):
     def __init__(self):
         super().__init__(('a', 'b',), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         a, b = inputs
         if a == POS or b == POS:
             return (NEG,)
@@ -305,7 +317,7 @@ class NAny(Primitive):
     def __init__(self):
         super().__init__(('a', 'b',), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         a, b = inputs
         if a == NEG:
             return (ZERO,) if b == POS else (POS,)
@@ -331,7 +343,7 @@ class NCons(Primitive):
     def __init__(self):
         super().__init__(('a', 'b',), ('out',))
 
-    def get_outputs(self, inputs):
+    def get_outputs(self, inputs: Trits) -> Trits:
         a, b = inputs
         if a == b and a != ZERO:
             return (NEG,) if a == POS else (POS,)
