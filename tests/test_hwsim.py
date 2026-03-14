@@ -464,3 +464,23 @@ def test_hwsim_dff_update_return(inputs, expected):
     comp.set_inputs((load, inp))
     out = comp.update()
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(BINARY, (
+                ZERO, ZERO, ZERO,
+                ZERO, ZERO, ZERO,
+                NEG, ZERO, POS,
+                ))))
+def test_hwsim_register(inputs, expected):
+    comp = memory.Register()
+
+    load, inp = inputs
+    (out,) = comp.get_outputs((load, inp))
+    # The value of a register should always be zero before any clock ticks
+    assert out == ZERO
+
+    comp.tick()
+    (out,) = comp.get_outputs((load, inp))
+    assert out == expected

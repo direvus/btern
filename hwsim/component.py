@@ -130,6 +130,9 @@ class Component(Primitive):
 
         if name in self.connections:
             source = self.connections[name]
+            if source in self.cache:
+                return self.cache[source]
+
             if '.' in source:
                 comp, _ = source.split('.')
                 self.evaluate_subcomponent(comp)
@@ -143,7 +146,7 @@ class Component(Primitive):
     def invalidate_cache(self, name: str) -> None:
         prefix = f'{name}.'
         self.cache = {
-                k: v for k, v in self.cache.items
+                k: v for k, v in self.cache.items()
                 if k != name and not k.startswith(prefix)}
 
     def update(self) -> bool:
@@ -163,6 +166,10 @@ class Component(Primitive):
             changed = True
         if self.update_subcomponents():
             changed = True
+        if changed:
+            self.cache = {
+                    k: v for k, v in self.cache.items()
+                    if k not in self.outputs}
         return changed
 
     def evaluate_subcomponent(self, name: str) -> Trits:

@@ -1,4 +1,5 @@
-from hwsim.component import Component, Trits
+from hwsim.component import Component, Trits, NOT
+from hwsim.logic import Mux
 from trit import ZERO
 
 
@@ -29,6 +30,56 @@ class DataFlipFlop(Component):
         self.state = self.cache['in']
         return True
 
-    def get_outputs(self, inputs: Trits) -> Trits:
-        self.set_inputs(inputs)
+    def get_outputs(self, inputs: Trits | None = None) -> Trits:
+        if inputs is not None:
+            self.set_inputs(inputs)
         return (self.state,)
+
+
+class Register(Component):
+    """A single-trit data register.
+
+    The Register is a persisent memory cell for a single trit value. It takes
+    two inputs, 'load' and 'in', and has one output 'out'.
+
+    When the Register receives a clock pulse, it updates its internal memory
+    according to the 'load' and 'in' signals. When 'load' is zero, the internal
+    state is retained and the value of 'in' is disregarded. When 'load' is
+    negative, the internal state is inverted and the value of 'in' is
+    disregarded. When 'load' is positive, the internal state is replaced with
+    the value of 'in'.
+    """
+    def __init__(self):
+        super().__init__(
+                ('load', 'in'),
+                ('out',),
+                {
+                    'DFF': DataFlipFlop,
+                    'Mux': Mux,
+                    'Not': NOT,
+                    },
+                {
+                    'out': 'DFF.out',
+                    'DFF.load': 'load',
+                    'DFF.in': 'Mux.out',
+                    'Mux.a': 'Not.out',
+                    'Mux.b': 'DFF.out',
+                    'Mux.c': 'in',
+                    'Mux.s': 'load',
+                    'Not.in': 'DFF.out',
+                    })
+        self.prepare_cache()
+
+    def prepare_cache(self):
+        # Seed the cache for the feedbacks from the DFF's output to the Mux, or
+        # else we will go into an infinite recursion trying to resolve the
+        # inputs for the DFF.
+        (value,) = self.components['DFF'].get_outputs()
+        self.cache['Not.in'] = value
+        self.cache['Mux.b'] = value
+
+    def update_subcomponents(self):
+        changed = super().update_subcomponents()
+        if changed:
+            self.prepare_cache()
+        return changed
