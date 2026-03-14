@@ -1,9 +1,9 @@
 from hwsim.component import ZERO, Component
-from hwsim.logic import and12, not12, mux12
+from hwsim.logic import And12, Not12, Mux12
 from hwsim.arithmetic import add12, inc12, dec12
 
 
-def alu():
+class ALU(Component):
     """A 12-trit Arithmetic Logic Unit (ALU)
 
     The logic unit takes two 12-trit input buses, named 'x' and 'y', and
@@ -61,45 +61,46 @@ def alu():
     |  +  |  +  | 0 | 0 + 1   | 1       |
     |  +  |  +  | + | 0 + 0   | 0       |
     """
-    return Component(
-            ('x[12]', 'y[12]', 'px', 'py', 'f'),
-            ('out[12]',),
-            {
-                'PreX': mux12,
-                'PreY': mux12,
-                'NotX': not12,
-                'NotY': not12,
-                'UnaryX': mux12,
-                'MuxOut': mux12,
-                'Add': add12,
-                'Inc': inc12,
-                'Dec': dec12,
-                'And': and12,
-                },
-            {
-                'out': 'MuxOut.out',
-                'MuxOut.a': 'And.out',
-                'MuxOut.b': 'UnaryX.out',
-                'MuxOut.c': 'Add.out',
-                'MuxOut.s': 'f',
-                'UnaryX.a': 'Dec.out',
-                'UnaryX.b': ZERO,
-                'UnaryX.c': 'Inc.out',
-                'UnaryX.s': 'py',
-                'Add.a': 'PreX.out',
-                'Add.b': 'PreY.out',
-                'And.a': 'PreX.out',
-                'And.b': 'PreY.out',
-                'Inc.in': 'PreX.out',
-                'Dec.in': 'PreX.out',
-                'PreX.a': 'NotX.out',
-                'PreX.b': 'x',
-                'PreX.c': ZERO,
-                'PreX.s': 'px',
-                'PreY.a': 'NotY.out',
-                'PreY.b': 'y',
-                'PreY.c': ZERO,
-                'PreY.s': 'py',
-                'NotX.in': 'x',
-                'NotY.in': 'y',
+    def __init__(self):
+        super().__init__(
+                ('x[12]', 'y[12]', 'px', 'py', 'f'),
+                ('out[12]',),
+                {
+                    'PreX': Mux12,
+                    'PreY': Mux12,
+                    'NotX': Not12,
+                    'NotY': Not12,
+                    'UnaryX': Mux12,
+                    'MuxOut': Mux12,
+                    'Add': add12,
+                    'Inc': inc12,
+                    'Dec': dec12,
+                    'And': And12,
+                    },
+                {
+                    'out': 'MuxOut.out',
+                    'MuxOut.a': 'And.out',
+                    'MuxOut.b': 'UnaryX.out',
+                    'MuxOut.c': 'Add.out',
+                    'MuxOut.s': 'f',
+                    'UnaryX.a': 'Dec.out',
+                    'UnaryX.b': ZERO,
+                    'UnaryX.c': 'Inc.out',
+                    'UnaryX.s': 'py',
+                    'Add.a': 'PreX.out',
+                    'Add.b': 'PreY.out',
+                    'And.a': 'PreX.out',
+                    'And.b': 'PreY.out',
+                    'Inc.in': 'PreX.out',
+                    'Dec.in': 'PreX.out',
+                    'PreX.a': 'NotX.out',
+                    'PreX.b': 'x',
+                    'PreX.c': ZERO,
+                    'PreX.s': 'px',
+                    'PreY.a': 'NotY.out',
+                    'PreY.b': 'y',
+                    'PreY.c': ZERO,
+                    'PreY.s': 'py',
+                    'NotX.in': 'x',
+                    'NotY.in': 'y',
                 })

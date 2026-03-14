@@ -1,5 +1,6 @@
-from hwsim.component import Component
+from hwsim.component import Component, Trits
 from trit import ZERO, POS, NEG
+
 
 class DataFlipFlop(Component):
     """The data flip flop has a single trit internal state value.
@@ -36,6 +37,6 @@ class DataFlipFlop(Component):
                 self.state = POS
         return True
 
-    def get_outputs(self, inputs: tuple) -> tuple:
+    def get_outputs(self, inputs: Trits) -> Trits:
         self.set_inputs(inputs)
         return (self.state,)

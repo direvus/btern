@@ -83,7 +83,7 @@ def test_hwsim_not(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (NEG, NEG, NEG, NEG, ZERO, ZERO, NEG, ZERO, POS))))
 def test_hwsim_and(inputs, expected):
-    comp = logic.and_gate()
+    comp = logic.And()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -93,7 +93,7 @@ def test_hwsim_and(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (NEG, ZERO, POS, ZERO, ZERO, POS, POS, POS, POS))))
 def test_hwsim_or(inputs, expected):
-    comp = logic.or_gate()
+    comp = logic.Or()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -103,7 +103,7 @@ def test_hwsim_or(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (NEG, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, POS))))
 def test_hwsim_any(inputs, expected):
-    comp = logic.any_gate()
+    comp = logic.Any()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -113,7 +113,7 @@ def test_hwsim_any(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (NEG, ZERO, POS, ZERO, ZERO, ZERO, POS, ZERO, NEG))))
 def test_hwsim_xor(inputs, expected):
-    comp = logic.xor_gate()
+    comp = logic.Xor()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -123,7 +123,7 @@ def test_hwsim_xor(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (POS, ZERO, NEG, ZERO, ZERO, ZERO, NEG, ZERO, POS))))
 def test_hwsim_nxor(inputs, expected):
-    comp = logic.nxor_gate()
+    comp = logic.NXor()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -133,7 +133,7 @@ def test_hwsim_nxor(inputs, expected):
         "inputs,expected",
         list(zip(UNARY, (NEG, POS, NEG))))
 def test_hwsim_isz(inputs, expected):
-    comp = logic.isz_gate()
+    comp = logic.IsZero()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -153,7 +153,7 @@ def test_hwsim_isz(inputs, expected):
             P, P, N, P, P, Z, P, P, P,  # a = +, b = +
             ))))
 def test_hwsim_mux(inputs, expected):
-    comp = logic.mux_gate()
+    comp = logic.Mux()
 
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -163,7 +163,7 @@ def test_hwsim_mux(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (POS, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, NEG))))
 def test_hwsim_sum(inputs, expected):
-    comp = arithmetic.sum_gate()
+    comp = arithmetic.Sum()
 
     out, = comp.get_outputs(inputs)
     assert out == expected
@@ -182,8 +182,8 @@ def test_hwsim_sum(inputs, expected):
             (POS, ZERO),
             (NEG, POS),
             ))))
-def test_hwsim_half_adder(inputs, expected):
-    comp = arithmetic.half_adder()
+def test_hwsim_half_add(inputs, expected):
+    comp = arithmetic.HalfAdd()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -202,8 +202,8 @@ def test_hwsim_half_adder(inputs, expected):
             (ZERO, ZERO), (POS, ZERO), (NEG, POS),
             (POS, ZERO), (NEG, POS), (ZERO, POS),
             ))))
-def test_hwsim_full_adder(inputs, expected):
-    comp = arithmetic.full_adder()
+def test_hwsim_full_add(inputs, expected):
+    comp = arithmetic.FullAdd()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -213,7 +213,7 @@ def test_hwsim_full_adder(inputs, expected):
         "inputs,expected",
         list(zip(UNARY, ((ZERO, ZERO), (POS, ZERO), (NEG, POS)))))
 def test_hwsim_inc(inputs, expected):
-    comp = arithmetic.inc()
+    comp = arithmetic.Inc()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -223,7 +223,7 @@ def test_hwsim_inc(inputs, expected):
         "inputs,expected",
         list(zip(UNARY, ((POS, NEG), (NEG, ZERO), (ZERO, ZERO)))))
 def test_hwsim_dec(inputs, expected):
-    comp = arithmetic.dec()
+    comp = arithmetic.Dec()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -245,7 +245,7 @@ def test_hwsim_dec(inputs, expected):
                 tuple('000+++0-+00+'),
                 ))))
 def test_hwsim_not12(inputs, expected):
-    comp = logic.not12()
+    comp = logic.Not12()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -267,7 +267,7 @@ def test_hwsim_not12(inputs, expected):
                 tuple('----00-0+-0+'),
                 ))))
 def test_hwsim_and12(inputs, expected):
-    comp = logic.and12()
+    comp = logic.And12()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -355,7 +355,7 @@ def test_hwsim_add12(inputs, expected):
                 tuple('0-+0-+0-+0-+'),
                 ))))
 def test_hwsim_mux12(inputs, expected):
-    comp = logic.mux12()
+    comp = logic.Mux12()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -391,7 +391,7 @@ def test_hwsim_mux12(inputs, expected):
                 tuple('-0--0--0--0-'),  # -x & -y
                 ))))
 def test_hwsim_alu(inputs, expected):
-    comp = cpu.alu()
+    comp = cpu.ALU()
 
     out = comp.get_outputs(inputs)
     assert out == expected

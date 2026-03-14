@@ -2,18 +2,19 @@ from hwsim.component import (
         Component, NAND, NOR, NANY, NOT, PNOT, NNOT)
 
 
-def and_gate():
+class And(Component):
     """The AND gate performs logical conjunction of the inputs.
 
     The output is true if and only if both inputs are true.
 
     (a AND b) == NOT (a NAND b)
     """
-    return Component(
-            ('a', 'b'),
-            ('out',),
-            {'Nand': NAND, 'Not': NOT},
-            {
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {'Nand': NAND, 'Not': NOT},
+                {
                     'out': 'Not.out',
                     'Not.in': 'Nand.out',
                     'Nand.a': 'a',
@@ -21,18 +22,19 @@ def and_gate():
                     })
 
 
-def or_gate():
+class Or(Component):
     """The OR gate performs logical disjunction of the inputs.
 
     The output is true if either (or both) of the inputs are true.
 
     (a OR b) == NOT (a NOR b)
     """
-    return Component(
-            ('a', 'b'),
-            ('out',),
-            {'Nor': NOR, 'Not': NOT},
-            {
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {'Nor': NOR, 'Not': NOT},
+                {
                     'out': 'Not.out',
                     'Not.in': 'Nor.out',
                     'Nor.a': 'a',
@@ -40,7 +42,7 @@ def or_gate():
                     })
 
 
-def any_gate():
+class Any(Component):
     """The ANY gate detects an overall bias of the inputs.
 
     The output is zero if the inputs are positive and negative, or both zero.
@@ -49,11 +51,12 @@ def any_gate():
 
     (a ANY b) == NOT (a NANY b)
     """
-    return Component(
-            ('a', 'b'),
-            ('out',),
-            {'NAny': NANY, 'Not': NOT},
-            {
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {'NAny': NANY, 'Not': NOT},
+                {
                     'out': 'Not.out',
                     'Not.in': 'NAny.out',
                     'NAny.a': 'a',
@@ -61,7 +64,7 @@ def any_gate():
                     })
 
 
-def xor_gate():
+class Xor(Component):
     """The XOR gate performs logical exclusive disjunction of the inputs.
 
     The output is true if either one of the inputs is true, but not both.
@@ -73,11 +76,12 @@ def xor_gate():
 
     (a XOR b) == (NOT (a NAND b)) NOR (a NOR b)
     """
-    return Component(
-            ('a', 'b'),
-            ('out',),
-            {'Nand': NAND, 'NorAB': NOR, 'Not': NOT, 'NorOut': NOR},
-            {
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {'Nand': NAND, 'NorAB': NOR, 'Not': NOT, 'NorOut': NOR},
+                {
                     'out': 'NorOut.out',
                     'NorOut.a': 'Not.out',
                     'NorOut.b': 'NorAB.out',
@@ -89,7 +93,7 @@ def xor_gate():
                     })
 
 
-def nxor_gate():
+class NXor(Component):
     """The NXOR gate performs negative exclusive disjunction of the inputs.
 
     The output is positive if the inputs are either both positive, or both
@@ -102,11 +106,12 @@ def nxor_gate():
 
     (a NXOR b) == (NOT (a NOR b)) NAND (a NAND b)
     """
-    return Component(
-            ('a', 'b'),
-            ('out',),
-            {'NandAB': NAND, 'NandOut': NAND, 'Nor': NOR, 'Not': NOT},
-            {
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {'NandAB': NAND, 'NandOut': NAND, 'Nor': NOR, 'Not': NOT},
+                {
                     'out': 'NandOut.out',
                     'NandOut.a': 'Not.out',
                     'NandOut.b': 'NandAB.out',
@@ -118,7 +123,7 @@ def nxor_gate():
                     })
 
 
-def isz_gate():
+class IsZero(Component):
     """The ISZ gate tests whether the input is zero.
 
     The output is positive if the input value is zero, and negative otherwise.
@@ -131,24 +136,25 @@ def isz_gate():
 
     ISZ(a) == PNOT(NAND(¬in, in))
     """
-    return Component(
-            ('in',),
-            ('out',),
-            {
-                'PNot': PNOT,
-                'Not': NOT,
-                'NAnd': NAND,
-            },
-            {
-                'out': 'PNot.out',
-                'PNot.in': 'NAnd.out',
-                'NAnd.a': 'in',
-                'NAnd.b': 'Not.out',
-                'Not.in': 'in',
-                })
+    def __init__(self):
+        super().__init__(
+                ('in',),
+                ('out',),
+                {
+                    'PNot': PNOT,
+                    'Not': NOT,
+                    'NAnd': NAND,
+                    },
+                {
+                    'out': 'PNot.out',
+                    'PNot.in': 'NAnd.out',
+                    'NAnd.a': 'in',
+                    'NAnd.b': 'Not.out',
+                    'Not.in': 'in',
+                    })
 
 
-def mux_gate():
+class Mux(Component):
     """The MUX gate is a single trit, 3-way multiplexer.
 
     It selects one of its three data inputs, based on the value of a fourth
@@ -179,146 +185,149 @@ def mux_gate():
     | + | 0 | + | 0 | - | + | 0 | 0 | + | 0 | + |
     | + | + | + | + | - | + | + | 0 | + | + | + |
     """
-    return Component(
-            ('a', 'b', 'c', 's'),
-            ('out',),
-            {
-                'NandABC': NAND,
-                'NandAB': NAND,
-                'NandA': NAND,
-                'NandB': NAND,
-                'NandC': NAND,
-                'NotAB': NOT,
-                'NNot': NNOT,
-                'ISZ': isz_gate,
-                'PNot1': PNOT,
-                'PNot2': PNOT,
-                },
-            {
-                'out': 'NandABC.out',
-                'NandABC.a': 'NotAB.out',
-                'NandABC.b': 'NandC.out',
-                'NotAB.in': 'NandAB.out',
-                'NandAB.a': 'NandA.out',
-                'NandAB.b': 'NandB.out',
-                'NandA.a': 'a',
-                'NandA.b': 'NNot.out',
-                'NNot.in': 's',
-                'NandB.a': 'b',
-                'NandB.b': 'ISZ.out',
-                'ISZ.in': 's',
-                'NandC.a': 'c',
-                'NandC.b': 'PNot2.out',
-                'PNot2.in': 'PNot1.out',
-                'PNot1.in': 's',
-                })
+    def __init__(self):
+        super().__init__(
+                ('a', 'b', 'c', 's'),
+                ('out',),
+                {
+                    'NandABC': NAND,
+                    'NandAB': NAND,
+                    'NandA': NAND,
+                    'NandB': NAND,
+                    'NandC': NAND,
+                    'NotAB': NOT,
+                    'NNot': NNOT,
+                    'ISZ': IsZero,
+                    'PNot1': PNOT,
+                    'PNot2': PNOT,
+                    },
+                {
+                    'out': 'NandABC.out',
+                    'NandABC.a': 'NotAB.out',
+                    'NandABC.b': 'NandC.out',
+                    'NotAB.in': 'NandAB.out',
+                    'NandAB.a': 'NandA.out',
+                    'NandAB.b': 'NandB.out',
+                    'NandA.a': 'a',
+                    'NandA.b': 'NNot.out',
+                    'NNot.in': 's',
+                    'NandB.a': 'b',
+                    'NandB.b': 'ISZ.out',
+                    'ISZ.in': 's',
+                    'NandC.a': 'c',
+                    'NandC.b': 'PNot2.out',
+                    'PNot2.in': 'PNot1.out',
+                    'PNot1.in': 's',
+                    })
 
 
-def not12():
-    return Component(
-            ('in[12]',),
-            ('out[12]',),
-            {
-                'Not0': NOT,
-                'Not1': NOT,
-                'Not2': NOT,
-                'Not3': NOT,
-                'Not4': NOT,
-                'Not5': NOT,
-                'Not6': NOT,
-                'Not7': NOT,
-                'Not8': NOT,
-                'Not9': NOT,
-                'Not10': NOT,
-                'Not11': NOT,
-                },
-            {
-                'out[0]': 'Not0.out',
-                'out[1]': 'Not1.out',
-                'out[2]': 'Not2.out',
-                'out[3]': 'Not3.out',
-                'out[4]': 'Not4.out',
-                'out[5]': 'Not5.out',
-                'out[6]': 'Not6.out',
-                'out[7]': 'Not7.out',
-                'out[8]': 'Not8.out',
-                'out[9]': 'Not9.out',
-                'out[10]': 'Not10.out',
-                'out[11]': 'Not11.out',
-                'Not0.in': 'in[0]',
-                'Not1.in': 'in[1]',
-                'Not2.in': 'in[2]',
-                'Not3.in': 'in[3]',
-                'Not4.in': 'in[4]',
-                'Not5.in': 'in[5]',
-                'Not6.in': 'in[6]',
-                'Not7.in': 'in[7]',
-                'Not8.in': 'in[8]',
-                'Not9.in': 'in[9]',
-                'Not10.in': 'in[10]',
-                'Not11.in': 'in[11]',
-                })
+class Not12(Component):
+    def __init__(self):
+        super().__init__(
+                ('in[12]',),
+                ('out[12]',),
+                {
+                    'Not0': NOT,
+                    'Not1': NOT,
+                    'Not2': NOT,
+                    'Not3': NOT,
+                    'Not4': NOT,
+                    'Not5': NOT,
+                    'Not6': NOT,
+                    'Not7': NOT,
+                    'Not8': NOT,
+                    'Not9': NOT,
+                    'Not10': NOT,
+                    'Not11': NOT,
+                    },
+                {
+                    'out[0]': 'Not0.out',
+                    'out[1]': 'Not1.out',
+                    'out[2]': 'Not2.out',
+                    'out[3]': 'Not3.out',
+                    'out[4]': 'Not4.out',
+                    'out[5]': 'Not5.out',
+                    'out[6]': 'Not6.out',
+                    'out[7]': 'Not7.out',
+                    'out[8]': 'Not8.out',
+                    'out[9]': 'Not9.out',
+                    'out[10]': 'Not10.out',
+                    'out[11]': 'Not11.out',
+                    'Not0.in': 'in[0]',
+                    'Not1.in': 'in[1]',
+                    'Not2.in': 'in[2]',
+                    'Not3.in': 'in[3]',
+                    'Not4.in': 'in[4]',
+                    'Not5.in': 'in[5]',
+                    'Not6.in': 'in[6]',
+                    'Not7.in': 'in[7]',
+                    'Not8.in': 'in[8]',
+                    'Not9.in': 'in[9]',
+                    'Not10.in': 'in[10]',
+                    'Not11.in': 'in[11]',
+                    })
 
 
-def and12():
-    return Component(
-            ('a[12]', 'b[12]'),
-            ('out[12]',),
-            {
-                'And0': and_gate,
-                'And1': and_gate,
-                'And2': and_gate,
-                'And3': and_gate,
-                'And4': and_gate,
-                'And5': and_gate,
-                'And6': and_gate,
-                'And7': and_gate,
-                'And8': and_gate,
-                'And9': and_gate,
-                'And10': and_gate,
-                'And11': and_gate,
-                },
-            {
-                'out[0]': 'And0.out',
-                'out[1]': 'And1.out',
-                'out[2]': 'And2.out',
-                'out[3]': 'And3.out',
-                'out[4]': 'And4.out',
-                'out[5]': 'And5.out',
-                'out[6]': 'And6.out',
-                'out[7]': 'And7.out',
-                'out[8]': 'And8.out',
-                'out[9]': 'And9.out',
-                'out[10]': 'And10.out',
-                'out[11]': 'And11.out',
-                'And0.a': 'a[0]',
-                'And0.b': 'b[0]',
-                'And1.a': 'a[1]',
-                'And1.b': 'b[1]',
-                'And2.a': 'a[2]',
-                'And2.b': 'b[2]',
-                'And3.a': 'a[3]',
-                'And3.b': 'b[3]',
-                'And4.a': 'a[4]',
-                'And4.b': 'b[4]',
-                'And5.a': 'a[5]',
-                'And5.b': 'b[5]',
-                'And6.a': 'a[6]',
-                'And6.b': 'b[6]',
-                'And7.a': 'a[7]',
-                'And7.b': 'b[7]',
-                'And8.a': 'a[8]',
-                'And8.b': 'b[8]',
-                'And9.a': 'a[9]',
-                'And9.b': 'b[9]',
-                'And10.a': 'a[10]',
-                'And10.b': 'b[10]',
-                'And11.a': 'a[11]',
-                'And11.b': 'b[11]',
-                })
+class And12(Component):
+    def __init__(self):
+        super().__init__(
+                ('a[12]', 'b[12]'),
+                ('out[12]',),
+                {
+                    'And0': And,
+                    'And1': And,
+                    'And2': And,
+                    'And3': And,
+                    'And4': And,
+                    'And5': And,
+                    'And6': And,
+                    'And7': And,
+                    'And8': And,
+                    'And9': And,
+                    'And10': And,
+                    'And11': And,
+                    },
+                {
+                    'out[0]': 'And0.out',
+                    'out[1]': 'And1.out',
+                    'out[2]': 'And2.out',
+                    'out[3]': 'And3.out',
+                    'out[4]': 'And4.out',
+                    'out[5]': 'And5.out',
+                    'out[6]': 'And6.out',
+                    'out[7]': 'And7.out',
+                    'out[8]': 'And8.out',
+                    'out[9]': 'And9.out',
+                    'out[10]': 'And10.out',
+                    'out[11]': 'And11.out',
+                    'And0.a': 'a[0]',
+                    'And0.b': 'b[0]',
+                    'And1.a': 'a[1]',
+                    'And1.b': 'b[1]',
+                    'And2.a': 'a[2]',
+                    'And2.b': 'b[2]',
+                    'And3.a': 'a[3]',
+                    'And3.b': 'b[3]',
+                    'And4.a': 'a[4]',
+                    'And4.b': 'b[4]',
+                    'And5.a': 'a[5]',
+                    'And5.b': 'b[5]',
+                    'And6.a': 'a[6]',
+                    'And6.b': 'b[6]',
+                    'And7.a': 'a[7]',
+                    'And7.b': 'b[7]',
+                    'And8.a': 'a[8]',
+                    'And8.b': 'b[8]',
+                    'And9.a': 'a[9]',
+                    'And9.b': 'b[9]',
+                    'And10.a': 'a[10]',
+                    'And10.b': 'b[10]',
+                    'And11.a': 'a[11]',
+                    'And11.b': 'b[11]',
+                    })
 
 
-def mux12():
+class Mux12(Component):
     """A 12 trit, 3-way multiplexer.
 
     It selects one of its three data input buses, based on the value of a
@@ -334,82 +343,83 @@ def mux12():
     |  0  |  b  |
     |  +  |  c  |
     """
-    return Component(
-            ('a[12]', 'b[12]', 'c[12]', 's'),
-            ('out[12]',),
-            {
-                'Mux0': mux_gate,
-                'Mux1': mux_gate,
-                'Mux2': mux_gate,
-                'Mux3': mux_gate,
-                'Mux4': mux_gate,
-                'Mux5': mux_gate,
-                'Mux6': mux_gate,
-                'Mux7': mux_gate,
-                'Mux8': mux_gate,
-                'Mux9': mux_gate,
-                'Mux10': mux_gate,
-                'Mux11': mux_gate,
-                },
-            {
-                'out[0]': 'Mux0.out',
-                'Mux0.a': 'a[0]',
-                'Mux0.b': 'b[0]',
-                'Mux0.c': 'c[0]',
-                'Mux0.s': 's',
-                'out[1]': 'Mux1.out',
-                'Mux1.a': 'a[1]',
-                'Mux1.b': 'b[1]',
-                'Mux1.c': 'c[1]',
-                'Mux1.s': 's',
-                'out[2]': 'Mux2.out',
-                'Mux2.a': 'a[2]',
-                'Mux2.b': 'b[2]',
-                'Mux2.c': 'c[2]',
-                'Mux2.s': 's',
-                'out[3]': 'Mux3.out',
-                'Mux3.a': 'a[3]',
-                'Mux3.b': 'b[3]',
-                'Mux3.c': 'c[3]',
-                'Mux3.s': 's',
-                'out[4]': 'Mux4.out',
-                'Mux4.a': 'a[4]',
-                'Mux4.b': 'b[4]',
-                'Mux4.c': 'c[4]',
-                'Mux4.s': 's',
-                'out[5]': 'Mux5.out',
-                'Mux5.a': 'a[5]',
-                'Mux5.b': 'b[5]',
-                'Mux5.c': 'c[5]',
-                'Mux5.s': 's',
-                'out[6]': 'Mux6.out',
-                'Mux6.a': 'a[6]',
-                'Mux6.b': 'b[6]',
-                'Mux6.c': 'c[6]',
-                'Mux6.s': 's',
-                'out[7]': 'Mux7.out',
-                'Mux7.a': 'a[7]',
-                'Mux7.b': 'b[7]',
-                'Mux7.c': 'c[7]',
-                'Mux7.s': 's',
-                'out[8]': 'Mux8.out',
-                'Mux8.a': 'a[8]',
-                'Mux8.b': 'b[8]',
-                'Mux8.c': 'c[8]',
-                'Mux8.s': 's',
-                'out[9]': 'Mux9.out',
-                'Mux9.a': 'a[9]',
-                'Mux9.b': 'b[9]',
-                'Mux9.c': 'c[9]',
-                'Mux9.s': 's',
-                'out[10]': 'Mux10.out',
-                'Mux10.a': 'a[10]',
-                'Mux10.b': 'b[10]',
-                'Mux10.c': 'c[10]',
-                'Mux10.s': 's',
-                'out[11]': 'Mux11.out',
-                'Mux11.a': 'a[11]',
-                'Mux11.b': 'b[11]',
-                'Mux11.c': 'c[11]',
-                'Mux11.s': 's',
-                })
+    def __init__(self):
+        super().__init__(
+                ('a[12]', 'b[12]', 'c[12]', 's'),
+                ('out[12]',),
+                {
+                    'Mux0': Mux,
+                    'Mux1': Mux,
+                    'Mux2': Mux,
+                    'Mux3': Mux,
+                    'Mux4': Mux,
+                    'Mux5': Mux,
+                    'Mux6': Mux,
+                    'Mux7': Mux,
+                    'Mux8': Mux,
+                    'Mux9': Mux,
+                    'Mux10': Mux,
+                    'Mux11': Mux,
+                    },
+                {
+                    'out[0]': 'Mux0.out',
+                    'Mux0.a': 'a[0]',
+                    'Mux0.b': 'b[0]',
+                    'Mux0.c': 'c[0]',
+                    'Mux0.s': 's',
+                    'out[1]': 'Mux1.out',
+                    'Mux1.a': 'a[1]',
+                    'Mux1.b': 'b[1]',
+                    'Mux1.c': 'c[1]',
+                    'Mux1.s': 's',
+                    'out[2]': 'Mux2.out',
+                    'Mux2.a': 'a[2]',
+                    'Mux2.b': 'b[2]',
+                    'Mux2.c': 'c[2]',
+                    'Mux2.s': 's',
+                    'out[3]': 'Mux3.out',
+                    'Mux3.a': 'a[3]',
+                    'Mux3.b': 'b[3]',
+                    'Mux3.c': 'c[3]',
+                    'Mux3.s': 's',
+                    'out[4]': 'Mux4.out',
+                    'Mux4.a': 'a[4]',
+                    'Mux4.b': 'b[4]',
+                    'Mux4.c': 'c[4]',
+                    'Mux4.s': 's',
+                    'out[5]': 'Mux5.out',
+                    'Mux5.a': 'a[5]',
+                    'Mux5.b': 'b[5]',
+                    'Mux5.c': 'c[5]',
+                    'Mux5.s': 's',
+                    'out[6]': 'Mux6.out',
+                    'Mux6.a': 'a[6]',
+                    'Mux6.b': 'b[6]',
+                    'Mux6.c': 'c[6]',
+                    'Mux6.s': 's',
+                    'out[7]': 'Mux7.out',
+                    'Mux7.a': 'a[7]',
+                    'Mux7.b': 'b[7]',
+                    'Mux7.c': 'c[7]',
+                    'Mux7.s': 's',
+                    'out[8]': 'Mux8.out',
+                    'Mux8.a': 'a[8]',
+                    'Mux8.b': 'b[8]',
+                    'Mux8.c': 'c[8]',
+                    'Mux8.s': 's',
+                    'out[9]': 'Mux9.out',
+                    'Mux9.a': 'a[9]',
+                    'Mux9.b': 'b[9]',
+                    'Mux9.c': 'c[9]',
+                    'Mux9.s': 's',
+                    'out[10]': 'Mux10.out',
+                    'Mux10.a': 'a[10]',
+                    'Mux10.b': 'b[10]',
+                    'Mux10.c': 'c[10]',
+                    'Mux10.s': 's',
+                    'out[11]': 'Mux11.out',
+                    'Mux11.a': 'a[11]',
+                    'Mux11.b': 'b[11]',
+                    'Mux11.c': 'c[11]',
+                    'Mux11.s': 's',
+                    })
