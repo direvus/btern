@@ -1,5 +1,5 @@
 from hwsim.component import Component, Trits
-from trit import ZERO, POS, NEG
+from trit import ZERO
 
 
 class DataFlipFlop(Component):
@@ -10,9 +10,8 @@ class DataFlipFlop(Component):
 
     When the flip flop receives a clock pulse, it updates its internal value
     according to the 'in' and 'load' signals. When 'load' is zero, the internal
-    value is retained as-is. When 'load' is negative, the internal value is
-    inverted. When 'load' is positive, the value of 'in' is stored in the
-    internal value, replacing its current content.
+    value is retained and the value of 'in' is disregarded. When 'load' is
+    non-zero, the internal state is set to the value of 'in'.
 
     The update() method returns True when the load signal is non-zero,
     regardless of whether the actual state value has changed.
@@ -27,14 +26,7 @@ class DataFlipFlop(Component):
         if load == ZERO:
             return False
 
-        if load == POS:
-            self.state = self.cache['in']
-        else:
-            # Load is negative, invert the current value
-            if self.state == POS:
-                self.state = NEG
-            elif self.state == NEG:
-                self.state = POS
+        self.state = self.cache['in']
         return True
 
     def get_outputs(self, inputs: Trits) -> Trits:

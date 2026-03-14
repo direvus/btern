@@ -422,9 +422,9 @@ def test_hwsim_dff_setup(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(TRINARY, (
-                POS, ZERO, NEG,
-                POS, ZERO, NEG,
-                POS, ZERO, NEG,
+                NEG, NEG, NEG,
+                ZERO, ZERO, ZERO,
+                POS, POS, POS,
                 NEG, ZERO, POS,
                 NEG, ZERO, POS,
                 NEG, ZERO, POS,
