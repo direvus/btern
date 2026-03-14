@@ -161,10 +161,13 @@ class Component(Primitive):
             f'{name}.{comp.outputs[i]}': x for i, x in enumerate(outputs)})
         return outputs
 
-    def get_outputs(self, inputs: tuple) -> tuple:
+    def set_inputs(self, inputs: tuple) -> None:
         self.cache.update({
                 name: inputs[i]
                 for i, name in enumerate(self.inputs)})
+
+    def get_outputs(self, inputs: tuple) -> tuple:
+        self.set_inputs(inputs)
         return tuple(self.get_value(name) for name in self.outputs)
 
 
@@ -344,17 +347,3 @@ NAND = NAnd()
 NOR = NOr()
 NANY = NAny()
 NCONS = NCons()
-
-
-class DataFlipFlop(Component):
-    """The data flip flop has a single trit internal state value.
-
-    It takes two inputs, 'in' and 'load', and has one output 'out'. The output
-    always produces the current internal state of the flip flop.
-
-    When the flip flop receives a clock pulse, it updates its internal value
-    according to the 'in' and 'load' signals. When 'load' is zero, the internal
-    value is retained as-is. When 'load' is negative, the internal value is
-    inverted. When 'load' is positive, the value of 'in' is stored in the
-    internal value, replacing its current content.
-    """

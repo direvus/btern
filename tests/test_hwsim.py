@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import component, arithmetic, logic, cpu
+from hwsim import component, arithmetic, logic, cpu, memory
 from trit import ZERO, POS, NEG
 
 
@@ -394,4 +394,73 @@ def test_hwsim_alu(inputs, expected):
     comp = cpu.alu()
 
     out = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(TRINARY, (
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                ))))
+def test_hwsim_dff_setup(inputs, expected):
+    comp = memory.DataFlipFlop()
+
+    load, inp, state = inputs
+    comp.state = state
+    (out,) = comp.get_outputs((load, inp))
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(TRINARY, (
+                POS, ZERO, NEG,
+                POS, ZERO, NEG,
+                POS, ZERO, NEG,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, ZERO, POS,
+                NEG, NEG, NEG,
+                ZERO, ZERO, ZERO,
+                POS, POS, POS,
+                ))))
+def test_hwsim_dff_update_state(inputs, expected):
+    comp = memory.DataFlipFlop()
+
+    load, inp, state = inputs
+    comp.state = state
+    comp.set_inputs((load, inp))
+    comp.update()
+    (out,) = comp.get_outputs((load, inp))
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(TRINARY, (
+                True, True, True,
+                True, True, True,
+                True, True, True,
+                False, False, False,
+                False, False, False,
+                False, False, False,
+                True, True, True,
+                True, True, True,
+                True, True, True,
+                ))))
+def test_hwsim_dff_update_return(inputs, expected):
+    comp = memory.DataFlipFlop()
+
+    load, inp, state = inputs
+    comp.state = state
+    comp.set_inputs((load, inp))
+    out = comp.update()
     assert out == expected
