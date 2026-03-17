@@ -440,3 +440,54 @@ class Add12(Component):
                     'Add11.b': 'b[11]',
                     'Add11.c': 'Add10.carry',
                     })
+
+
+class Comparator(Component):
+    """The Comparator signals whether a number is negative, zero or positive.
+
+    It takes 2 input trits, 'a' and 'b', and produces a single trit output
+    'out'.
+
+    Treating the inputs together as representing a 2-trit ternary number, with
+    'a' being the most significant, output negative if the number is negative
+    overall, positive if the number is positive overall, and zero if the number
+    is exactly zero.
+    """
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {
+                    'NAnyOut': NANY,
+                    'NAny': NANY,
+                    'NCons': NCONS,
+                    'NotB': NOT,
+                    },
+                {
+                    'out': 'NAnyOut.out',
+                    'NAnyOut.a': 'NAny.out',
+                    'NAnyOut.b': 'NCons.out',
+                    'NAny.a': 'a',
+                    'NAny.b': 'b',
+                    'NCons.a': 'a',
+                    'NCons.b': 'NotB.out',
+                    'NotB.in': 'b',
+                    })
+
+
+class Comparator12(Component):
+    """The Comparator signals whether a number is negative, zero or positive.
+
+    It takes a 12-trit input bus 'in', and outputs a single trit signal
+    indicating whether the input represents a negative, zero or positive
+    number.
+
+    A number is only zero when all of its trits are zero. It is negative
+    overall when the most significant trit is negative, and positive overall
+    when the most significant trit is positive.
+    """
+    def __init__(self):
+        super().__init__(
+                ('in[12]',),
+                ('out',),
+                {}, {})

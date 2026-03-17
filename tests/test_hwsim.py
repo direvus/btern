@@ -343,6 +343,16 @@ def test_hwsim_add12(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(BINARY, (NEG, NEG, NEG, NEG, ZERO, POS, POS, POS, POS))))
+def test_hwsim_comparator(inputs, expected):
+    comp = arithmetic.Comparator()
+
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(
             (
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0-+0-+0-+0-+' '-'),
