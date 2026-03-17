@@ -11,6 +11,7 @@ BINARY_TARGETS = {
         'carry': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
         'sub': (ZERO, NEG, POS, POS, ZERO, NEG, NEG, POS, ZERO),
         'sub_carry': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
+        'cmp': (NEG, NEG, NEG, NEG, ZERO, POS, POS, POS, POS),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),

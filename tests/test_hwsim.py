@@ -287,7 +287,7 @@ def test_hwsim_and12(inputs, expected):
                 tuple('------------'),
                 ))))
 def test_hwsim_inc12(inputs, expected):
-    comp = arithmetic.inc12()
+    comp = arithmetic.Inc12()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -313,7 +313,7 @@ def test_hwsim_inc12(inputs, expected):
                 tuple('0+++++++++++'),
                 ))))
 def test_hwsim_dec12(inputs, expected):
-    comp = arithmetic.dec12()
+    comp = arithmetic.Dec12()
 
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -335,7 +335,7 @@ def test_hwsim_dec12(inputs, expected):
                 tuple('000000000000'),
                 ))))
 def test_hwsim_add12(inputs, expected):
-    comp = arithmetic.add12()
+    comp = arithmetic.Add12()
 
     out = comp.get_outputs(inputs)
     assert out == expected

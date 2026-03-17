@@ -211,7 +211,7 @@ class Dec(Component):
                     })
 
 
-class inc12(Component):
+class Inc12(Component):
     """A 12-trit incrementer.
 
     It takes a 12-trit input bus 'in', and produces a 12-trit output bus 'out'.
@@ -285,7 +285,7 @@ class inc12(Component):
                     })
 
 
-class dec12(Component):
+class Dec12(Component):
     """A 12-trit decrementer.
 
     It takes a 12-trit input bus 'in', and produces a 12-trit output bus 'out'.
@@ -359,7 +359,7 @@ class dec12(Component):
                     })
 
 
-class add12(Component):
+class Add12(Component):
     """A 12-trit addition chip.
 
     It takes two 12-trit input buses 'a' and 'b', and produces the sum of those

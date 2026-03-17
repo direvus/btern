@@ -1,6 +1,6 @@
 from hwsim.component import ZERO, Component
 from hwsim.logic import And12, Not12, Mux12
-from hwsim.arithmetic import add12, inc12, dec12
+from hwsim.arithmetic import Add12, Inc12, Dec12
 
 
 class ALU(Component):
@@ -72,9 +72,9 @@ class ALU(Component):
                     'NotY': Not12,
                     'UnaryX': Mux12,
                     'MuxOut': Mux12,
-                    'Add': add12,
-                    'Inc': inc12,
-                    'Dec': dec12,
+                    'Add': Add12,
+                    'Inc': Inc12,
+                    'Dec': Dec12,
                     'And': And12,
                     },
                 {
