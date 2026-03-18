@@ -154,46 +154,6 @@ class IsZero(Component):
                     })
 
 
-class Equal(Component):
-    """The Equal gate tests whether two inputs are equal.
-
-    The output is positive if both inputs have the same value, and negative
-    otherwise.
-
-    |   | - | 0 | + |
-    |===|===|===|===|
-    | - | + | - | - |
-    | 0 | - | + | - |
-    | + | - | - | + |
-
-    EQ(a, b) == PNOT(NAND(ISZ(NANY(a, ¬b)), NAND(a, b)))
-    """
-    def __init__(self):
-        super().__init__(
-                ('a', 'b'),
-                ('out',),
-                {
-                    'PNot': PNOT,
-                    'NotB': NOT,
-                    'NAny': NANY,
-                    'NAnd1': NAND,
-                    'NAnd2': NAND,
-                    'IsZ': IsZero,
-                    },
-                {
-                    'out': 'PNot.out',
-                    'PNot.in': 'NAnd2.out',
-                    'NAnd2.a': 'NAnd1.out',
-                    'NAnd2.b': 'IsZ.out',
-                    'NAnd1.a': 'a',
-                    'NAnd1.b': 'b',
-                    'IsZ.in': 'NAny.out',
-                    'NAny.a': 'a',
-                    'NAny.b': 'NotB.out',
-                    'NotB.in': 'b',
-                    })
-
-
 class Mux(Component):
     """The MUX gate is a single trit, 3-way multiplexer.
 
