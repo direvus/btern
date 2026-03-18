@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from argparse import ArgumentParser
 from itertools import product
 
 from trit import NEG, ZERO, POS
@@ -13,11 +14,13 @@ BINARY_TARGETS = {
         'sub_carry': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         'cmp': (NEG, NEG, NEG, NEG, ZERO, POS, POS, POS, POS),
         'eq': (POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, POS),
+        'eq2': (POS, ZERO, ZERO, ZERO, POS, ZERO, ZERO, ZERO, ZERO, NEG),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),
         'CLD': (POS, NEG, ZERO),
         'ISZ': (NEG, POS, NEG),
+        'NZ': (POS, NEG, POS),
         'inc_carry': (ZERO, ZERO, POS),
         'dec_carry': (NEG, ZERO, ZERO),
         }
@@ -201,8 +204,15 @@ def find_unary_gates(name, expected):
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('-s', '--select')
+
+    args = parser.parse_args()
+
     for name, expected in BINARY_TARGETS.items():
-        find_binary_gates(name, expected)
+        if args.select is None or args.select in name:
+            find_binary_gates(name, expected)
 
     for name, expected in UNARY_TARGETS.items():
-        find_unary_gates(name, expected)
+        if args.select is None or args.select in name:
+            find_unary_gates(name, expected)

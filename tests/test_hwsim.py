@@ -141,6 +141,16 @@ def test_hwsim_isz(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(BINARY, (P, N, N, N, N, P, N, N, N, N, P))))
+def test_hwsim_eq(inputs, expected):
+    comp = logic.Equal()
+
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(QUATERNARY, (
             N, N, N, N, N, Z, N, N, P,  # a = -, b = -
             N, Z, N, N, Z, Z, N, Z, P,  # a = -, b = 0
