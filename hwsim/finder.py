@@ -13,8 +13,8 @@ BINARY_TARGETS = {
         'sub': (ZERO, NEG, POS, POS, ZERO, NEG, NEG, POS, ZERO),
         'sub_carry': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         'cmp': (NEG, NEG, NEG, NEG, ZERO, POS, POS, POS, POS),
-        'eq': (POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, POS),
-        'eq2': (POS, ZERO, ZERO, ZERO, POS, ZERO, ZERO, ZERO, ZERO, NEG),
+        'eq': (POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, POS),
+        'eq2': (POS, NEG, NEG, NEG, ZERO, NEG, NEG, NEG, POS),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),
@@ -24,6 +24,15 @@ UNARY_TARGETS = {
         'inc_carry': (ZERO, ZERO, POS),
         'dec_carry': (NEG, ZERO, ZERO),
         }
+
+
+def describe_gate(gate, args):
+    name = gate.__name__
+    if name == 'buffer':
+        return args[0]
+    else:
+        arglist = ', '.join(args)
+        return f'{name}({arglist})'
 
 
 def buffer(v):

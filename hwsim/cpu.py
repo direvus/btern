@@ -1,4 +1,4 @@
-from hwsim.component import ZERO, Component
+from hwsim.component import ZERO, NEG, NANY, NOT, Component
 from hwsim.logic import And12, Not12, Mux12
 from hwsim.arithmetic import Add12, Inc12, Dec12
 
@@ -104,3 +104,75 @@ class ALU(Component):
                     'NotX.in': 'x',
                     'NotY.in': 'y',
                 })
+
+
+class Jumper(Component):
+    """The Jumper calculates the address of the next instruction to execute.
+
+    It takes as inputs the address of the current instruction, a possible jump
+    target address, the result of running the Comparator against the test
+    value, and two control signals j1 and j2.
+
+    The output will be calculated according to the control signals as follows:
+
+    | j1 | j2 | name | out                           |
+    |====|====|======|===============================|
+    | -  | -  | JLT  | Jump if test is <0            |
+    | -  | 0  | JEZ  | Jump if test is =0            |
+    | -  | +  | JGT  | Jump if test is >0            |
+    | 0  | -  | RST  | Jump to start unconditionally |
+    | 0  | 0  | NOJ  | Do not jump                   |
+    | 0  | +  | JMP  | Jump unconditionally          |
+    | +  | -  | JLE  | Jump if test is <=0           |
+    | +  | 0  | JNZ  | Jump if test is !=0           |
+    | +  | +  | JGE  | Jump if test is >=0           |
+
+    If the logic indicates no jump (a jump criterion is not met, or the control
+    code is 00 NOJ) the output is the current instruction address + 1.
+    """
+    def __init__(self):
+        # Note: lazily using 3-way multiplexers for the 'A' and 'C' branch,
+        # even though there are only two possible outcomes on those branches --
+        # the jump target, or current+1. As a future optimisation, we may be
+        # able to swap these out for 2-way multiplexers. Each 3-way mux has 78
+        # primitives, whereas I think a 2-way mux could be 51. So it's a pretty
+        # significant difference, though granted we only need one Jumper chip
+        # in the entire computer.
+        super().__init__(
+                ('current[12]', 'target[12]', 'cmp', 'j1', 'j2'),
+                ('out[12]',),
+                {
+                    'Inc': Inc12,
+                    'MuxA': Mux12,
+                    'MuxB': Mux12,
+                    'MuxC': Mux12,
+                    'MuxOut': Mux12,
+                    'NAnyA': NANY,
+                    'NAnyC': NANY,
+                    'NotJ2': NOT,
+                    },
+                {
+                    'out': 'MuxOut.out',
+                    'MuxOut.a': 'MuxA.out',
+                    'MuxOut.b': 'MuxB.out',
+                    'MuxOut.c': 'MuxC.out',
+                    'MuxOut.s': 'j1',
+                    'MuxA.a': 'Inc.out',
+                    'MuxA.b': 'target',
+                    'MuxA.c': 'Inc.out',
+                    'MuxA.s': 'NAnyA.out',
+                    'MuxB.a': NEG,
+                    'MuxB.b': 'Inc.out',
+                    'MuxB.c': 'target',
+                    'MuxB.s': 'j2',
+                    'MuxC.a': 'target',
+                    'MuxC.b': 'Inc.out',
+                    'MuxC.c': 'target',
+                    'MuxC.s': 'NAnyC.out',
+                    'NAnyA.a': 'NotJ2.out',
+                    'NAnyA.b': 'cmp',
+                    'NAnyC.a': 'j2',
+                    'NAnyC.b': 'cmp',
+                    'NotJ2.in': 'j2',
+                    'Inc.in': 'current',
+                    })
