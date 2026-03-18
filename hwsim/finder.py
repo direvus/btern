@@ -12,6 +12,7 @@ BINARY_TARGETS = {
         'sub': (ZERO, NEG, POS, POS, ZERO, NEG, NEG, POS, ZERO),
         'sub_carry': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         'cmp': (NEG, NEG, NEG, NEG, ZERO, POS, POS, POS, POS),
+        'eq': (POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, NEG, POS),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),
@@ -78,8 +79,12 @@ def nxor(a, b):
     return POS if a == b else NEG
 
 
+def isz(a):
+    return POS if a == ZERO else NEG
+
+
 INPUTS = tuple((a, b) for a in (NEG, ZERO, POS) for b in (NEG, ZERO, POS))
-UNARY = (buffer, _not, pnot, nnot)
+UNARY = (buffer, _not, pnot, nnot, isz)
 BINARY = (nand, nor, nany, ncons, nxor)
 
 COST = {
@@ -92,6 +97,7 @@ COST = {
         'nany': 1,
         'ncons': 1,
         'nxor': 4,
+        'isz': 3,
         }
 
 

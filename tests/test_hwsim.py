@@ -355,6 +355,38 @@ def test_hwsim_comparator(inputs, expected):
         "inputs,expected",
         list(zip(
             (
+                '000000000000',
+                '-00000000000',
+                '+00000000000',
+                '00000000000-',
+                '00000000000+',
+                '00000-000000',
+                '00000000+000',
+                '+++++++++++-',
+                '-----------+',
+                ),
+            (
+                '0',
+                '-',
+                '+',
+                '-',
+                '+',
+                '-',
+                '+',
+                '-',
+                '+',
+                ))))
+def test_hwsim_comparator12(inputs, expected):
+    comp = arithmetic.Comparator12()
+
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0-+0-+0-+0-+' '-'),
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0-+0-+0-+0-+' '0'),
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0-+0-+0-+0-+' '+'),
