@@ -15,6 +15,9 @@ BINARY_TARGETS = {
         'cmp': (NEG, NEG, NEG, NEG, ZERO, POS, POS, POS, POS),
         'eq': (POS, NEG, NEG, NEG, POS, NEG, NEG, NEG, POS),
         'eq2': (POS, NEG, NEG, NEG, ZERO, NEG, NEG, NEG, POS),
+        'demux_a': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
+        'demux_b': (ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO),
+        'demux_c': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),

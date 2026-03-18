@@ -1,5 +1,5 @@
 from hwsim.component import (
-        Component, NAND, NOR, NANY, NOT, PNOT, NNOT)
+        Component, NAND, NCONS, NOR, NANY, NOT, PNOT, NNOT)
 
 
 class And(Component):
@@ -574,4 +574,76 @@ class Mux12(Component):
                     'NAnd11B.b': 'ISZ.out',
                     'NAnd11C.a': 'c[11]',
                     'NAnd11C.b': 'PNotPNotS.out',
+                    })
+
+
+class Demux(Component):
+    """A single trit, 3-way demultiplexer.
+
+    The demultiplexer takes two inputs, 'in' and 's'. It has three outputs,
+    'a', 'b' and 'c'.
+
+    The input value will be produced on one of the three outputs, selected
+    according to the value of 's':
+
+    | s | out |
+    |===|=====|
+    | - |  a  |
+    | 0 |  b  |
+    | + |  c  |
+
+    The two outputs that are not selected will always have the value zero.
+    Therefore, the complete truth table is as follows:
+
+    | in | s | a | b | c |
+    |====|===|===|===|===|
+    | -  | - | - | 0 | 0 |
+    | -  | 0 | 0 | - | 0 |
+    | -  | + | 0 | 0 | - |
+    | 0  | - | 0 | 0 | 0 |
+    | 0  | 0 | 0 | 0 | 0 |
+    | 0  | + | 0 | 0 | 0 |
+    | +  | - | + | 0 | 0 |
+    | +  | 0 | 0 | + | 0 |
+    | +  | + | 0 | 0 | + |
+    """
+    def __init__(self):
+        super().__init__(
+                ('in', 's'),
+                ('a', 'b', 'c'),
+                {
+                    'NotS': NOT,
+                    'NConsA': NCONS,
+                    'NConsB': NCONS,
+                    'NConsC': NCONS,
+                    'NOrA': NOR,
+                    'NOrC': NOR,
+                    'NAndA': NAND,
+                    'NAndC': NAND,
+                    'NAnyB1': NANY,
+                    'NAnyB2': NANY,
+                    },
+                {
+                    'a': 'NConsA.out',
+                    'b': 'NConsB.out',
+                    'c': 'NConsC.out',
+                    'NotS.in': 's',
+                    'NConsA.a': 'NOrA.out',
+                    'NConsA.b': 'NAndA.out',
+                    'NConsB.a': 'NAnyB1.out',
+                    'NConsB.b': 'NAnyB2.out',
+                    'NConsC.a': 'NAndC.out',
+                    'NConsC.b': 'NOrC.out',
+                    'NOrA.a': 'in',
+                    'NOrA.b': 's',
+                    'NAndA.a': 'in',
+                    'NAndA.b': 'NotS.out',
+                    'NAnyB1.a': 'in',
+                    'NAnyB1.b': 's',
+                    'NAnyB2.a': 'in',
+                    'NAnyB2.b': 'NotS.out',
+                    'NAndC.a': 'in',
+                    'NAndC.b': 's',
+                    'NOrC.a': 'in',
+                    'NOrC.b': 'NotS.out',
                     })

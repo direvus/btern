@@ -83,3 +83,14 @@ class Register(Component):
         if changed:
             self.prepare_cache()
         return changed
+
+
+class RAM3(Component):
+    """A 3 register RAM module.
+
+    The module takes a 12-trit input bus named 'in', a single 'address' signal
+    and a single trit 'load' signal.
+
+    The address signal selects which of the three registers is to be read from
+    and written to.
+    """

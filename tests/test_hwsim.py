@@ -161,6 +161,26 @@ def test_hwsim_mux(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(BINARY, (
+            (N, Z, Z),
+            (Z, N, Z),
+            (Z, Z, N),
+            (Z, Z, Z),
+            (Z, Z, Z),
+            (Z, Z, Z),
+            (P, Z, Z),
+            (Z, P, Z),
+            (Z, Z, P),
+            ))))
+def test_hwsim_demux(inputs, expected):
+    comp = logic.Demux()
+
+    out = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(BINARY, (POS, NEG, ZERO, NEG, ZERO, POS, ZERO, POS, NEG))))
 def test_hwsim_sum(inputs, expected):
     comp = arithmetic.Sum()
