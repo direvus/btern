@@ -10,6 +10,7 @@ Trits = Iterable[Trit]
 
 
 BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')
+BUS_SLICE_RE = re.compile(r'^(\w+)\[(\d+)\.\.(\d+)]$')
 
 
 class Primitive:
@@ -109,6 +110,7 @@ class Component(Primitive):
             return
 
         size = self.buses[dest]
+        m = BUS_SLICE_RE.match(source)
         if source in self.buses:
             if self.buses[source] != size:
                 raise ValueError(
@@ -116,7 +118,27 @@ class Component(Primitive):
                     "both endpoints are buses but have different sizes")
             for i in range(size):
                 self.connections[f'{dest}[{i}]'] = f'{source}[{i}]'
+        elif m:
+            # Source uses slice notation [x..y]
+            name = m.group(1)
+            start = int(m.group(2))
+            end = int(m.group(3))
+            if start > end:
+                raise ValueError(
+                        f"Invalid bus slice {source}: "
+                        "start of range is after the end")
+            slice_size = end - start + 1
+            if size != slice_size:
+                raise ValueError(
+                    f"Invalid connection {dest} <- {source}: "
+                    f"{dest} has size {size} but {source} has {slice_size}")
+
+            for i in range(size):
+                offset = start + i
+                self.connections[f'{dest}[{i}]'] = f'{name}[{offset}]'
         else:
+            # The destination is a bus, but the source is a single trit, so fan
+            # out the source value to all trits on the bus.
             for i in range(size):
                 self.connections[f'{dest}[{i}]'] = source
 
@@ -166,10 +188,9 @@ class Component(Primitive):
             changed = True
         if self.update_subcomponents():
             changed = True
-        if changed:
-            self.cache = {
-                    k: v for k, v in self.cache.items()
-                    if k not in self.outputs}
+        self.cache = {
+                k: v for k, v in self.cache.items()
+                if k not in self.outputs}
         return changed
 
     def evaluate_subcomponent(self, name: str) -> Trits:

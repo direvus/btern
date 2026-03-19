@@ -221,6 +221,78 @@ class Mux(Component):
                     })
 
 
+class Demux(Component):
+    """A single trit, 3-way demultiplexer.
+
+    The demultiplexer takes two inputs, 'in' and 's'. It has three outputs,
+    'a', 'b' and 'c'.
+
+    The input value will be produced on one of the three outputs, selected
+    according to the value of 's':
+
+    | s | out |
+    |===|=====|
+    | - |  a  |
+    | 0 |  b  |
+    | + |  c  |
+
+    The two outputs that are not selected will always have the value zero.
+    Therefore, the complete truth table is as follows:
+
+    | in | s | a | b | c |
+    |====|===|===|===|===|
+    | -  | - | - | 0 | 0 |
+    | -  | 0 | 0 | - | 0 |
+    | -  | + | 0 | 0 | - |
+    | 0  | - | 0 | 0 | 0 |
+    | 0  | 0 | 0 | 0 | 0 |
+    | 0  | + | 0 | 0 | 0 |
+    | +  | - | + | 0 | 0 |
+    | +  | 0 | 0 | + | 0 |
+    | +  | + | 0 | 0 | + |
+    """
+    def __init__(self):
+        super().__init__(
+                ('in', 's'),
+                ('a', 'b', 'c'),
+                {
+                    'NotS': NOT,
+                    'NConsA': NCONS,
+                    'NConsB': NCONS,
+                    'NConsC': NCONS,
+                    'NOrA': NOR,
+                    'NOrC': NOR,
+                    'NAndA': NAND,
+                    'NAndC': NAND,
+                    'NAnyB1': NANY,
+                    'NAnyB2': NANY,
+                    },
+                {
+                    'a': 'NConsA.out',
+                    'b': 'NConsB.out',
+                    'c': 'NConsC.out',
+                    'NotS.in': 's',
+                    'NConsA.a': 'NOrA.out',
+                    'NConsA.b': 'NAndA.out',
+                    'NConsB.a': 'NAnyB1.out',
+                    'NConsB.b': 'NAnyB2.out',
+                    'NConsC.a': 'NAndC.out',
+                    'NConsC.b': 'NOrC.out',
+                    'NOrA.a': 'in',
+                    'NOrA.b': 's',
+                    'NAndA.a': 'in',
+                    'NAndA.b': 'NotS.out',
+                    'NAnyB1.a': 'in',
+                    'NAnyB1.b': 's',
+                    'NAnyB2.a': 'in',
+                    'NAnyB2.b': 'NotS.out',
+                    'NAndC.a': 'in',
+                    'NAndC.b': 's',
+                    'NOrC.a': 'in',
+                    'NOrC.b': 'NotS.out',
+                    })
+
+
 class Not12(Component):
     def __init__(self):
         super().__init__(
@@ -577,73 +649,109 @@ class Mux12(Component):
                     })
 
 
-class Demux(Component):
-    """A single trit, 3-way demultiplexer.
+class Mux9Way12(Component):
+    """A 12 trit, 9-way multiplexer.
 
-    The demultiplexer takes two inputs, 'in' and 's'. It has three outputs,
-    'a', 'b' and 'c'.
+    It selects one of its nine data input buses, based on the value of a
+    2-trit selector input bus, and produces the selected input bus values on
+    its output bus.
 
-    The input value will be produced on one of the three outputs, selected
-    according to the value of 's':
+    The three data input buses are named 'a' through 'i', and the selector
+    input bus is named 's'. The output value is determined as follows:
 
-    | s | out |
-    |===|=====|
-    | - |  a  |
-    | 0 |  b  |
-    | + |  c  |
-
-    The two outputs that are not selected will always have the value zero.
-    Therefore, the complete truth table is as follows:
-
-    | in | s | a | b | c |
-    |====|===|===|===|===|
-    | -  | - | - | 0 | 0 |
-    | -  | 0 | 0 | - | 0 |
-    | -  | + | 0 | 0 | - |
-    | 0  | - | 0 | 0 | 0 |
-    | 0  | 0 | 0 | 0 | 0 |
-    | 0  | + | 0 | 0 | 0 |
-    | +  | - | + | 0 | 0 |
-    | +  | 0 | 0 | + | 0 |
-    | +  | + | 0 | 0 | + |
+    | s[1] | s[0] | out |
+    |======|======|=====|
+    |   -  |   -  |  a  |
+    |   -  |   0  |  b  |
+    |   -  |   +  |  c  |
+    |   0  |   -  |  d  |
+    |   0  |   0  |  e  |
+    |   0  |   +  |  f  |
+    |   +  |   -  |  g  |
+    |   +  |   0  |  h  |
+    |   +  |   +  |  i  |
     """
     def __init__(self):
         super().__init__(
-                ('in', 's'),
-                ('a', 'b', 'c'),
+                ('a[12]', 'b[12]', 'c[12]', 'd[12]', 'e[12]', 'f[12]', 'g[12]',
+                 'h[12]', 'i[12]', 's[2]'),
+                ('out[12]',),
                 {
-                    'NotS': NOT,
-                    'NConsA': NCONS,
-                    'NConsB': NCONS,
-                    'NConsC': NCONS,
-                    'NOrA': NOR,
-                    'NOrC': NOR,
-                    'NAndA': NAND,
-                    'NAndC': NAND,
-                    'NAnyB1': NANY,
-                    'NAnyB2': NANY,
+                    'MuxOut': Mux12,
+                    'MuxABC': Mux12,
+                    'MuxDEF': Mux12,
+                    'MuxGHI': Mux12,
                     },
                 {
-                    'a': 'NConsA.out',
-                    'b': 'NConsB.out',
-                    'c': 'NConsC.out',
-                    'NotS.in': 's',
-                    'NConsA.a': 'NOrA.out',
-                    'NConsA.b': 'NAndA.out',
-                    'NConsB.a': 'NAnyB1.out',
-                    'NConsB.b': 'NAnyB2.out',
-                    'NConsC.a': 'NAndC.out',
-                    'NConsC.b': 'NOrC.out',
-                    'NOrA.a': 'in',
-                    'NOrA.b': 's',
-                    'NAndA.a': 'in',
-                    'NAndA.b': 'NotS.out',
-                    'NAnyB1.a': 'in',
-                    'NAnyB1.b': 's',
-                    'NAnyB2.a': 'in',
-                    'NAnyB2.b': 'NotS.out',
-                    'NAndC.a': 'in',
-                    'NAndC.b': 's',
-                    'NOrC.a': 'in',
-                    'NOrC.b': 'NotS.out',
+                    'out': 'MuxOut.out',
+                    'MuxOut.a': 'MuxABC.out',
+                    'MuxOut.b': 'MuxDEF.out',
+                    'MuxOut.c': 'MuxGHI.out',
+                    'MuxOut.s': 's[1]',
+                    'MuxABC.a': 'a',
+                    'MuxABC.b': 'b',
+                    'MuxABC.c': 'c',
+                    'MuxABC.s': 's[0]',
+                    'MuxDEF.a': 'd',
+                    'MuxDEF.b': 'e',
+                    'MuxDEF.c': 'f',
+                    'MuxDEF.s': 's[0]',
+                    'MuxGHI.a': 'g',
+                    'MuxGHI.b': 'h',
+                    'MuxGHI.c': 'i',
+                    'MuxGHI.s': 's[0]',
+                    })
+
+
+class Demux9Way(Component):
+    """A single trit, 9-way demultiplexer.
+
+    The demultiplexer takes a single input 'in' and a two-trit input bus 's'.
+    It has nine outputs, named 'a' through 'i'.
+
+    The input value will be produced on one of the nine output channels,
+    selected according to the value of 's':
+
+    | s[1] | s[0] | out |
+    |======|======|=====|
+    |   -  |   -  |  a  |
+    |   -  |   0  |  b  |
+    |   -  |   +  |  c  |
+    |   0  |   -  |  d  |
+    |   0  |   0  |  e  |
+    |   0  |   +  |  f  |
+    |   +  |   -  |  g  |
+    |   +  |   0  |  h  |
+    |   +  |   +  |  i  |
+
+    The outputs that are not selected will always have the value zero.
+    """
+    def __init__(self):
+        super().__init__(
+                ('in', 's[2]'),
+                ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'),
+                {
+                    'DemuxIn': Demux,
+                    'DemuxABC': Demux,
+                    'DemuxDEF': Demux,
+                    'DemuxGHI': Demux,
+                    },
+                {
+                    'a': 'DemuxABC.a',
+                    'b': 'DemuxABC.b',
+                    'c': 'DemuxABC.c',
+                    'd': 'DemuxDEF.a',
+                    'e': 'DemuxDEF.b',
+                    'f': 'DemuxDEF.c',
+                    'g': 'DemuxGHI.a',
+                    'h': 'DemuxGHI.b',
+                    'i': 'DemuxGHI.c',
+                    'DemuxABC.in': 'DemuxIn.a',
+                    'DemuxABC.s': 's[0]',
+                    'DemuxDEF.in': 'DemuxIn.b',
+                    'DemuxDEF.s': 's[0]',
+                    'DemuxGHI.in': 'DemuxIn.c',
+                    'DemuxGHI.s': 's[0]',
+                    'DemuxIn.in': 'in',
+                    'DemuxIn.s': 's[1]',
                     })
