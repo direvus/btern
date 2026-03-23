@@ -161,6 +161,25 @@ def test_hwsim_mux(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(TRINARY, (
+            N, N, N,  # a = -, b = -
+            Z, N, Z,  # a = -, b = 0
+            P, N, P,  # a = -, b = +
+            N, Z, N,  # a = 0, b = -
+            Z, Z, Z,  # a = 0, b = 0
+            P, Z, P,  # a = 0, b = +
+            N, P, N,  # a = +, b = -
+            Z, P, Z,  # a = +, b = 0
+            P, P, P,  # a = +, b = +
+            ))))
+def test_hwsim_mux_2way(inputs, expected):
+    comp = logic.Mux2Way()
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(BINARY, (
             (N, Z, Z),
             (Z, N, Z),

@@ -703,6 +703,47 @@ class Mux9Way12(Component):
                     })
 
 
+class Mux2Way(Component):
+    """A single trit, 2-way multiplexer.
+
+    It selects one of its 2 data inputs 'a' and 'b', based on the value of a
+    selector input 's', and produces the selected input value on its output
+    'out'.
+
+    Unlike the normal (3-way) multiplexer, this one only considers whether the
+    selector input is zero or non-zero; if zero, it selects 'a', otherwise it
+    selects 'b'.
+
+    | s | out |
+    |===|=====|
+    | - |  b  |
+    | 0 |  a  |
+    | + |  b  |
+    """
+    def __init__(self):
+        super().__init__(
+                ('a', 'b', 's'),
+                ('out',),
+                {
+                    'IsZ': IsZero,
+                    'NotZ': NOT,
+                    'NAndA': NAND,
+                    'NAndB': NAND,
+                    'NAndAB': NAND,
+                    },
+                {
+                    'out': 'NAndAB.out',
+                    'NAndAB.a': 'NAndA.out',
+                    'NAndAB.b': 'NAndB.out',
+                    'NAndA.a': 'a',
+                    'NAndA.b': 'IsZ.out',
+                    'NAndB.a': 'b',
+                    'NAndB.b': 'NotZ.out',
+                    'NotZ.in': 'IsZ.out',
+                    'IsZ.in': 's',
+                    })
+
+
 class Demux9Way(Component):
     """A single trit, 9-way demultiplexer.
 
