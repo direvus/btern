@@ -1,6 +1,6 @@
 from hwsim.component import Component, Trits
 from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
-from trit import NEG, ZERO
+from trit import NEG, ZERO, POS
 
 
 class DataFlipFlop(Component):
@@ -706,3 +706,69 @@ class RAM177KSim(Component):
         self.set_inputs(inputs)
         addr = ''.join(inputs[13:24])
         return self.registers.get(addr, self.default_value)
+
+
+class ProgramCounter11(Component):
+    """An 11-trit program counter register.
+
+    This is effectively a register that is always in 'write' mode. It takes an
+    11-trit input bus 'in', and has an 11-trit output bus 'out'.
+
+    The output bus always yields the current value of the register. When the
+    register receives a clock pulse, it updates its internal memory to match
+    the 'in' bus, and the new value will be available to read on the output bus
+    on the following clock cycle.
+    """
+    def __init__(self):
+        super().__init__(
+                ('in[11]',),
+                ('out[11]',),
+                {
+                    'T0': Register,
+                    'T1': Register,
+                    'T2': Register,
+                    'T3': Register,
+                    'T4': Register,
+                    'T5': Register,
+                    'T6': Register,
+                    'T7': Register,
+                    'T8': Register,
+                    'T9': Register,
+                    'T10': Register,
+                    },
+                {
+                    'out[0]': 'T0.out',
+                    'out[1]': 'T1.out',
+                    'out[2]': 'T2.out',
+                    'out[3]': 'T3.out',
+                    'out[4]': 'T4.out',
+                    'out[5]': 'T5.out',
+                    'out[6]': 'T6.out',
+                    'out[7]': 'T7.out',
+                    'out[8]': 'T8.out',
+                    'out[9]': 'T9.out',
+                    'out[10]': 'T10.out',
+                    'T0.in': 'in[0]',
+                    'T1.in': 'in[1]',
+                    'T2.in': 'in[2]',
+                    'T3.in': 'in[3]',
+                    'T4.in': 'in[4]',
+                    'T5.in': 'in[5]',
+                    'T6.in': 'in[6]',
+                    'T7.in': 'in[7]',
+                    'T8.in': 'in[8]',
+                    'T9.in': 'in[9]',
+                    'T10.in': 'in[10]',
+                    'T0.load': POS,
+                    'T1.load': POS,
+                    'T2.load': POS,
+                    'T3.load': POS,
+                    'T4.load': POS,
+                    'T5.load': POS,
+                    'T6.load': POS,
+                    'T7.load': POS,
+                    'T8.load': POS,
+                    'T9.load': POS,
+                    'T10.load': POS,
+                    'T11.load': POS,
+                    })

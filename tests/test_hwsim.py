@@ -798,6 +798,28 @@ def test_hwsim_ram177ksim():
     assert out == zero
 
 
+def test_hwsim_program_counter11():
+    comp = memory.ProgramCounter11()
+    v = '0-+-+---0++'
+    z = '00000000000'
+    n = '-----------'
+
+    out = comp.get_outputs(v)
+    # The value of the register should continue to reflect the initial state
+    # until the next clock cycle.
+    assert out == tuple(z)
+
+    comp.tick()
+    # Check that the current value was loaded correctly from the previous
+    # cycle, and set the next value to all negative.
+    out = comp.get_outputs(n)
+    assert out == tuple(v)
+
+    comp.tick()
+    out = comp.get_outputs(z)
+    assert out == tuple(n)
+
+
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(
