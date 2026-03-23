@@ -1,6 +1,6 @@
 from hwsim.component import Component, Trits
 from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
-from trit import ZERO
+from trit import NEG, ZERO
 
 
 class DataFlipFlop(Component):
@@ -665,3 +665,44 @@ class RAM177K(Component):
                     'Demux.in': 'load',
                     'Demux.s': 'addr[10]',
                     })
+
+
+class RAM177KSim(Component):
+    """A simulated 177,147 register RAM module.
+
+    The module takes a 12-trit input data bus named 'in', a single trit 'load'
+    signal and an 11-trit 'addr' bus.
+
+    The 12-trit ouput bus always contains the current value of the active
+    register. Changes to register contents will take effect on the next time
+    tick.
+
+    This class simulates the overall effect of a memory module in software,
+    because instantiating all of the subcomponents and tracking all of the
+    connection state between that many registers is not very practical for
+    unit testing.
+    """
+    def __init__(self):
+        super().__init__(
+                ('in[12]', 'load', 'addr[11]'),
+                ('out[12]',))
+        self.registers = {}
+        self.default_value = tuple(ZERO * 12)
+
+    def update(self) -> bool:
+        load = self.cache['load']
+        if load == ZERO:
+            return False
+
+        addr = ''.join(self.cache[f'addr[{i}]'] for i in range(11))
+        if load == NEG:
+            self.registers[addr] = self.default_value
+        else:
+            value = tuple(self.cache[f'in[{i}]'] for i in range(12))
+            self.registers[addr] = value
+        return True
+
+    def get_outputs(self, inputs: Trits) -> Trits:
+        self.set_inputs(inputs)
+        addr = ''.join(inputs[13:24])
+        return self.registers.get(addr, self.default_value)

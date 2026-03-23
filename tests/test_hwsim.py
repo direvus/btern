@@ -732,6 +732,72 @@ def test_hwsim_ram9():
     assert out == tuple(v)
 
 
+def test_hwsim_ram81():
+    ram = memory.RAM81()
+    addr = '+0-+'
+    value = '+--0+---00--'
+    zero = tuple(ZERO * 12)
+
+    # Load the test value into the register. It won't be visible in the outputs
+    # from the RAM module until after the next clock tick.
+    out = ram.get_outputs(value + '+' + addr)
+    assert out == zero
+
+    # Send a clock tick, and continue to address the same register but switch
+    # the 'load' signal to retain. Afterwards, check that the value loaded in
+    # the previous clock cycle is now visible on the output.
+    ram.tick()
+    out = ram.get_outputs(value + '0' + addr)
+    assert out == tuple(value)
+
+    # Send a clock tick, and continue to address the same register but switch
+    # the 'load' signal to reset. Afterwards, check that the value loaded in
+    # the previous clock cycle was correctly retained by the previous
+    # instruction.
+    ram.tick()
+    out = ram.get_outputs(value + '-' + addr)
+    assert out == tuple(value)
+
+    # Send another tick, and check that the register was correctly cleared by
+    # the previous instruction.
+    ram.tick()
+    out = ram.get_outputs(value + '0' + addr)
+    assert out == zero
+
+
+def test_hwsim_ram177ksim():
+    ram = memory.RAM177KSim()
+    addr = '+0-+00+---0'
+    value = '+--0+---00--'
+    zero = tuple(ZERO * 12)
+
+    # Load the test value into the register. It won't be visible in the outputs
+    # from the RAM module until after the next clock tick.
+    out = ram.get_outputs(value + '+' + addr)
+    assert out == zero
+
+    # Send a clock tick, and continue to address the same register but switch
+    # the 'load' signal to retain. Afterwards, check that the value loaded in
+    # the previous clock cycle is now visible on the output.
+    ram.tick()
+    out = ram.get_outputs(value + '0' + addr)
+    assert out == tuple(value)
+
+    # Send a clock tick, and continue to address the same register but switch
+    # the 'load' signal to reset. Afterwards, check that the value loaded in
+    # the previous clock cycle was correctly retained by the previous
+    # instruction.
+    ram.tick()
+    out = ram.get_outputs(value + '-' + addr)
+    assert out == tuple(value)
+
+    # Send another tick, and check that the register was correctly cleared by
+    # the previous instruction.
+    ram.tick()
+    out = ram.get_outputs(value + '0' + addr)
+    assert out == zero
+
+
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(
@@ -814,36 +880,3 @@ def test_hwsim_jumper(inputs, expected):
     comp = cpu.Jumper()
     out = comp.get_outputs(inputs)
     assert out == expected
-
-
-def test_hwsim_ram729():
-    ram = memory.RAM729()
-    addr = '+00-++'
-    value = '+--0+---00--'
-    zero = tuple(ZERO * 12)
-
-    # Load the test value into the register. It won't be visible in the outputs
-    # from the RAM module until after the next clock tick.
-    out = ram.get_outputs(value + '+' + addr)
-    assert out == zero
-
-    # Send a clock tick, and continue to address the same register but switch
-    # the 'load' signal to retain. Afterwards, check that the value loaded in
-    # the previous clock cycle is now visible on the output.
-    ram.tick()
-    out = ram.get_outputs(value + '0' + addr)
-    assert out == tuple(value)
-
-    # Send a clock tick, and continue to address the same register but switch
-    # the 'load' signal to reset. Afterwards, check that the value loaded in
-    # the previous clock cycle was correctly retained by the previous
-    # instruction.
-    ram.tick()
-    out = ram.get_outputs(value + '-' + addr)
-    assert out == tuple(value)
-
-    # Send another tick, and check that the register was correctly cleared by
-    # the previous instruction.
-    ram.tick()
-    out = ram.get_outputs(value + '0' + addr)
-    assert out == zero
