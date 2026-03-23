@@ -109,7 +109,7 @@ class ALU(Component):
 class Jumper(Component):
     """The Jumper calculates the address of the next instruction to execute.
 
-    It takes as inputs the address of the current instruction, a possible jump
+    It takes as inputs the address of the current instruction, a candidate jump
     target address, the result of running the Comparator against the test
     value, and two control signals j1 and j2.
 
@@ -139,8 +139,8 @@ class Jumper(Component):
         # significant difference, though granted we only need one Jumper chip
         # in the entire computer.
         super().__init__(
-                ('current[12]', 'target[12]', 'cmp', 'j1', 'j2'),
-                ('out[12]',),
+                ('current[11]', 'target[11]', 'cmp', 'j1', 'j2'),
+                ('out[11]',),
                 {
                     'Inc': Inc12,
                     'MuxA': Mux12,
@@ -152,27 +152,32 @@ class Jumper(Component):
                     'NotJ2': NOT,
                     },
                 {
-                    'out': 'MuxOut.out',
+                    'out': 'MuxOut.out[0..10]',
                     'MuxOut.a': 'MuxA.out',
                     'MuxOut.b': 'MuxB.out',
                     'MuxOut.c': 'MuxC.out',
                     'MuxOut.s': 'j1',
                     'MuxA.a': 'Inc.out',
-                    'MuxA.b': 'target',
+                    'MuxA.b[0..10]': 'target',
+                    'MuxA.b[11]': ZERO,
                     'MuxA.c': 'Inc.out',
                     'MuxA.s': 'NAnyA.out',
                     'MuxB.a': NEG,
                     'MuxB.b': 'Inc.out',
-                    'MuxB.c': 'target',
+                    'MuxB.c[0..10]': 'target',
+                    'MuxB.c[11]': ZERO,
                     'MuxB.s': 'j2',
-                    'MuxC.a': 'target',
+                    'MuxC.a[0..10]': 'target',
+                    'MuxC.a[11]': ZERO,
                     'MuxC.b': 'Inc.out',
-                    'MuxC.c': 'target',
+                    'MuxC.c[0..10]': 'target',
+                    'MuxC.c[11]': ZERO,
                     'MuxC.s': 'NAnyC.out',
                     'NAnyA.a': 'NotJ2.out',
                     'NAnyA.b': 'cmp',
                     'NAnyC.a': 'j2',
                     'NAnyC.b': 'cmp',
                     'NotJ2.in': 'j2',
-                    'Inc.in': 'current',
+                    'Inc.in[0..10]': 'current',
+                    'Inc.in[11]': ZERO,
                     })

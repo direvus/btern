@@ -5,6 +5,10 @@ from itertools import product
 from trit import NEG, ZERO, POS
 
 
+N = NEG
+Z = ZERO
+P = POS
+
 BINARY_TARGETS = {
         'XOR': (NEG, ZERO, POS, ZERO, ZERO, ZERO, POS, ZERO, NEG),
         'NXOR': (POS, ZERO, NEG, ZERO, ZERO, ZERO, NEG, ZERO, POS),
@@ -18,6 +22,7 @@ BINARY_TARGETS = {
         'demux_a': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         'demux_b': (ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO),
         'demux_c': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
+        'load_m': (Z, Z, Z, Z, Z, P, Z, Z, Z)
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),

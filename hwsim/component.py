@@ -10,7 +10,7 @@ Trits = Iterable[Trit]
 
 
 BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')
-BUS_SLICE_RE = re.compile(r'^(\w+)\[(\d+)\.\.(\d+)]$')
+BUS_SLICE_RE = re.compile(r'^([\w.]+)\[(\d+)\.\.(\d+)]$')
 
 
 class Primitive:
@@ -103,44 +103,64 @@ class Component(Primitive):
                 self.add_connection(dest, source)
 
     def add_connection(self, dest: str, source: str):
-        if dest not in self.buses:
+        m = BUS_SLICE_RE.match(dest)
+        if m:
+            # Dest uses slice notation [x..y]
+            dest_name = m.group(1)
+            dest_start = int(m.group(2))
+            dest_end = int(m.group(3))
+            if dest_start > dest_end:
+                raise ValueError(
+                        f"Invalid bus slice {dest}: "
+                        "start of range is after the end")
+            dest_size = dest_end - dest_start + 1
+        elif dest in self.buses:
+            # Dest refers to a whole bus
+            dest_name = dest
+            dest_start = 0
+            dest_size = self.buses[dest]
+        else:
             # Simple case with no buses involved, this is just a single trit
             # connection.
             self.connections[dest] = source
             return
 
-        size = self.buses[dest]
         m = BUS_SLICE_RE.match(source)
-        if source in self.buses:
-            if self.buses[source] != size:
-                raise ValueError(
-                    f"Invalid connection {dest} <- {source}: "
-                    "both endpoints are buses but have different sizes")
-            for i in range(size):
-                self.connections[f'{dest}[{i}]'] = f'{source}[{i}]'
-        elif m:
+        if m:
             # Source uses slice notation [x..y]
-            name = m.group(1)
-            start = int(m.group(2))
-            end = int(m.group(3))
-            if start > end:
+            source_name = m.group(1)
+            source_start = int(m.group(2))
+            source_end = int(m.group(3))
+            if source_start > source_end:
                 raise ValueError(
                         f"Invalid bus slice {source}: "
                         "start of range is after the end")
-            slice_size = end - start + 1
-            if size != slice_size:
-                raise ValueError(
-                    f"Invalid connection {dest} <- {source}: "
-                    f"{dest} has size {size} but {source} has {slice_size}")
-
-            for i in range(size):
-                offset = start + i
-                self.connections[f'{dest}[{i}]'] = f'{name}[{offset}]'
+            source_size = source_end - source_start + 1
+        elif source in self.buses:
+            # Source refers to a whole bus
+            source_name = source
+            source_start = 0
+            source_size = self.buses[source]
         else:
-            # The destination is a bus, but the source is a single trit, so fan
-            # out the source value to all trits on the bus.
-            for i in range(size):
-                self.connections[f'{dest}[{i}]'] = source
+            # Source is a single trit, and dest is a bus, so fan out the single
+            # source to all wires on the destination.
+            for i in range(dest_size):
+                self.connections[f'{dest_name}[{i}]'] = source
+            return
+
+        # If we've arrived here, then there is a bus (or slice) on both sides
+        # of the connection
+        if dest_size != source_size:
+            raise ValueError(
+                f"Invalid connection {dest} <- {source}: "
+                "both endpoints are buses but have different sizes")
+
+        i = dest_start
+        j = source_start
+        for _ in range(dest_size):
+            self.connections[f'{dest_name}[{i}]'] = f'{source_name}[{j}]'
+            i += 1
+            j += 1
 
     def get_value(self, name: str) -> Trit:
         # Literal trit values are treated as a constant source
@@ -155,13 +175,17 @@ class Component(Primitive):
             if source in self.cache:
                 return self.cache[source]
 
-            if '.' in source:
-                comp, _ = source.split('.')
-                self.evaluate_subcomponent(comp)
-                value = self.cache[source]
-                self.cache[name] = value
-                return value
-            return self.get_value(source)
+            try:
+                if '.' in source:
+                    comp, _ = source.split('.')
+                    self.evaluate_subcomponent(comp)
+                    value = self.cache[source]
+                    self.cache[name] = value
+                    return value
+                return self.get_value(source)
+            except ValueError as e:
+                raise ValueError(
+                        f"Failed to get value for {name} <- {source}: {e}")
 
         raise ValueError(f"'{name}' does not exist in this component")
 
