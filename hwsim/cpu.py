@@ -338,3 +338,121 @@ class JumpController(Component):
                     'NotReset.in': 'reset',
                     'IsResetZero.in': 'reset',
                     })
+
+
+class CPU(Component):
+    """The CPU executes machine language instructions.
+
+    Its inputs are:
+
+    - inM -- a 12-trit bus holding the current value addressed in RAM
+    - inst -- a 12-trit bus holding the machine language instruction to execute
+    - reset -- a single trit signal
+
+    Its outputs are:
+
+    - addressM -- an 11-trit address in RAM
+    - outM -- the 12-trit value to present to RAM
+    - loadM -- a single-trit signal indicating how the addressed RAM register
+      should behave
+    - addressP -- an 11-trit address in program ROM of the next instruction to
+      execute.
+
+    When the reset signal is non-zero, it overrides the instruction and instead
+    forces the CPU to unconditionally jump to the start of the program ROM.
+
+    The meaning of each trit in the machine language instruction is as follows:
+
+    | index | meaning                         |
+    |=======|=================================|
+    |   0   | Reserved                        |
+    |   1   | Reserved                        |
+    |   2   | Reserved                        |
+    |   3   | Reserved                        |
+    |   4   | Jump control 1                  |
+    |   5   | Jump control 2                  |
+    |   6   | ALU function select (&/++/--/+) |
+    |   7   | X-input transform               |
+    |   8   | Y-input transform               |
+    |   9   | ALU input select (M+D/A+D/A+M)  |
+    |  10   | Computation target (A/M/D)      |
+    |  11   | Instruction mode (load/compute) |
+    """
+    def __init__(self):
+        super().__init__(
+                ('inM[12]', 'inst[12]', 'reset'),
+                ('addrM[11]', 'outM[12]', 'loadM', 'addrP[11]'),
+                {
+                    'ALU': ALU,
+                    'Loader': Loader,
+                    'Jumper': Jumper,
+                    'JumpCtl': JumpController,
+                    'Cmp': Comparator12,
+                    'A': Register12,
+                    'D': Register12,
+                    'ProgramCounter': ProgramCounter11,
+                    'X': Mux12,
+                    'Y': Mux12,
+                    'RegIn': Mux2Way12,
+                    },
+                {
+                    'loadM': 'Loader.m',
+                    'Loader.reset': 'reset',
+                    'Loader.mode': 'inst[11]',
+                    'Loader.target': 'inst[10]',
+
+                    'addrP': 'Jumper.out',
+                    'Jumper.j1': 'JumpCtl.out1',
+                    'Jumper.j2': 'JumpCtl.out2',
+                    'Jumper.cmp': 'Cmp.out',
+                    'Jumper.target': 'A.out[0..10]',
+                    'Jumper.current': 'ProgramCounter.out',
+
+                    'A.load': 'Loader.a',
+                    'D.load': 'Loader.d',
+                    'A.in': 'RegIn.out',
+                    'D.in': 'RegIn.out',
+
+                    'ALU.f': 'inst[6]',
+                    'ALU.px': 'inst[7]',
+                    'ALU.py': 'inst[8]',
+                    'ALU.x': 'X.out',
+                    'ALU.y': 'Y.out',
+
+                    # TODO: Lazy use of a 3-way mux, replace with 2-way later
+                    'X.a': 'inM',
+                    'X.b': 'A.out',
+                    'X.c': 'A.out',
+                    'X.s': 'inst[9]',
+
+                    # TODO: Lazy use of a 3-way mux, replace with 2-way later
+                    'Y.a': 'D.out',
+                    'Y.b': 'D.out',
+                    'Y.c': 'inM',
+                    'Y.s': 'inst[9]',
+
+                    'RegIn.a': 'ALU.out',
+                    'RegIn.b[0..10]': 'inst[0..10]',
+                    'RegIn.b[11]': ZERO,
+                    'RegIn.s': 'inst[11]',
+
+                    'Cmp.in': 'ALU.out',
+                    'outM': 'ALU.out',
+
+                    'addrM': 'A.out[0..10]',
+
+                    'JumpCtl.j1': 'inst[4]',
+                    'JumpCtl.j2': 'inst[5]',
+                    'JumpCtl.mode': 'inst[11]',
+                    'JumpCtl.reset': 'reset',
+
+                    'ProgramCounter.in': 'Jumper.out',
+                    })
+
+        # Seed the cache for the feedback loops: the ALU's output feeds back
+        # into the register input, and the Jumper's output feedback in to the
+        # Program Counter. If we don't populate these values in the cache we
+        # will go into an infinite recursion.
+        for i in range(12):
+            self.cache[f'RegIn.a[{i}]'] = ZERO
+            self.cache[f'ProgramCounter.in[{i}]'] = ZERO

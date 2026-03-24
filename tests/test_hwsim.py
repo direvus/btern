@@ -978,3 +978,18 @@ def test_hwsim_jump_controller(inputs, expected):
     comp = cpu.JumpController()
     out = comp.get_outputs(inputs)
     assert out == tuple(expected)
+
+
+def test_hwsim_cpu_reset():
+    comp = cpu.CPU()
+    # Send a reset signal with random junk in 'inM' and 'inst'. Expect that the
+    # loadM output should be 0, and addrP will be all negative.
+    inputs = ('--0++-000+-+' '0++0+-+-0000' '+')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('-----------')
+
+    # Advance to the next clock cycle and confirm that registers A and D have
+    # both been reset to zero.
