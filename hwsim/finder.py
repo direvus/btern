@@ -22,10 +22,12 @@ BINARY_TARGETS = {
         'demux_a': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         'demux_b': (ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO),
         'demux_c': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
-        'load_m': (Z, Z, Z, Z, Z, P, Z, Z, Z),
         'jump_mode': (Z, Z, Z, N, Z, P, Z, Z, Z),
         'jump2_reset': (N, N, N, N, Z, P, N, N, N),
         'zero_if_both_zero': (N, N, N, N, Z, N, N, N, N),
+        'load_a': (P, P, P, P, Z, Z, Z, Z, Z),
+        'load_m': (Z, Z, Z, Z, P, Z, Z, Z, Z),
+        'load_d': (Z, Z, Z, Z, Z, P, P, P, P),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),

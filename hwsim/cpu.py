@@ -1,6 +1,7 @@
-from hwsim.component import ZERO, NEG, NAND, NANY, NCONS, NOT, PNOT, Component
+from hwsim.component import (
+        ZERO, NEG, NAND, NANY, NCONS, NOR, NOT, PNOT, Component)
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
-from hwsim.logic import And12, Not12, Mux12, Mux2Way12, IsZero
+from hwsim.logic import And12, Not12, Mux2Way, Mux12, Mux2Way12, IsZero
 from hwsim.memory import Register12, ProgramCounter11
 
 
@@ -175,55 +176,94 @@ class Jumper(Component):
 
 
 class Loader(Component):
-    """The Loader calculates whether data should be loaded into RAM.
+    """The Loader calculates how data should be loaded into memory.
 
     Its inputs are single-trit signals 'reset', 'mode' and 'target', and it has
-    a single trit output 'out'.
+    three outputs 'a', 'm' and 'd'.
 
-    The output is positive only when both 'reset' and 'mode' are zero, and
-    'target' is positive. In all other cases, the output is zero.
+    The 'a' output gives the loading signal for the A register, the 'd' output
+    gives the loading signal for the D register, and the 'm' output gives the
+    loading signal for the active register in RAM.
 
-    |       | target | - | 0 | + |
-    | reset |  mode  |   |   |   |
-    |=======|========|===|===|===|
-    |   -   |    -   | 0 | 0 | 0 |
-    |   -   |    0   | 0 | 0 | 0 |
-    |   -   |    +   | 0 | 0 | 0 |
-    |   0   |    -   | 0 | 0 | 0 |
-    |   0   |    0   | 0 | 0 | + |
-    |   0   |    +   | 0 | 0 | 0 |
-    |   +   |    -   | 0 | 0 | 0 |
-    |   +   |    0   | 0 | 0 | 0 |
-    |   +   |    +   | 0 | 0 | 0 |
+    When the 'reset' signal is non-zero, the outputs are always '-', '0', '-'
+    irrespective of the other inputs.
+
+
+    |       | target |  -  |  0  |  +  |
+    | reset |  mode  |     |     |     |
+    |=======|========|=====|=====|=====|
+    |   -   |    -   | -0- | -0- | -0- |
+    |   -   |    0   | -0- | -0- | -0- |
+    |   -   |    +   | -0- | -0- | -0- |
+    |   0   |    -   | +00 | +00 | +00 |
+    |   0   |    0   | +00 | 0+0 | 00+ |
+    |   0   |    +   | 00+ | 00+ | 00+ |
+    |   +   |    -   | -0- | -0- | -0- |
+    |   +   |    0   | -0- | -0- | -0- |
+    |   +   |    +   | -0- | -0- | -0- |
     """
     def __init__(self):
         super().__init__(
                 ('reset', 'mode', 'target'),
-                ('out',),
+                ('a', 'm', 'd'),
                 {
-                    'NAnyA1': NANY,
-                    'NAnyA2': NANY,
-                    'NAnyB1': NANY,
-                    'NAnyB2': NANY,
-                    'NCons': NCONS,
-                    'NotMode': NOT,
-                    'PNot': PNOT,
+                    'NOrA': NOR,
+                    'NAndA': NAND,
+                    'NotA': NOT,
+                    'NConsA': NCONS,
+                    'NAnyM1': NANY,
+                    'NAnyM2': NANY,
+                    'NConsM': NCONS,
+                    'NConsD': NCONS,
+                    'NAndD': NAND,
+                    'NAnyD': NANY,
+                    'MuxA': Mux2Way,
+                    'MuxM': Mux2Way,
+                    'MuxD': Mux2Way,
+                    'PNotMode': PNOT,
+                    'PNotTarget': PNOT,
                     },
                 {
-                    'out': 'NCons.out',
-                    'NCons.a': 'NAnyB1.out',
-                    'NCons.b': 'NAnyB2.out',
-                    'NAnyB1.a': 'PNot.out',
-                    'NAnyB1.b': 'target',
-                    'NAnyB2.a': 'NAnyA2.out',
-                    'NAnyB2.b': 'target',
-                    'NAnyA1.a': 'reset',
-                    'NAnyA1.b': 'mode',
-                    'NAnyA2.a': 'NAnyA1.out',
-                    'NAnyA2.b': 'NotMode.out',
+                    'a': 'MuxA.out',
+                    'm': 'MuxM.out',
+                    'd': 'MuxD.out',
 
-                    'NotMode.in': 'mode',
-                    'PNot.in': 'NAnyA2.out',
+                    'MuxA.a': 'NConsA.out',
+                    'MuxA.b': NEG,
+                    'MuxA.s': 'reset',
+
+                    'MuxM.a': 'NConsM.out',
+                    'MuxM.b': ZERO,
+                    'MuxM.s': 'reset',
+
+                    'MuxD.a': 'NAndD.out',
+                    'MuxD.b': NEG,
+                    'MuxD.s': 'reset',
+
+                    'NConsA.a': 'NOrA.out',
+                    'NConsA.b': 'NotA.out',
+                    'NotA.in': 'NAndA.out',
+                    'NOrA.a': 'PNotMode.out',
+                    'NOrA.b': 'target',
+                    'NAndA.a': 'mode',
+                    'NAndA.b': 'target',
+
+                    'NConsM.a': 'NAnyM1.out',
+                    'NConsM.b': 'NAnyM2.out',
+                    'NAnyM1.a': 'PNotMode.out',
+                    'NAnyM1.b': 'target',
+                    'NAnyM2.a': 'mode',
+                    'NAnyM2.b': 'PNotTarget.out',
+
+                    'NAndD.a': 'NConsD.out',
+                    'NAndD.b': 'NAnyD.out',
+                    'NConsD.a': 'mode',
+                    'NConsD.b': 'PNotTarget.out',
+                    'NAnyD.a': 'mode',
+                    'NAnyD.b': 'target',
+
+                    'PNotMode.in': 'mode',
+                    'PNotTarget.in': 'target',
                     })
 
 
