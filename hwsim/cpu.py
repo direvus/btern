@@ -1,6 +1,6 @@
 from hwsim.component import ZERO, NEG, NAND, NANY, NCONS, NOT, PNOT, Component
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
-from hwsim.logic import And12, Not12, Mux12, IsZero
+from hwsim.logic import And12, Not12, Mux12, Mux2Way12, IsZero
 from hwsim.memory import Register12, ProgramCounter11
 
 
@@ -132,21 +132,14 @@ class Jumper(Component):
     code is 00 NOJ) the output is the current instruction address + 1.
     """
     def __init__(self):
-        # Note: lazily using 3-way multiplexers for the 'A' and 'C' branch,
-        # even though there are only two possible outcomes on those branches --
-        # the jump target, or current+1. As a future optimisation, we may be
-        # able to swap these out for 2-way multiplexers. Each 3-way mux has 78
-        # primitives, whereas I think a 2-way mux could be 51. So it's a pretty
-        # significant difference, though granted we only need one Jumper chip
-        # in the entire computer.
         super().__init__(
                 ('current[11]', 'target[11]', 'cmp', 'j1', 'j2'),
                 ('out[11]',),
                 {
                     'Inc': Inc12,
-                    'MuxA': Mux12,
+                    'MuxA': Mux2Way12,
                     'MuxB': Mux12,
-                    'MuxC': Mux12,
+                    'MuxC': Mux2Way12,
                     'MuxOut': Mux12,
                     'NAnyA': NANY,
                     'NAnyC': NANY,
@@ -158,21 +151,18 @@ class Jumper(Component):
                     'MuxOut.b': 'MuxB.out',
                     'MuxOut.c': 'MuxC.out',
                     'MuxOut.s': 'j1',
-                    'MuxA.a': 'Inc.out',
-                    'MuxA.b[0..10]': 'target',
-                    'MuxA.b[11]': ZERO,
-                    'MuxA.c': 'Inc.out',
+                    'MuxA.a[0..10]': 'target',
+                    'MuxA.a[11]': ZERO,
+                    'MuxA.b': 'Inc.out',
                     'MuxA.s': 'NAnyA.out',
                     'MuxB.a': NEG,
                     'MuxB.b': 'Inc.out',
                     'MuxB.c[0..10]': 'target',
                     'MuxB.c[11]': ZERO,
                     'MuxB.s': 'j2',
-                    'MuxC.a[0..10]': 'target',
-                    'MuxC.a[11]': ZERO,
-                    'MuxC.b': 'Inc.out',
-                    'MuxC.c[0..10]': 'target',
-                    'MuxC.c[11]': ZERO,
+                    'MuxC.a': 'Inc.out',
+                    'MuxC.b[0..10]': 'target',
+                    'MuxC.b[11]': ZERO,
                     'MuxC.s': 'NAnyC.out',
                     'NAnyA.a': 'NotJ2.out',
                     'NAnyA.b': 'cmp',
