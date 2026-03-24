@@ -1,6 +1,7 @@
-from hwsim.component import ZERO, NEG, NANY, NOT, Component
-from hwsim.logic import And12, Not12, Mux12
-from hwsim.arithmetic import Add12, Inc12, Dec12
+from hwsim.component import ZERO, NEG, NAND, NANY, NCONS, NOT, PNOT, Component
+from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
+from hwsim.logic import And12, Not12, Mux, Mux12, IsZero
+from hwsim.memory import Register12, ProgramCounter11
 
 
 class ALU(Component):
@@ -180,4 +181,130 @@ class Jumper(Component):
                     'NotJ2.in': 'j2',
                     'Inc.in[0..10]': 'current',
                     'Inc.in[11]': ZERO,
+                    })
+
+
+class Loader(Component):
+    """The Loader calculates whether data should be loaded into RAM.
+
+    Its inputs are single-trit signals 'reset', 'mode' and 'target', and it has
+    a single trit output 'out'.
+
+    The output is positive only when both 'reset' and 'mode' are zero, and
+    'target' is positive. In all other cases, the output is zero.
+
+    |       | target | - | 0 | + |
+    | reset |  mode  |   |   |   |
+    |=======|========|===|===|===|
+    |   -   |    -   | 0 | 0 | 0 |
+    |   -   |    0   | 0 | 0 | 0 |
+    |   -   |    +   | 0 | 0 | 0 |
+    |   0   |    -   | 0 | 0 | 0 |
+    |   0   |    0   | 0 | 0 | + |
+    |   0   |    +   | 0 | 0 | 0 |
+    |   +   |    -   | 0 | 0 | 0 |
+    |   +   |    0   | 0 | 0 | 0 |
+    |   +   |    +   | 0 | 0 | 0 |
+    """
+    def __init__(self):
+        super().__init__(
+                ('reset', 'mode', 'target'),
+                ('out',),
+                {
+                    'NAnyA1': NANY,
+                    'NAnyA2': NANY,
+                    'NAnyB1': NANY,
+                    'NAnyB2': NANY,
+                    'NCons': NCONS,
+                    'NotMode': NOT,
+                    'PNot': PNOT,
+                    },
+                {
+                    'out': 'NCons.out',
+                    'NCons.a': 'NAnyB1.out',
+                    'NCons.b': 'NAnyB2.out',
+                    'NAnyB1.a': 'PNot.out',
+                    'NAnyB1.b': 'target',
+                    'NAnyB2.a': 'NAnyA2.out',
+                    'NAnyB2.b': 'target',
+                    'NAnyA1.a': 'reset',
+                    'NAnyA1.b': 'mode',
+                    'NAnyA2.a': 'NAnyA1.out',
+                    'NAnyA2.b': 'NotMode.out',
+
+                    'NotMode.in': 'mode',
+                    'PNot.in': 'NAnyA2.out',
+                    })
+
+
+class JumpController(Component):
+    """The Jump Controller modifies the jump control signals if needed.
+
+    It takes as inputs the two jump control signals 'j1' and 'j2', and the
+    'mode' and 'reset' signals.
+
+    When the 'mode' signal in a CPU instruction is non-zero, the jump1 and
+    jump2 signals are not controls at all, they are literal trit values to be
+    loaded into a register, so we need to override them both to zero to ensure
+    no jump occurs.
+
+    When the 'reset' signal to the CPU is non-zero, irrespective of the
+    CPU instruction, we need to override the jump signals to force a jump to
+    the start of the program address space, so jump1 needs to be zero and jump2
+    needs to be negative.
+
+    When both 'mode' and 'signal' are both zero, then the jump signals are
+    passed through to the outputs as-is.
+    """
+    def __init__(self):
+        super().__init__(
+                ('j1', 'j2', 'mode', 'reset'),
+                ('out1', 'out2'),
+                {
+                    'NotMode': NOT,
+                    'NotReset': NOT,
+                    'Not2': NOT,
+                    'IsResetZero': IsZero,
+                    'NCons1R': NCONS,
+                    'NCons1M': NCONS,
+                    'NCons2M': NCONS,
+                    'NAny1RA': NANY,
+                    'NAny1RB': NANY,
+                    'NAny1MA': NANY,
+                    'NAny1MB': NANY,
+                    'NAny2MA': NANY,
+                    'NAny2MB': NANY,
+                    'NAnd2R': NAND,
+                    },
+                {
+                    'out1': 'NCons1R.out',
+                    'NCons1R.a': 'NAny1RA.out',
+                    'NCons1R.b': 'NAny1RB.out',
+                    'NAny1RA.a': 'NotReset.out',
+                    'NAny1RA.b': 'NCons1M.out',
+                    'NAny1RB.a': 'reset',
+                    'NAny1RB.b': 'NCons1M.out',
+
+                    'NCons1M.a': 'NAny1MA.out',
+                    'NCons1M.b': 'NAny1MB.out',
+                    'NAny1MA.a': 'NotMode.out',
+                    'NAny1MA.b': 'j1',
+                    'NAny1MB.a': 'mode',
+                    'NAny1MB.b': 'j1',
+
+                    'out2': 'Not2.out',
+                    'Not2.in': 'NAnd2R.out',
+                    'NAnd2R.a': 'IsResetZero.out',
+                    'NAnd2R.b': 'NCons2M.out',
+
+                    'NCons2M.a': 'NAny2MA.out',
+                    'NCons2M.b': 'NAny2MB.out',
+                    'NAny2MA.a': 'NotMode.out',
+                    'NAny2MA.b': 'j2',
+                    'NAny2MB.a': 'mode',
+                    'NAny2MB.b': 'j2',
+
+                    'NotMode.in': 'mode',
+                    'NotReset.in': 'reset',
+                    'IsResetZero.in': 'reset',
                     })

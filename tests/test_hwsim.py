@@ -841,6 +841,25 @@ def test_hwsim_program_counter11():
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(TRINARY, (
+            Z, Z, Z,  # a = -, b = -
+            Z, Z, Z,  # a = -, b = 0
+            Z, Z, Z,  # a = -, b = +
+            Z, Z, Z,  # a = 0, b = -
+            Z, Z, P,  # a = 0, b = 0
+            Z, Z, Z,  # a = 0, b = +
+            Z, Z, Z,  # a = +, b = -
+            Z, Z, Z,  # a = +, b = 0
+            Z, Z, Z,  # a = +, b = +
+            ))))
+def test_hwsim_loader(inputs, expected):
+    comp = cpu.Loader()
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(
             (
                 # No jump
@@ -921,3 +940,22 @@ def test_hwsim_jumper(inputs, expected):
     comp = cpu.Jumper()
     out = comp.get_outputs(inputs)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(QUATERNARY, (
+            '0-', '00', '0-', '0-', '--', '0-', '0-', '00', '0-',  # j = --
+            '0-', '00', '0-', '0-', '-0', '0-', '0-', '00', '0-',  # j = -0
+            '0-', '00', '0-', '0-', '-+', '0-', '0-', '00', '0-',  # j = -+
+            '0-', '00', '0-', '0-', '0-', '0-', '0-', '00', '0-',  # j = 0-
+            '0-', '00', '0-', '0-', '00', '0-', '0-', '00', '0-',  # j = 00
+            '0-', '00', '0-', '0-', '0+', '0-', '0-', '00', '0-',  # j = 0+
+            '0-', '00', '0-', '0-', '+-', '0-', '0-', '00', '0-',  # j = +-
+            '0-', '00', '0-', '0-', '+0', '0-', '0-', '00', '0-',  # j = +0
+            '0-', '00', '0-', '0-', '++', '0-', '0-', '00', '0-',  # j = ++
+            ))))
+def test_hwsim_jump_controller(inputs, expected):
+    comp = cpu.JumpController()
+    out = comp.get_outputs(inputs)
+    assert out == tuple(expected)

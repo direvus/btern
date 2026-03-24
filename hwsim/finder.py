@@ -22,7 +22,10 @@ BINARY_TARGETS = {
         'demux_a': (NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO, ZERO),
         'demux_b': (ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS, ZERO),
         'demux_c': (ZERO, ZERO, NEG, ZERO, ZERO, ZERO, ZERO, ZERO, POS),
-        'load_m': (Z, Z, Z, Z, Z, P, Z, Z, Z)
+        'load_m': (Z, Z, Z, Z, Z, P, Z, Z, Z),
+        'jump_mode': (Z, Z, Z, N, Z, P, Z, Z, Z),
+        'jump2_reset': (N, N, N, N, Z, P, N, N, N),
+        'zero_if_both_zero': (N, N, N, N, Z, N, N, N, N),
         }
 UNARY_TARGETS = {
         'CLU': (ZERO, POS, NEG),
@@ -99,13 +102,21 @@ def nxor(a, b):
     return POS if a == b else NEG
 
 
+def pass_a(a, b):
+    return a
+
+
+def pass_b(a, b):
+    return b
+
+
 def isz(a):
     return POS if a == ZERO else NEG
 
 
 INPUTS = tuple((a, b) for a in (NEG, ZERO, POS) for b in (NEG, ZERO, POS))
 UNARY = (buffer, _not, pnot, nnot, isz)
-BINARY = (nand, nor, nany, ncons, nxor)
+BINARY = (nand, nor, nany, ncons, nxor, pass_a, pass_b)
 
 COST = {
         'buffer': 0,
@@ -118,6 +129,8 @@ COST = {
         'ncons': 1,
         'nxor': 4,
         'isz': 3,
+        'pass_a': 0,
+        'pass_b': 0,
         }
 
 
@@ -168,8 +181,6 @@ def find_binary_gates(name, expected):
                   f"{post.__name__}({com.__name__}({pre_a.__name__}(a), "
                   f"{pre_b.__name__}(b)))")
             found = True
-    if found:
-        return
 
     for a, b, c, d in product(BINARY, BINARY, BINARY, UNARY):
         if test_gates_bbbu(a, b, c, d, INPUTS, expected):
@@ -177,8 +188,6 @@ def find_binary_gates(name, expected):
                   f"{d.__name__}({c.__name__}({a.__name__}(a, b), "
                   f"{b.__name__}(a, b)))")
             found = True
-    if found:
-        return
 
     best = float('Infinity')
     for funcs in product(UNARY, UNARY, UNARY, UNARY, BINARY, BINARY, UNARY,
