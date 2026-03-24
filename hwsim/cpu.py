@@ -1,5 +1,5 @@
 from hwsim.component import (
-        ZERO, NEG, NAND, NANY, NCONS, NOR, NOT, PNOT, Component)
+        ZERO, NEG, NAND, NANY, NCONS, NOR, NOT, PNOT, Component, Trits)
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
 from hwsim.logic import And12, Not12, Mux2Way, Mux12, Mux2Way12, IsZero
 from hwsim.memory import Register12, ProgramCounter11
@@ -456,3 +456,11 @@ class CPU(Component):
         for i in range(12):
             self.cache[f'RegIn.a[{i}]'] = ZERO
             self.cache[f'ProgramCounter.in[{i}]'] = ZERO
+
+    def get_a(self) -> Trits:
+        """Get the current contents of the A register as a string."""
+        return self.components['A'].get_contents()
+
+    def get_d(self) -> Trits:
+        """Get the current contents of the D register as a string."""
+        return self.components['D'].get_contents()

@@ -993,3 +993,6 @@ def test_hwsim_cpu_reset():
 
     # Advance to the next clock cycle and confirm that registers A and D have
     # both been reset to zero.
+    comp.tick()
+    assert comp.get_a() == '000000000000'
+    assert comp.get_d() == '000000000000'

@@ -1,4 +1,4 @@
-from hwsim.component import Component, Trits
+from hwsim.component import Component, Trit, Trits
 from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
 from trit import NEG, ZERO, POS
 
@@ -17,7 +17,7 @@ class DataFlipFlop(Component):
     The update() method returns True when the load signal is non-zero,
     regardless of whether the actual state value has changed.
     """
-    state = ZERO
+    state: Trit = ZERO
 
     def __init__(self):
         super().__init__(('in', 'load'), ('out',))
@@ -34,6 +34,9 @@ class DataFlipFlop(Component):
         if inputs is not None:
             self.set_inputs(inputs)
         return (self.state,)
+
+    def get_contents(self) -> Trit:
+        return self.state
 
 
 class Register(Component):
@@ -98,6 +101,9 @@ class Register(Component):
         changed = super().update_subcomponents()
         self.prepare_cache()
         return changed
+
+    def get_contents(self) -> Trit:
+        return self.components['DFF'].get_contents()
 
 
 class Register12(Component):
@@ -170,6 +176,11 @@ class Register12(Component):
                     'T10.load': 'load',
                     'T11.load': 'load',
                     })
+
+    def get_contents(self) -> Trits:
+        return ''.join(
+                self.components[f'T{i}'].get_contents()
+                for i in range(12))
 
 
 class RAM3(Component):
