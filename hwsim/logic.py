@@ -744,6 +744,158 @@ class Mux2Way(Component):
                     })
 
 
+class Mux2Way12(Component):
+    """A 12-trit, 2-way multiplexer.
+
+    It selects one of its 2 data input buses 'a' and 'b', based on the value of
+    a selector input 's', and produces the selected input value on its output
+    bus 'out'.
+
+    Unlike the normal (3-way) multiplexer, this one only considers whether the
+    selector input is zero or non-zero; if zero, it selects 'a', otherwise it
+    selects 'b'.
+
+    | s | out |
+    |===|=====|
+    | - |  b  |
+    | 0 |  a  |
+    | + |  b  |
+    """
+    def __init__(self):
+        super().__init__(
+                ('a[12]', 'b[12]', 's'),
+                ('out[12]',),
+                {
+                    'IsZ': IsZero,
+                    'NotZ': NOT,
+                    'NAnd0A': NAND,
+                    'NAnd0B': NAND,
+                    'NAnd0AB': NAND,
+                    'NAnd1A': NAND,
+                    'NAnd1B': NAND,
+                    'NAnd1AB': NAND,
+                    'NAnd2A': NAND,
+                    'NAnd2B': NAND,
+                    'NAnd2AB': NAND,
+                    'NAnd3A': NAND,
+                    'NAnd3B': NAND,
+                    'NAnd3AB': NAND,
+                    'NAnd4A': NAND,
+                    'NAnd4B': NAND,
+                    'NAnd4AB': NAND,
+                    'NAnd5A': NAND,
+                    'NAnd5B': NAND,
+                    'NAnd5AB': NAND,
+                    'NAnd6A': NAND,
+                    'NAnd6B': NAND,
+                    'NAnd6AB': NAND,
+                    'NAnd7A': NAND,
+                    'NAnd7B': NAND,
+                    'NAnd7AB': NAND,
+                    'NAnd8A': NAND,
+                    'NAnd8B': NAND,
+                    'NAnd8AB': NAND,
+                    'NAnd9A': NAND,
+                    'NAnd9B': NAND,
+                    'NAnd9AB': NAND,
+                    'NAnd10A': NAND,
+                    'NAnd10B': NAND,
+                    'NAnd10AB': NAND,
+                    'NAnd11A': NAND,
+                    'NAnd11B': NAND,
+                    'NAnd11AB': NAND,
+                    },
+                {
+                    'IsZ.in': 's',
+                    'NotZ.in': 'IsZ.out',
+
+                    'out[0]': 'NAnd0AB.out',
+                    'NAnd0AB.a': 'NAnd0A.out',
+                    'NAnd0AB.b': 'NAnd0B.out',
+                    'NAnd0A.a': 'a[0]',
+                    'NAnd0A.b': 'IsZ.out',
+                    'NAnd0B.a': 'b[0]',
+                    'NAnd0B.b': 'NotZ.out',
+                    'out[1]': 'NAnd1AB.out',
+                    'NAnd1AB.a': 'NAnd1A.out',
+                    'NAnd1AB.b': 'NAnd1B.out',
+                    'NAnd1A.a': 'a[1]',
+                    'NAnd1A.b': 'IsZ.out',
+                    'NAnd1B.a': 'b[1]',
+                    'NAnd1B.b': 'NotZ.out',
+                    'out[2]': 'NAnd2AB.out',
+                    'NAnd2AB.a': 'NAnd2A.out',
+                    'NAnd2AB.b': 'NAnd2B.out',
+                    'NAnd2A.a': 'a[2]',
+                    'NAnd2A.b': 'IsZ.out',
+                    'NAnd2B.a': 'b[2]',
+                    'NAnd2B.b': 'NotZ.out',
+                    'out[3]': 'NAnd3AB.out',
+                    'NAnd3AB.a': 'NAnd3A.out',
+                    'NAnd3AB.b': 'NAnd3B.out',
+                    'NAnd3A.a': 'a[3]',
+                    'NAnd3A.b': 'IsZ.out',
+                    'NAnd3B.a': 'b[3]',
+                    'NAnd3B.b': 'NotZ.out',
+                    'out[4]': 'NAnd4AB.out',
+                    'NAnd4AB.a': 'NAnd4A.out',
+                    'NAnd4AB.b': 'NAnd4B.out',
+                    'NAnd4A.a': 'a[4]',
+                    'NAnd4A.b': 'IsZ.out',
+                    'NAnd4B.a': 'b[4]',
+                    'NAnd4B.b': 'NotZ.out',
+                    'out[5]': 'NAnd5AB.out',
+                    'NAnd5AB.a': 'NAnd5A.out',
+                    'NAnd5AB.b': 'NAnd5B.out',
+                    'NAnd5A.a': 'a[5]',
+                    'NAnd5A.b': 'IsZ.out',
+                    'NAnd5B.a': 'b[5]',
+                    'NAnd5B.b': 'NotZ.out',
+                    'out[6]': 'NAnd6AB.out',
+                    'NAnd6AB.a': 'NAnd6A.out',
+                    'NAnd6AB.b': 'NAnd6B.out',
+                    'NAnd6A.a': 'a[6]',
+                    'NAnd6A.b': 'IsZ.out',
+                    'NAnd6B.a': 'b[6]',
+                    'NAnd6B.b': 'NotZ.out',
+                    'out[7]': 'NAnd7AB.out',
+                    'NAnd7AB.a': 'NAnd7A.out',
+                    'NAnd7AB.b': 'NAnd7B.out',
+                    'NAnd7A.a': 'a[7]',
+                    'NAnd7A.b': 'IsZ.out',
+                    'NAnd7B.a': 'b[7]',
+                    'NAnd7B.b': 'NotZ.out',
+                    'out[8]': 'NAnd8AB.out',
+                    'NAnd8AB.a': 'NAnd8A.out',
+                    'NAnd8AB.b': 'NAnd8B.out',
+                    'NAnd8A.a': 'a[8]',
+                    'NAnd8A.b': 'IsZ.out',
+                    'NAnd8B.a': 'b[8]',
+                    'NAnd8B.b': 'NotZ.out',
+                    'out[9]': 'NAnd9AB.out',
+                    'NAnd9AB.a': 'NAnd9A.out',
+                    'NAnd9AB.b': 'NAnd9B.out',
+                    'NAnd9A.a': 'a[9]',
+                    'NAnd9A.b': 'IsZ.out',
+                    'NAnd9B.a': 'b[9]',
+                    'NAnd9B.b': 'NotZ.out',
+                    'out[10]': 'NAnd10AB.out',
+                    'NAnd10AB.a': 'NAnd10A.out',
+                    'NAnd10AB.b': 'NAnd10B.out',
+                    'NAnd10A.a': 'a[10]',
+                    'NAnd10A.b': 'IsZ.out',
+                    'NAnd10B.a': 'b[10]',
+                    'NAnd10B.b': 'NotZ.out',
+                    'out[11]': 'NAnd11AB.out',
+                    'NAnd11AB.a': 'NAnd11A.out',
+                    'NAnd11AB.b': 'NAnd11B.out',
+                    'NAnd11A.a': 'a[11]',
+                    'NAnd11A.b': 'IsZ.out',
+                    'NAnd11B.a': 'b[11]',
+                    'NAnd11B.b': 'NotZ.out',
+                    })
+
+
 class Demux9Way(Component):
     """A single trit, 9-way demultiplexer.
 

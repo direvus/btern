@@ -1,6 +1,6 @@
 from hwsim.component import ZERO, NEG, NAND, NANY, NCONS, NOT, PNOT, Component
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
-from hwsim.logic import And12, Not12, Mux, Mux12, IsZero
+from hwsim.logic import And12, Not12, Mux12, IsZero
 from hwsim.memory import Register12, ProgramCounter11
 
 

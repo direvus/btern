@@ -445,6 +445,25 @@ def test_hwsim_mux12(inputs, expected):
         "inputs,expected",
         list(zip(
             (
+                ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '-'),
+                ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0'),
+                ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '+'),
+                ),
+            (
+                tuple('+-0+-0+-0+-0'),
+                tuple('-0+-0+-0+-0+'),
+                tuple('+-0+-0+-0+-0'),
+                ))))
+def test_hwsim_mux2way12(inputs, expected):
+    comp = logic.Mux2Way12()
+    out = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '0++'),
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '+++'),
                 ('-0+-0+-0+-0+' '+-0+-0+-0+-0' '++0'),
