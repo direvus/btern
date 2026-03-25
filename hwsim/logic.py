@@ -154,6 +154,65 @@ class IsZero(Component):
                     })
 
 
+class CycleDown(Component):
+    """The CLD (cycle down) gate decreases the value of the input.
+
+    A negative input wraps around to give a positive output.
+
+    | in  | out |
+    |=====|=====|
+    |  -  |  +  |
+    |  0  |  -  |
+    |  +  |  0  |
+    """
+    def __init__(self):
+        super().__init__(
+                ('in',),
+                ('out',),
+                {
+                    'IsZ': IsZero,
+                    'NAny': NANY,
+                    },
+                {
+                    'out': 'NAny.out',
+                    'IsZ.in': 'in',
+                    'NAny.a': 'in',
+                    'NAny.b': 'IsZ.out',
+                    })
+
+
+class CycleUp(Component):
+    """The CLU (cycle up) gate increases the value of the input.
+
+    A positive input wraps around to give a negative output.
+
+    | in  | out |
+    |=====|=====|
+    |  -  |  0  |
+    |  0  |  +  |
+    |  +  |  -  |
+    """
+    def __init__(self):
+        super().__init__(
+                ('in',),
+                ('out',),
+                {
+                    'Not': NOT,
+                    'NNot': NNOT,
+                    'NOr': NOR,
+                    'NAny': NANY,
+                    },
+                {
+                    'out': 'NAny.out',
+                    'NAny.a': 'in',
+                    'NAny.b': 'NNot.out',
+                    'NNot.in': 'NOr.out',
+                    'NOr.a': 'Not.out',
+                    'NOr.b': 'in',
+                    'Not.in': 'in',
+                    })
+
+
 class Mux(Component):
     """The MUX gate is a single trit, 3-way multiplexer.
 

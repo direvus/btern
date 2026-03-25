@@ -141,6 +141,24 @@ def test_hwsim_isz(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(UNARY, (P, N, Z))))
+def test_hwsim_cld(inputs, expected):
+    comp = logic.CycleDown()
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(UNARY, (Z, P, N))))
+def test_hwsim_clu(inputs, expected):
+    comp = logic.CycleUp()
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(QUATERNARY, (
             N, N, N, N, N, Z, N, N, P,  # a = -, b = -
             N, Z, N, N, Z, Z, N, Z, P,  # a = -, b = 0
