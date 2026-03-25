@@ -1,3 +1,4 @@
+from trit import ZERO
 from hwsim.component import (
         Component, NAND, NCONS, NOR, NANY, NOT, PNOT, NNOT)
 
@@ -1006,4 +1007,80 @@ class Demux9Way(Component):
                     'DemuxGHI.s': 's[0]',
                     'DemuxIn.in': 'in',
                     'DemuxIn.s': 's[1]',
+                    })
+
+
+class ShiftLeft12(Component):
+    """A 12-trit left shift operation.
+
+    It has a 12-trit input bus 'in' and a 12-trit output bus 'out'.
+
+    Each trit value from the input bus is shifted one place to the left, with
+    trits organised from most significant on the left to least significant on
+    the right. The lowest trit of the output is always zero, and the highest
+    trit of the input is discarded.
+
+    For example:
+
+    |        | [11] ... [0] |
+    |========|==============|
+    |  input | ---0++00-+-- |
+    | output | --0++00-+--0 |
+    """
+    def __init__(self):
+        super().__init__(
+                ('in[12]',),
+                ('out[12]',),
+                {},
+                {
+                    'out[0]': ZERO,
+                    'out[1]': 'in[0]',
+                    'out[2]': 'in[1]',
+                    'out[3]': 'in[2]',
+                    'out[4]': 'in[3]',
+                    'out[5]': 'in[4]',
+                    'out[6]': 'in[5]',
+                    'out[7]': 'in[6]',
+                    'out[8]': 'in[7]',
+                    'out[9]': 'in[8]',
+                    'out[10]': 'in[9]',
+                    'out[11]': 'in[10]',
+                    })
+
+
+class ShiftRight12(Component):
+    """A 12-trit right shift operation.
+
+    It has a 12-trit input bus 'in' and a 12-trit output bus 'out'.
+
+    Each trit value from the input bus is shifted one place to the right, with
+    trits organised from most significant on the left to least significant on
+    the right. The highest trit of the output is always zero, and the lowest
+    trit of the input is discarded.
+
+    For example:
+
+    |        | [11] ... [0] |
+    |========|==============|
+    |  input | ---0++00-+-- |
+    | output | 0---0++00-+- |
+    """
+    def __init__(self):
+        super().__init__(
+                ('in[12]',),
+                ('out[12]',),
+                {},
+                {
+                    'out[0]': 'in[1]',
+                    'out[1]': 'in[2]',
+                    'out[2]': 'in[3]',
+                    'out[3]': 'in[4]',
+                    'out[4]': 'in[5]',
+                    'out[5]': 'in[6]',
+                    'out[6]': 'in[7]',
+                    'out[7]': 'in[8]',
+                    'out[8]': 'in[9]',
+                    'out[9]': 'in[10]',
+                    'out[10]': 'in[11]',
+                    'out[11]': ZERO,
                     })

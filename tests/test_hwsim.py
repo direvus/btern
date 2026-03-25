@@ -21,7 +21,7 @@ QUATERNARY = tuple((a, b, c, d)
 
 
 def seq_matches(a: Iterable, b: Iterable) -> bool:
-    return all(x == y for x, y in zip(a, b))
+    return len(a) == len(b) and all(x == y for x, y in zip(a, b))
 
 
 @pytest.mark.parametrize(
@@ -510,6 +510,48 @@ def test_hwsim_mux2way12(inputs, expected):
     comp = logic.Mux2Way12()
     out = comp.get_outputs(inputs)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                '------------',
+                '000000000000',
+                '++++++++++++',
+                '---0++00-+--',
+                ),
+            (
+                '0-----------',
+                '000000000000',
+                '0+++++++++++',
+                '0---0++00-+-',
+                ))))
+def test_hwsim_shift_left12(inputs, expected):
+    comp = logic.ShiftLeft12()
+    out = comp.get_outputs(inputs)
+    assert seq_matches(out, expected)
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                '------------',
+                '000000000000',
+                '++++++++++++',
+                '---0++00-+--',
+                ),
+            (
+                '-----------0',
+                '000000000000',
+                '+++++++++++0',
+                '--0++00-+--0',
+                ))))
+def test_hwsim_shift_right12(inputs, expected):
+    comp = logic.ShiftRight12()
+    out = comp.get_outputs(inputs)
+    assert seq_matches(out, expected)
 
 
 @pytest.mark.parametrize(
