@@ -1,12 +1,8 @@
 import re
 from collections.abc import Callable, Iterable
-from typing import Literal
-
 
 from trit import ZERO, POS, NEG
-
-Trit = Literal[NEG, ZERO, POS]
-Trits = Iterable[Trit]
+from hwsim.util import Trit, Trits
 
 
 BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')

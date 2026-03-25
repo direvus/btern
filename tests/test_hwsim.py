@@ -1,6 +1,8 @@
+from collections.abc import Iterable
+
 import pytest
 
-from hwsim import component, arithmetic, logic, cpu, memory
+from hwsim import component, arithmetic, logic, computer, cpu, memory, util
 from trit import ZERO, POS, NEG
 
 
@@ -16,6 +18,38 @@ QUATERNARY = tuple((a, b, c, d)
                    for b in TRITS
                    for c in TRITS
                    for d in TRITS)
+
+
+def seq_matches(a: Iterable, b: Iterable) -> bool:
+    return all(x == y for x, y in zip(a, b))
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                '-',
+                '0',
+                '+',
+                '--',
+                '-0',
+                '-+',
+                '-++',
+                '---+',
+                ),
+            (
+                -1,
+                0,
+                1,
+                -4,
+                -1,
+                2,
+                11,
+                14,
+                ))))
+def test_hwsim_trits_to_int(inputs, expected):
+    out = util.trits_to_int(inputs)
+    assert out == expected
 
 
 @pytest.mark.parametrize(
@@ -821,8 +855,8 @@ def test_hwsim_ram81():
     assert out == zero
 
 
-def test_hwsim_ram177ksim():
-    ram = memory.RAM177KSim()
+def test_hwsim_ram177k_mock():
+    ram = memory.RAM177KMock()
     addr = '+0-+00+---0'
     value = '+--0+---00--'
     zero = tuple(ZERO * 12)
@@ -1214,3 +1248,21 @@ def test_hwsim_cpu_ym():
     comp.tick()
 
     assert comp.get_a() == '0++0+-++++--'
+
+
+def test_hwsim_computer():
+    # Put a random literal value into D, then select a random memory address,
+    # and write the value from D into memory.
+    comp = computer.Computer()
+    program = (
+        '--0++-00+---',  # MOV A
+        '++-0+-+-00-+',  # MOV D
+        '000000++0000',  # ADD 0 D M
+        )
+    comp.load_program(program)
+    comp.reset()
+    for _ in range(len(program)):
+        comp.get_outputs(ZERO)
+        comp.tick()
+
+    assert seq_matches(comp.get_ram_contents('--0++-00+--'), '++-0+-+-00-0')

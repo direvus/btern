@@ -1,5 +1,8 @@
+from collections.abc import Iterable
+
 from hwsim.component import Component, Trit, Trits
 from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
+from hwsim.util import trits_to_int
 from trit import NEG, ZERO, POS
 
 
@@ -670,8 +673,8 @@ class RAM177K(Component):
                     })
 
 
-class RAM177KSim(Component):
-    """A simulated 177,147 register RAM module.
+class RAM177KMock(Component):
+    """A mocked 177,147 register RAM module.
 
     The module takes a 12-trit input data bus named 'in', a single trit 'load'
     signal and an 11-trit 'addr' bus.
@@ -680,35 +683,107 @@ class RAM177KSim(Component):
     register. Changes to register contents will take effect on the next time
     tick.
 
-    This class simulates the overall effect of a memory module in software,
-    because instantiating all of the subcomponents and tracking all of the
-    connection state between that many registers is not very practical for
+    This class imitates the overall behaviour of a memory module, without
+    instantiating all of the subcomponents and tracking all of the connection
+    state between that many registers, because that is not very practical for
     unit testing.
     """
+    deferred = True
+
     def __init__(self):
         super().__init__(
                 ('in[12]', 'load', 'addr[11]'),
                 ('out[12]',))
         self.registers = {}
+        self.addr = ''
         self.default_value = tuple(ZERO * 12)
 
     def update(self) -> bool:
         load = self.cache['load']
-        if load == ZERO:
+        addr = ''.join(self.cache[f'addr[{i}]'] for i in range(11))
+        if load == ZERO and self.addr == addr:
             return False
 
-        addr = ''.join(self.cache[f'addr[{i}]'] for i in range(11))
+        self.addr = addr
         if load == NEG:
-            self.registers[addr] = self.default_value
+            self.registers[self.addr] = self.default_value
         else:
             value = tuple(self.cache[f'in[{i}]'] for i in range(12))
-            self.registers[addr] = value
+            self.registers[self.addr] = value
         return True
 
-    def get_outputs(self, inputs: Trits) -> Trits:
-        self.set_inputs(inputs)
-        addr = ''.join(inputs[13:24])
+    def get_outputs(self, inputs: Trits | None = None) -> Trits:
+        if inputs is not None:
+            self.set_inputs(inputs)
+        return self.registers.get(self.addr, self.default_value)
+
+    def get_contents(self, addr: Trits) -> Trits:
+        addr = ''.join(addr)
         return self.registers.get(addr, self.default_value)
+
+
+class ROM177KMock(Component):
+    """A mocked 177,147 register read-only memory module.
+
+    The module takes an 11-trit input address bus 'addr', and has a 12-trit
+    output bus 'out'.
+
+    The 12-trit ouput bus always contains the current value of the addressed
+    register.
+
+    This class imitates the overall behaviour of a ROM module, but without
+    simulating all of the subcomponents and connections between them, because
+    that is not very practical for unit testing.
+    """
+    deferred = True
+    index = 0
+
+    def __init__(self):
+        super().__init__(
+                ('addr[11]',),
+                ('out[12]',))
+        self.index = 0
+        self.registers = []
+        self.min_address = trits_to_int(NEG * 11)
+        self.default_value = tuple(ZERO * 12)
+
+    def get_outputs(self, inputs: Trits | None = None) -> Trits:
+        if inputs is not None:
+            self.set_inputs(inputs)
+        return self.registers[self.index]
+
+    def update(self) -> bool:
+        addr = tuple(self.cache.get(f'addr[{i}]', '0') for i in range(11))
+        index = trits_to_int(addr) - self.min_address
+        if index != self.index and index >= 0 and index < len(self.registers):
+            self.index = index
+            return True
+        return False
+
+    def get_value(self, name: str) -> Trit:
+        if name == 'out':
+            return self.state
+        return super().get_value(name)
+
+    def load(self, values: Iterable[Trits]):
+        """Write data to the ROM.
+
+        Starting from the lowest possible register address in the ROM
+        (-----------), the values will be written sequentially into the ROM.
+
+        Each member of the `values` argument should be exactly 12 trits long.
+        If a value is longer than 12 trits, it will be truncated, and shorter
+        values will be padded on the right with zeroes.
+        """
+        self.registers = []
+        for value in values:
+            length = len(value)
+            if length > 12:
+                value = value[:12]
+            elif length < 12:
+                pad = tuple(ZERO) * (length - 12)
+                value = tuple(value) + pad
+            self.registers.append(tuple(value))
 
 
 class ProgramCounter11(Component):

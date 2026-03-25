@@ -352,11 +352,11 @@ class CPU(Component):
 
     Its outputs are:
 
-    - addressM -- an 11-trit address in RAM
+    - addrM -- an 11-trit address in RAM
     - outM -- the 12-trit value to present to RAM
     - loadM -- a single-trit signal indicating how the addressed RAM register
       should behave
-    - addressP -- an 11-trit address in program ROM of the next instruction to
+    - addrP -- an 11-trit address in program ROM of the next instruction to
       execute.
 
     When the reset signal is non-zero, it overrides the instruction and instead
