@@ -1040,3 +1040,45 @@ def test_hwsim_cpu_load_d():
     comp.tick()
     assert comp.get_a() == '000000000000'
     assert comp.get_d() == '+-+-+-+-+-+0'
+
+
+def test_hwsim_cpu_add():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Load literal value -28 into register A
+    inputs = ('000000000000' '-00-0000000-' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+
+    comp.tick()
+    assert comp.get_a() == '-00-00000000'
+    assert comp.get_d() == '000000000000'
+
+    # Load literal value 30 into register D
+    inputs = ('000000000000' '0+0+0000000+' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('+----------')
+
+    comp.tick()
+    assert comp.get_a() == '-00-00000000'
+    assert comp.get_d() == '0+0+00000000'
+
+    # Add together A and D, store the result in D
+    inputs = ('000000000000' '000000+000+0' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('-0---------')
+
+    # The contents of D should now be 2, and A should be unchanged.
+    comp.tick()
+    assert comp.get_a() == '-00-00000000'
+    assert comp.get_d() == '-+0000000000'
