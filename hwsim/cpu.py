@@ -21,8 +21,8 @@ class ALU(Component):
     When 'f' is negative, the output is the logical AND of the two inputs. When
     'f' is positive, the output is the arithmetic sum of the two inputs. When
     'f' is zero, the 'y' input is ignored, and the value of the 'py' signal is
-    instead used to select the function: if 'py' is negative, the output is x -
-    1, and if it is positive, the output is x + 1.
+    instead used to select the function to apply to 'x': if 'py' is negative,
+    the output is x - 1, and if it is positive, the output is x + 1.
 
     The behaviour when 'f' and 'py' are both zero is reserved for future
     expansion.
@@ -365,12 +365,12 @@ class CPU(Component):
 
     | index | meaning                         |
     |=======|=================================|
-    |   0   | Reserved                        |
-    |   1   | Reserved                        |
+    |   0   | Jump control 1                  |
+    |   1   | Jump control 2                  |
     |   2   | Reserved                        |
     |   3   | Reserved                        |
-    |   4   | Jump control 1                  |
-    |   5   | Jump control 2                  |
+    |   4   | Reserved                        |
+    |   5   | Reserved                        |
     |   6   | ALU function select (&/++/--/+) |
     |   7   | X-input transform               |
     |   8   | Y-input transform               |
@@ -441,8 +441,8 @@ class CPU(Component):
 
                     'addrM': 'A.out[0..10]',
 
-                    'JumpCtl.j1': 'inst[4]',
-                    'JumpCtl.j2': 'inst[5]',
+                    'JumpCtl.j1': 'inst[0]',
+                    'JumpCtl.j2': 'inst[1]',
                     'JumpCtl.mode': 'inst[11]',
                     'JumpCtl.reset': 'reset',
 

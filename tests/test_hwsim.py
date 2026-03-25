@@ -1082,3 +1082,77 @@ def test_hwsim_cpu_add():
     comp.tick()
     assert comp.get_a() == '-00-00000000'
     assert comp.get_d() == '-+0000000000'
+
+
+def test_hwsim_cpu_and():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Load literal value into register A
+    inputs = ('000000000000' '---000+++00-' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+    comp.tick()
+
+    # Load literal value into register D
+    inputs = ('000000000000' '-0+-0+-0+00+' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('+----------')
+    comp.tick()
+
+    assert comp.get_a() == '---000+++000'
+    assert comp.get_d() == '-0+-0+-0+000'
+
+    # Compute the logical AND of A and D, store the result in D
+    inputs = ('000000000000' '000000-000+0' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('-0---------')
+    comp.tick()
+
+    # The contents of D should now be the result of AND, A should be unchanged.
+    assert comp.get_a() == '---000+++000'
+    assert comp.get_d() == '----00-0+000'
+
+
+def test_hwsim_cpu_write_m():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Load literal address value into register A
+    inputs = ('000000000000' '--0++-000+--' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+    comp.tick()
+
+    # Load a literal value into register D
+    inputs = ('000000000000' '-0+-0+-0+00+' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('+----------')
+    comp.tick()
+
+    # Compute the value of 0+D, store the result in M
+    inputs = ('000000000000' '000000++0000' '0')
+    out = comp.get_outputs(inputs)
+    addrm = out[:11]
+    outm = out[11:23]
+    loadm = out[23]
+    addrp = out[24:35]
+    assert addrm == tuple('--0++-000+-')
+    assert outm == tuple('-0+-0+-0+000')
+    assert loadm == P
+    assert addrp == tuple('-0---------')
