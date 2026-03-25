@@ -1,7 +1,8 @@
 from hwsim.component import (
         ZERO, NEG, NAND, NANY, NCONS, NOR, NOT, PNOT, Component, Trits)
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
-from hwsim.logic import And12, Not12, Mux2Way, Mux12, Mux2Way12, IsZero
+from hwsim.logic import (
+        And12, CycleDown, CycleUp, Not12, Mux2Way, Mux12, Mux2Way12, IsZero)
 from hwsim.memory import Register12, ProgramCounter11
 
 
@@ -371,7 +372,7 @@ class CPU(Component):
     |   3   | Reserved                        |
     |   4   | Reserved                        |
     |   5   | Reserved                        |
-    |   6   | ALU function select (&/++/--/+) |
+    |   6   | ALU function select (&/-1/+1/+) |
     |   7   | X-input transform               |
     |   8   | Y-input transform               |
     |   9   | ALU input select (M+D/A+D/A+M)  |
@@ -391,8 +392,10 @@ class CPU(Component):
                     'A': Register12,
                     'D': Register12,
                     'ProgramCounter': ProgramCounter11,
-                    'X': Mux12,
-                    'Y': Mux12,
+                    'X': Mux2Way12,
+                    'Y': Mux2Way12,
+                    'XM': CycleUp,
+                    'YM': CycleDown,
                     'RegIn': Mux2Way12,
                     },
                 {
@@ -419,17 +422,16 @@ class CPU(Component):
                     'ALU.x': 'X.out',
                     'ALU.y': 'Y.out',
 
-                    # TODO: Lazy use of a 3-way mux, replace with 2-way later
+                    'XM.in': 'inst[9]',
+                    'YM.in': 'inst[9]',
+
                     'X.a': 'inM',
                     'X.b': 'A.out',
-                    'X.c': 'A.out',
-                    'X.s': 'inst[9]',
+                    'X.s': 'XM.out',
 
-                    # TODO: Lazy use of a 3-way mux, replace with 2-way later
-                    'Y.a': 'D.out',
+                    'Y.a': 'inM',
                     'Y.b': 'D.out',
-                    'Y.c': 'inM',
-                    'Y.s': 'inst[9]',
+                    'Y.s': 'YM.out',
 
                     'RegIn.a': 'ALU.out',
                     'RegIn.b[0..10]': 'inst[0..10]',
@@ -449,33 +451,6 @@ class CPU(Component):
                     'ProgramCounter.in': 'Jumper.out',
                     })
 
-        # Seed the cache to break the feedback loops: the ALU's output feeds
-        # back into the register input, and the Jumper's output feeds back in
-        # to the Program Counter. If we don't populate these values in the
-        # cache, we will go into an infinite recursion.
-        for i in range(12):
-            self.cache[f'RegIn.a[{i}]'] = ZERO
-        for i in range(11):
-            self.cache[f'ProgramCounter.out[{i}]'] = ZERO
-
-    def update_subcomponents(self):
-        # Save the current state of the ALU and Jumper outputs, so that we can
-        # seed them back into the cache after the update.
-        print("Updating ...")
-        print(f"A = {self.get_a()} D = {self.get_d()} PC = {self.get_pc()}")
-        temp = {}
-        for i in range(12):
-            temp[f'RegIn.a[{i}]'] = self.cache[f'ALU.out[{i}]']
-        for i in range(11):
-            temp[f'ProgramCounter.in[{i}]'] = self.cache[f'Jumper.out[{i}]']
-        jump = ''.join(self.cache[f'Jumper.out[{i}]'] for i in range(11))
-        print(f"Jumper.out = {jump}")
-
-        changed = super().update_subcomponents()
-
-        self.cache.update(temp)
-        return changed
-
     def reset(self) -> None:
         """Reset the CPU.
 
@@ -483,8 +458,6 @@ class CPU(Component):
         """
         self.get_outputs('000000000000000000000000+')
         self.tick()
-        print("Post update:")
-        print(f"A = {self.get_a()} D = {self.get_d()} PC = {self.get_pc()}")
 
     def get_a(self) -> Trits:
         """Get the current contents of the A register."""

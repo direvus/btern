@@ -1176,7 +1176,7 @@ def test_hwsim_cpu_write_m():
     assert addrp == tuple('-0---------')
 
 
-def test_hwsim_cpu_read_m():
+def test_hwsim_cpu_xm():
     comp = cpu.CPU()
     comp.reset()
 
@@ -1189,3 +1189,28 @@ def test_hwsim_cpu_read_m():
     assert outm == tuple('-0-000+++00-')
     assert loadm == P
     assert addrp == tuple('0----------')
+
+
+def test_hwsim_cpu_ym():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Load a literal value into register A
+    inputs = ('000000000000' '--0++-000+--' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+    comp.tick()
+
+    # Compute A+M and load the result back into M
+    inputs = ('+--000+++00-' '000000+00+-0' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('+----------')
+    comp.tick()
+
+    assert comp.get_a() == '0++0+-++++--'
