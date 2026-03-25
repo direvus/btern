@@ -996,3 +996,47 @@ def test_hwsim_cpu_reset():
     comp.tick()
     assert comp.get_a() == '000000000000'
     assert comp.get_d() == '000000000000'
+
+
+def test_hwsim_cpu_load_a():
+    comp = cpu.CPU()
+    comp.reset()
+    assert comp.get_a() == '000000000000'
+    assert comp.get_d() == '000000000000'
+
+    # Tell the CPU to load a literal value into register A
+    inputs = ('000000000000' '+-+-+-+-+-+-' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+
+    # Advance to the next clock cycle and confirm that the register contains
+    # the 11 literal trits from the instruction, with the high trit set to
+    # zero.
+    comp.tick()
+    assert comp.get_a() == '+-+-+-+-+-+0'
+    assert comp.get_d() == '000000000000'
+
+
+def test_hwsim_cpu_load_d():
+    comp = cpu.CPU()
+    comp.reset()
+    assert comp.get_a() == '000000000000'
+    assert comp.get_d() == '000000000000'
+
+    # Tell the CPU to load a literal value into register D
+    inputs = ('000000000000' '+-+-+-+-+-++' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+
+    # Advance to the next clock cycle and confirm that the register contains
+    # the 11 literal trits from the instruction, with the high trit set to
+    # zero.
+    comp.tick()
+    assert comp.get_a() == '000000000000'
+    assert comp.get_d() == '+-+-+-+-+-+0'

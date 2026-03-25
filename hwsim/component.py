@@ -29,6 +29,7 @@ class Primitive:
     buses: dict | None = None
     inputs: tuple[str] = tuple()
     outputs: tuple[str] = tuple()
+    deferred: bool = False
 
     def __init__(self, inputs: Iterable[str], outputs: Iterable[str]):
         self.inputs = tuple(inputs)
@@ -50,6 +51,8 @@ ComponentCompatible = Primitive | Callable
 
 
 class Component(Primitive):
+    deferred: bool = False
+
     def __init__(
             self,
             inputs: Iterable[str],
@@ -102,7 +105,7 @@ class Component(Primitive):
             for dest, source in connections.items():
                 self.add_connection(dest, source)
 
-    def add_connection(self, dest: str, source: str):
+    def add_connection(self, dest: str, source: str) -> None:
         m = BUS_SLICE_RE.match(dest)
         if m:
             # Dest uses slice notation [x..y]
@@ -201,9 +204,17 @@ class Component(Primitive):
     def update_subcomponents(self) -> bool:
         changed = False
         for name, comp in self.components.items():
+            if comp.deferred:
+                # We previously deferred setting the inputs for this
+                # subcomponent, so set them now.
+                inputs = tuple(
+                        self.get_value(f'{name}.{x}') for x in comp.inputs)
+                comp.set_inputs(inputs)
             if comp.tick():
                 changed = True
-            self.invalidate_cache(name)
+        if changed:
+            for name in self.components.keys():
+                self.invalidate_cache(name)
         return changed
 
     def tick(self) -> bool:
@@ -219,19 +230,37 @@ class Component(Primitive):
 
     def evaluate_subcomponent(self, name: str) -> Trits:
         comp = self.components[name]
-        inputs = tuple(self.get_value(f'{name}.{x}') for x in comp.inputs)
+        if comp.deferred:
+            inputs = None
+        else:
+            inputs = tuple(self.get_value(f'{name}.{x}') for x in comp.inputs)
         outputs = comp.get_outputs(inputs)
         self.cache.update({
             f'{name}.{comp.outputs[i]}': x for i, x in enumerate(outputs)})
         return outputs
 
     def set_inputs(self, inputs: Trits) -> None:
-        self.cache.update({
-                name: inputs[i]
-                for i, name in enumerate(self.inputs)})
+        changed = False
+        cache = {}
+        for i, name in enumerate(self.inputs):
+            if inputs[i] != self.cache.get(name):
+                changed = True
+            cache[name] = inputs[i]
+        if changed:
+            self.cache = cache
 
-    def get_outputs(self, inputs: Trits) -> Trits:
-        self.set_inputs(inputs)
+    def get_outputs(self, inputs: Trits | None = None) -> Trits:
+        """Get the output values for this component.
+
+        Normal (non-deferred) components need all of their inputs defined in
+        order to calculate their outputs.
+
+        Deferred components (e.g., memory registers) can provide their outputs
+        without any inputs, but they will respond to their inputs during a
+        clock tick.
+        """
+        if inputs is not None:
+            self.set_inputs(inputs)
         return tuple(self.get_value(name) for name in self.outputs)
 
 

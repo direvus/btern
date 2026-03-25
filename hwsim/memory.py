@@ -18,6 +18,7 @@ class DataFlipFlop(Component):
     regardless of whether the actual state value has changed.
     """
     state: Trit = ZERO
+    deferred = True
 
     def __init__(self):
         super().__init__(('in', 'load'), ('out',))
@@ -30,10 +31,10 @@ class DataFlipFlop(Component):
         self.state = self.cache['in']
         return True
 
-    def get_outputs(self, inputs: Trits | None = None) -> Trits:
-        if inputs is not None:
-            self.set_inputs(inputs)
-        return (self.state,)
+    def get_value(self, name: str) -> Trit:
+        if name == 'out':
+            return self.state
+        return super().get_value(name)
 
     def get_contents(self) -> Trit:
         return self.state
@@ -71,6 +72,8 @@ class Register(Component):
     | +  |  +   | + | + | + |
 
     """
+    deferred = True
+
     def __init__(self):
         super().__init__(
                 ('in', 'load'),
@@ -88,19 +91,6 @@ class Register(Component):
                     'Mux.c': 'in',
                     'Mux.s': 'load',
                     })
-        self.prepare_cache()
-
-    def prepare_cache(self):
-        # Seed the cache for the feedbacks from the DFF's output to the Mux, or
-        # else we will go into an infinite recursion trying to resolve the
-        # inputs for the DFF.
-        (value,) = self.components['DFF'].get_outputs()
-        self.cache['Mux.b'] = value
-
-    def update_subcomponents(self):
-        changed = super().update_subcomponents()
-        self.prepare_cache()
-        return changed
 
     def get_contents(self) -> Trit:
         return self.components['DFF'].get_contents()
@@ -120,6 +110,8 @@ class Register12(Component):
     disregarded. When 'load' is positive, the internal state is replaced with
     the value of 'in'.
     """
+    deferred = True
+
     def __init__(self):
         super().__init__(
                 ('in[12]', 'load'),
@@ -730,6 +722,8 @@ class ProgramCounter11(Component):
     the 'in' bus, and the new value will be available to read on the output bus
     on the following clock cycle.
     """
+    deferred = True
+
     def __init__(self):
         super().__init__(
                 ('in[11]',),
@@ -783,3 +777,8 @@ class ProgramCounter11(Component):
                     'T10.load': POS,
                     'T11.load': POS,
                     })
+
+    def get_contents(self) -> Trits:
+        return ''.join(
+                self.components[f'T{i}'].get_contents()
+                for i in range(11))

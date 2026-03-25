@@ -449,18 +449,51 @@ class CPU(Component):
                     'ProgramCounter.in': 'Jumper.out',
                     })
 
-        # Seed the cache for the feedback loops: the ALU's output feeds back
-        # into the register input, and the Jumper's output feedback in to the
-        # Program Counter. If we don't populate these values in the cache we
-        # will go into an infinite recursion.
+        # Seed the cache to break the feedback loops: the ALU's output feeds
+        # back into the register input, and the Jumper's output feeds back in
+        # to the Program Counter. If we don't populate these values in the
+        # cache, we will go into an infinite recursion.
         for i in range(12):
             self.cache[f'RegIn.a[{i}]'] = ZERO
-            self.cache[f'ProgramCounter.in[{i}]'] = ZERO
+        for i in range(11):
+            self.cache[f'ProgramCounter.out[{i}]'] = ZERO
+
+    def update_subcomponents(self):
+        # Save the current state of the ALU and Jumper outputs, so that we can
+        # seed them back into the cache after the update.
+        print("Updating ...")
+        print(f"A = {self.get_a()} D = {self.get_d()} PC = {self.get_pc()}")
+        temp = {}
+        for i in range(12):
+            temp[f'RegIn.a[{i}]'] = self.cache[f'ALU.out[{i}]']
+        for i in range(11):
+            temp[f'ProgramCounter.in[{i}]'] = self.cache[f'Jumper.out[{i}]']
+        jump = ''.join(self.cache[f'Jumper.out[{i}]'] for i in range(11))
+        print(f"Jumper.out = {jump}")
+
+        changed = super().update_subcomponents()
+
+        self.cache.update(temp)
+        return changed
+
+    def reset(self) -> None:
+        """Reset the CPU.
+
+        Set the 'reset' input to a non-zero value, and then send a clock tick.
+        """
+        self.get_outputs('000000000000000000000000+')
+        self.tick()
+        print("Post update:")
+        print(f"A = {self.get_a()} D = {self.get_d()} PC = {self.get_pc()}")
 
     def get_a(self) -> Trits:
-        """Get the current contents of the A register as a string."""
+        """Get the current contents of the A register."""
         return self.components['A'].get_contents()
 
     def get_d(self) -> Trits:
-        """Get the current contents of the D register as a string."""
+        """Get the current contents of the D register."""
         return self.components['D'].get_contents()
+
+    def get_pc(self) -> Trits:
+        """Get the current contents of the Program Counter."""
+        return self.components['ProgramCounter'].get_contents()
