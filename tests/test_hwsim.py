@@ -1174,3 +1174,18 @@ def test_hwsim_cpu_write_m():
     assert outm == tuple('-0+-0+-0+000')
     assert loadm == P
     assert addrp == tuple('-0---------')
+
+
+def test_hwsim_cpu_read_m():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Increment the value of M and load it back into M
+    inputs = ('+--000+++00-' '00000000+-00' '0')
+    out = comp.get_outputs(inputs)
+    outm = out[11:23]
+    loadm = out[23]
+    addrp = out[24:35]
+    assert outm == tuple('-0-000+++00-')
+    assert loadm == P
+    assert addrp == tuple('0----------')
