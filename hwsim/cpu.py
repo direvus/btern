@@ -2,7 +2,8 @@ from hwsim.component import (
         ZERO, NEG, NAND, NANY, NCONS, NOR, NOT, PNOT, Component, Trits)
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
 from hwsim.logic import (
-        And12, CycleDown, CycleUp, Not12, Mux2Way, Mux12, Mux2Way12, IsZero)
+        And12, CycleDown, CycleUp, IsZero, Not12, Mux2Way, Mux12, Mux2Way12,
+        ShiftLeft12, ShiftRight12)
 from hwsim.memory import Register12, ProgramCounter11
 
 
@@ -371,10 +372,10 @@ class CPU(Component):
     |   2   | Reserved                        |
     |   3   | Reserved                        |
     |   4   | Reserved                        |
-    |   5   | Reserved                        |
+    |   5   | Shift (right/none/left)         |
     |   6   | ALU function select (&/-1/+1/+) |
-    |   7   | X-input transform               |
-    |   8   | Y-input transform               |
+    |   7   | X-input transform (-X/X/0)      |
+    |   8   | Y-input transform (-Y/Y/0)      |
     |   9   | ALU input select (M+D/A+D/A+M)  |
     |  10   | Computation target (A/M/D)      |
     |  11   | Instruction mode (load/compute) |
@@ -397,6 +398,9 @@ class CPU(Component):
                     'XM': CycleUp,
                     'YM': CycleDown,
                     'RegIn': Mux2Way12,
+                    'ShiftL': ShiftLeft12,
+                    'ShiftR': ShiftRight12,
+                    'Result': Mux12,
                     },
                 {
                     'loadM': 'Loader.m',
@@ -433,13 +437,21 @@ class CPU(Component):
                     'Y.b': 'D.out',
                     'Y.s': 'YM.out',
 
-                    'RegIn.a': 'ALU.out',
+                    'RegIn.a': 'Result.out',
                     'RegIn.b[0..10]': 'inst[0..10]',
                     'RegIn.b[11]': ZERO,
                     'RegIn.s': 'inst[11]',
 
-                    'Cmp.in': 'ALU.out',
-                    'outM': 'ALU.out',
+                    'ShiftL.in': 'ALU.out',
+                    'ShiftR.in': 'ALU.out',
+
+                    'Result.a': 'ShiftR.out',
+                    'Result.b': 'ALU.out',
+                    'Result.c': 'ShiftL.out',
+                    'Result.s': 'inst[5]',
+
+                    'Cmp.in': 'Result.out',
+                    'outM': 'Result.out',
 
                     'addrM': 'A.out[0..10]',
 

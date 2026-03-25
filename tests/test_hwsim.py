@@ -1292,6 +1292,56 @@ def test_hwsim_cpu_ym():
     assert comp.get_a() == '0++0+-++++--'
 
 
+def test_hwsim_cpu_shift_left():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Load a literal value into register D
+    inputs = ('000000000000' '--0++-000+-+' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+    comp.tick()
+    assert comp.get_d() == '--0++-000+-0'
+
+    # Shift the value left and load it back into D
+    inputs = ('000000000000' '00000+++00+0' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('+----------')
+    comp.tick()
+    assert comp.get_d() == '0--0++-000+-'
+
+
+def test_hwsim_cpu_shift_right():
+    comp = cpu.CPU()
+    comp.reset()
+
+    # Load a literal value into register D
+    inputs = ('000000000000' '--0++-000+-+' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('0----------')
+    comp.tick()
+    assert comp.get_d() == '--0++-000+-0'
+
+    # Shift the value right and load it back into D
+    inputs = ('000000000000' '00000-++00+0' '0')
+    out = comp.get_outputs(inputs)
+    loadm = out[23]
+    addrp = out[24:35]
+    assert loadm == Z
+    assert addrp == tuple('+----------')
+    comp.tick()
+    assert comp.get_d() == '-0++-000+-00'
+
+
 def test_hwsim_computer():
     # Put a random literal value into D, then select a random memory address,
     # and write the value from D into memory.
