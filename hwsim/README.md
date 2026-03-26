@@ -50,7 +50,7 @@ These fundamental components are:
 
 ### Inverter (NOT)
 
-![NOT gate](doc/hwsim/not.png)
+![NOT gate](/doc/hwsim/not.png)
 
 Logically inverts its input:
 
@@ -62,7 +62,7 @@ Logically inverts its input:
 
 ### Positively-biased inverter (PNOT)
 
-![PNOT gate](doc/hwsim/pnot.png)
+![PNOT gate](/doc/hwsim/pnot.png)
 
 Logically inverts its input, but a zero input is biased to a positive output:
 
@@ -74,7 +74,7 @@ Logically inverts its input, but a zero input is biased to a positive output:
 
 ### Negatively-biased inverter (NNOT)
 
-![NNOT gate](doc/hwsim/nnot.png)
+![NNOT gate](/doc/hwsim/nnot.png)
 
 Logically inverts its input, but a zero input is biased to a negative output:
 
