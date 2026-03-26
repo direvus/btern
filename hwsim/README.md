@@ -92,8 +92,7 @@ Outputs the inverse of the logical AND of its two inputs:
 
 a NAND b == NOT (a AND b)
 
-|     |     |  b  |     |
-|  a  | `−` | `0` | `+` |
+| a/b | `−` | `0` | `+` |
 |-----|-----|-----|-----|
 | `−` | `+` | `+` | `+` |
 | `0` | `+` | `0` | `0` |
@@ -107,8 +106,7 @@ Outputs the inverse of the logical OR of its two inputs:
 
 a NOR b == NOT (a OR b)
 
-|     |     |  b  |     |
-|  a  | `−` | `0` | `+` |
+| a/b | `−` | `0` | `+` |
 |-----|-----|-----|-----|
 | `−` | `+` | `0` | `−` |
 | `0` | `0` | `0` | `−` |
@@ -126,8 +124,7 @@ charge bias of the inputs when taken together.
 
 a NANY b == NOT (a ANY b)
 
-|     |     |  b  |     |
-|  a  | `−` | `0` | `+` |
+| a/b | `−` | `0` | `+` |
 |-----|-----|-----|-----|
 | `−` | `+` | `+` | `0` |
 | `0` | `+` | `0` | `−` |
@@ -143,8 +140,7 @@ other cases, it outputs zero.
 
 a NCONS b == NOT (a CONS b)
 
-|     |     |  b  |     |
-|  a  | `−` | `0` | `+` |
+| a/b | `−` | `0` | `+` |
 |-----|-----|-----|-----|
 | `−` | `+` | `0` | `0` |
 | `0` | `0` | `0` | `0` |
@@ -178,7 +174,6 @@ The following table shows what the next stored value of the DFF will be, after
 a clock tick, given the current stored value and the values of the 'load' and
 'in' inputs.
 
-|     |     |     | curr|     |
 | load|  in | `−` | `0` | `+` |
 |-----|-----|-----|-----|-----|
 | `−` | `−` | `0` | `0` | `0` |
