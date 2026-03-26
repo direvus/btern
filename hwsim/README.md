@@ -12,7 +12,7 @@ symbols `−`, `0` and `+`.
 Logic gates operate on the Kleene three-valued logic system, where signals
 are interpreted as follows:
 
-| signal | meaning |
+| Signal | Meaning |
 |--------|---------|
 |  `−`   | False   |
 |  `0`   | Unknown |
@@ -185,3 +185,165 @@ a clock tick, given the current stored value and the values of the 'load' and
 | `+` | `−` | `−` | `−` | `−` |
 | `+` | `0` | `0` | `0` | `0` |
 | `+` | `+` | `+` | `+` | `+` |
+
+## Computer Architecture
+
+The computer uses a word size of 12 trits. It has a RAM module and a program
+ROM module, each of which can be addressed using 11 trits, for a total
+addressable space of 177,147 words, or 2,125,764 trits.
+
+The Central Processing Unit (CPU) accepts a 12-trit machine language
+instruction, and a 12-trit value from the currently active RAM register. It
+produces the result of executing the instruction, a new RAM address to
+activate, a signal indicating whether to load, retain or reset the contents of
+that RAM address, and the address of the next instruction to execute from the
+program ROM.
+
+The CPU contains two main registers, named `A` and `D`. These registers,
+together with the value from the active RAM register (named `M`), can be taken
+as inputs to the Arithmetic Logic Unit (ALU).
+
+The `A` register has two additional special functions:
+
+- Selects the active register in RAM for the next clock cycle. Thus, in any
+  given clock cycle, `M` is the value in the register with the address that was
+  held in `A` in the previous cycle.
+- Selects the target address in program ROM for a successful jump condition.
+
+## Machine Language Specification
+
+Each machine language instruction is 12 trits long, and it makes sense to look
+at them from most to least significant trit:
+
+| Index | Meaning                         |
+|-------|---------------------------------|
+|  11   | Instruction mode (move/compute) |
+|  10   | Computation target (A/M/D)      |
+|   9   | ALU input select (M+D/A+D/A+M)  |
+|   8   | Y-input transform (-Y/Y/0)      |
+|   7   | X-input transform (-X/X/0)      |
+|   6   | ALU function select (&/-1/+1/+) |
+|   5   | Shift (right/none/left)         |
+|   4   | Reserved                        |
+|   3   | Reserved                        |
+|   2   | Reserved                        |
+|   1   | Jump control 2                  |
+|   0   | Jump control 1                  |
+
+### Instruction mode (index 11)
+
+The most significant trit at index 11 controls the overall instruction mode.
+When it is zero, the instruction is in compute (normal) mode.
+
+When it is non-zero, the instruction treats the remaining 11 trits as a literal
+data value, and loads that value directly into either the `A` or the `D`
+register. The high bit of the target register will be set to zero.
+
+To load a literal value with 12 significant trits into a register, it's
+recommended to first load in the 11 high trits using a Move instruction, then
+shift it left, then use an increment or decrement instruction to set the low
+trit.
+
+| Code | Mode |
+|------|------|
+|  `−` | Move literal value directly into `A` |
+|  `0` | Compute |
+|  `+` | Move literal value directly into `D` |
+
+### Target select (index 10)
+
+The trit at index 10 selects where the result of computation should be written:
+
+| Code | Target |
+|------|--------|
+|  `−` |   `A`  |
+|  `0` |   `M`  |
+|  `+` |   `D`  |
+
+### ALU input select (index 9)
+
+The trit at index 9 selects which two inputs should be sent to the ALU for
+computation. The ALU has two inputs, named `X` and `Y`, and they are selected
+from `A`, `M` and `D` as follows:
+
+| Code |  X  |  Y  |
+|------|-----|-----|
+|  `−` | `M` | `D` |
+|  `0` | `A` | `D` |
+|  `+` | `A` | `M` |
+
+### X and Y input transforms (indexes 7-8)
+
+The two trits at indexes 7 and 8 indicate whether to apply a transform
+operation to each of the selected X and Y inputs before sending it to the ALU;
+index 7 controls the X input, and index 8 controls the Y. Each input will
+either be replaced with all zeroes, passed through as-is, or negated.
+
+Note that in balanced ternary, a tritwise logical negation and an arithmetic
+negation are the same thing.
+
+| Code | Operation    |
+|------|--------------|
+|  `−` | Negate       |
+|  `0` | Pass through |
+|  `+` | Zero out     |
+
+### ALU function select (index 6)
+
+The trit at index 6 controls which function the ALU will apply to its inputs.
+
+| Code | Operation  | Detail                          |
+|------|------------|---------------------------------|
+|  `−` | X AND Y    | Tritwise logical AND of X and Y |
+|  `0` | X+1 or X-1 | Increase or decrease X by 1     |
+|  `+` | X + Y      | Arithmetic sum of X and Y       |
+
+When the code is zero, the Y input is disregarded and instead the ALU uses the
+trit at index 8 to select a unary operation to apply to X:
+
+|  [8] | Operation | Detail            |
+|------|-----------|-------------------|
+|  `−` | X-1       | Subtract 1 from X |
+|  `0` | Reserved  |                   |
+|  `+` | X+1       | Add 1 to X        |
+
+### Trit shifting (index 5)
+
+The trit at index 5 selects whether to shift the trits of the output from the
+ALU.
+
+"Shift left" means the trit at index 0 is moved to index 1, and so on until the
+trit at index 10 is moved to 11, and the trit at 11 is discarded. The empty
+place at index 0 is filled with a zero.
+
+"Shift right" is the same but in the opposite direction.
+
+| Code | Operation   |
+|------|-------------|
+|  `−` | Shift right |
+|  `0` | No shift    |
+|  `+` | Shift left  |
+
+### Jump controls (indexes 0-1)
+
+The trits at indexes 0 and 1 control which instruction address will be executed
+next. The JLT, JEZ, JGT, JLE, JNZ and JGE settings test the output from the ALU
+against the selected criterion, and if it matches, will jump to the address
+held in `A`.
+
+The RST setting will unconditionally jump to the first address of the program
+ROM. The JMP setting will unconditionally jump to the address in `A`, and the
+NOJ setting will not jump, but advance normally to the current instruction
+address plus one.
+
+| j1  | j2  | name | Result                        |
+|-----|-----|------|-------------------------------|
+| `-` | `-` | JLT  | Jump if test is <0            |
+| `-` | `0` | JEZ  | Jump if test is =0            |
+| `-` | `+` | JGT  | Jump if test is >0            |
+| `0` | `-` | RST  | Jump to start unconditionally |
+| `0` | `0` | NOJ  | Do not jump                   |
+| `0` | `+` | JMP  | Jump unconditionally          |
+| `+` | `-` | JLE  | Jump if test is <=0           |
+| `+` | `0` | JNZ  | Jump if test is !=0           |
+| `+` | `+` | JGE  | Jump if test is >=0           |
