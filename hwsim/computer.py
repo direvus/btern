@@ -61,6 +61,7 @@ class Computer(Component):
         self.set_inputs(inputs)
         for name in self.components:
             self.evaluate_subcomponent(name)
+        return tuple()
 
     def reset(self) -> None:
         """Reset the computer and advance to the next clock cycle."""
@@ -69,9 +70,23 @@ class Computer(Component):
         self.get_outputs(POS)
         self.tick()
 
+    def step(self) -> None:
+        """Execute one normal clock cycle."""
+        self.get_outputs(ZERO)
+        self.tick()
+
     def load_program(self, data: Iterable[Trits]) -> None:
         """Write data to the program ROM."""
         self.components['ROM'].load(data)
 
     def get_ram_contents(self, address: Trits) -> Trits:
         return self.components['RAM'].get_contents(address)
+
+    def get_a(self) -> Trits:
+        return self.components['CPU'].get_a()
+
+    def get_d(self) -> Trits:
+        return self.components['CPU'].get_d()
+
+    def get_program_address(self) -> Trits:
+        return self.components['CPU'].get_pc()
