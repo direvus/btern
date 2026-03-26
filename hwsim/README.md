@@ -14,9 +14,9 @@ are interpreted as follows:
 
 | signal | meaning |
 |--------|---------|
-|   −    | False   |
-|   0    | Unknown |
-|   +    | True    |
+|  `−`   | False   |
+|  `0`   | Unknown |
+|  `+`   | True    |
 
 The `0` value means a value that could be either `−` or `+`, but we don't know
 which one. Otherwise, logical operations follow the same rules as normal
@@ -56,9 +56,9 @@ Logically inverts its input:
 
 |  in | out |
 |-----|-----|
-|  −  |  +  |
-|  0  |  0  |
-|  +  |  −  |
+| `−` | `+` |
+| `0` | `0` |
+| `+` | `−` |
 
 ### Positively-biased inverter (PNOT)
 
@@ -68,9 +68,9 @@ Logically inverts its input, but a zero input is biased to a positive output:
 
 |  in | out |
 |-----|-----|
-|  −  |  +  |
-|  0  |  +  |
-|  +  |  −  |
+| `−` | `+` |
+| `0` | `+` |
+| `+` | `−` |
 
 ### Negatively-biased inverter (NNOT)
 
@@ -80,9 +80,9 @@ Logically inverts its input, but a zero input is biased to a negative output:
 
 |  in | out |
 |-----|-----|
-|  −  |  +  |
-|  0  |  −  |
-|  +  |  −  |
+| `−` | `+` |
+| `0` | `−` |
+| `+` | `−` |
 
 ### Inverted logical conjunction (NAND)
 
