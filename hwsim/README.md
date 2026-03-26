@@ -13,7 +13,7 @@ Logic gates operate on the Kleene three-valued logic system, where signals
 are interpreted as follows:
 
 | signal | meaning |
-|========|=========|
+|--------|---------|
 |   -    | False   |
 |   0    | Unknown |
 |   +    | True    |
@@ -55,7 +55,7 @@ These fundamental components are:
 Logically inverts its input:
 
 |  in | out |
-|=====|=====|
+|-----|-----|
 |  -  |  +  |
 |  0  |  0  |
 |  +  |  -  |
@@ -67,7 +67,7 @@ Logically inverts its input:
 Logically inverts its input, but a zero input is biased to a positive output:
 
 |  in | out |
-|=====|=====|
+|-----|-----|
 |  -  |  +  |
 |  0  |  +  |
 |  +  |  -  |
@@ -79,7 +79,7 @@ Logically inverts its input, but a zero input is biased to a positive output:
 Logically inverts its input, but a zero input is biased to a negative output:
 
 |  in | out |
-|=====|=====|
+|-----|-----|
 |  -  |  +  |
 |  0  |  -  |
 |  +  |  -  |
