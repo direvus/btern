@@ -8,7 +8,7 @@ Trit = Literal[NEG, ZERO, POS]
 Trits = Iterable[Trit]
 
 
-def trits_to_int(trits: Trits) -> Trits:
+def trits_to_int(trits: Trits) -> int:
     """Convert a sequence of trits into a Python integer.
 
     The trits are interpreted from least signficant at index 0, to most
@@ -22,3 +22,26 @@ def trits_to_int(trits: Trits) -> Trits:
             result += value * scale
         scale *= 3
     return result
+
+
+def int_to_trits(n: int, size: int) -> Trits:
+    """Convert a Python decimal integer into a fixed-length sequence of trits.
+
+    The trits are organised from least significant at index 0, to most
+    significant at the end of the sequence.
+
+    Raises an error if the given integer cannot be represented in the given
+    number of trits.
+    """
+    trit_map = '-0+'
+    m = (3 ** size) // 2
+    if n < -m or n > m:
+        raise ValueError(f"Integer {n} cannot be represented in {size} trits")
+
+    # Shift to an unsigned equivalent
+    x = n + m
+    result = []
+    for _ in range(size):
+        x, rem = divmod(x, 3)
+        result.append(trit_map[rem])
+    return ''.join(result)

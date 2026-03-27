@@ -57,10 +57,14 @@ names:
 - MOV
 - ADD
 - SUB
+- CHK
+- CLR
 - CPY
 - AND
 - INC
 - DEC
+- SHL
+- SHR
 - NOP
 
 The MOV operation is a special operation with its own distinct rules. All other
@@ -71,7 +75,7 @@ operations are **compute** operations.
 There are some general rules for arguments that apply to all compute
 operations, that is, all operations except for MOV.
 
-In all other operation, all **input** arguments must be one of the following:
+In compute operations, all **input** arguments must be one of the following:
 
 - The name of a register: `A`, `M` or `D`, or
 - The name of a negated register: `-A`, `-M` or `-D`, or
@@ -133,9 +137,10 @@ MOV LOOP1 A
 
 ### ADD
 
-The CPY (copy) instruction copies the contents of one register to another.
+The ADD instruction adds the two inputs together and stores in the result in a
+register.
 
-It has two mandatory arguments, the input and the destination register.
+It has three mandatory arguments, the two inputs and the destination register.
 
 ```
 ADD A D M
@@ -143,8 +148,8 @@ ADD A D M
 
 ### SUB
 
-The SUB (subtract) instruction subtracts one input from another, and writes the
-result to a register.
+The SUB (subtract) instruction subtracts the second input from the first, and
+writes the result to a register.
 
 It has three mandatory arguments, the two inputs and the destination register,
 for example:
@@ -154,6 +159,36 @@ SUB M D M
 ```
 
 SUB is a convenient shorthand for calling ADD with the second input negated.
+
+### CHK
+
+The CHK (check) instruction does not modify any register, but selects a
+register as the input of computation, typically so that it can be used as the
+test value for a conditional jump.
+
+It has one mandatory argument: the input register.
+
+For example:
+
+```
+CHK D
+```
+
+CHK is a convenient shorthand for adding zero to the register, and writing the
+result back to the same register.
+
+### CLR
+
+The CLR (clear) instruction sets a register to zero.
+
+It has one mandatory argument: the destination register.
+
+For example:
+
+```
+CLR M
+```
+CLR is a convenient shorthand for `AND 0 0 <dest>`
 
 ### CPY
 
@@ -198,6 +233,40 @@ for example:
 DEC D D
 ```
 
+### SHL
+
+The SHL (shift left) instruction shifts the trits in the input one position to
+the left.
+
+It has two mandatory arguments, the input and the destination register. For
+example:
+
+```
+SHL D D
+```
+
+SHL is a convenient shorthand for `ADD 0 <in> <dest> <<`
+
+Because SHL applies its own shift argument to the instruction, it is an error
+to specify a shift to this operation.
+
+### SHR
+
+The SHR (shift right) instruction shifts the trits in the input one position to
+the right.
+
+It has two mandatory arguments, the input and the destination register. For
+example:
+
+```
+SHR M D
+```
+
+SHR is a convenient shorthand for `ADD 0 <in> <dest> >>`
+
+Because SHR applies its own shift argument to the instruction, it is an error
+to specify a shift to this operation.
+
 ### NOP
 
 The NOP (no operation) instruction doesn't do anything apart from occupy the
@@ -205,4 +274,4 @@ computer for one cycle.
 
 It has no mandatory arguments.
 
-NOP is a shorthand for ADD 0 0.
+NOP is a shorthand for `ADD 0 D D`.

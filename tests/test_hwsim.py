@@ -54,6 +54,34 @@ def test_hwsim_trits_to_int(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(
+            (
+                (-1, 1),
+                (0, 1),
+                (1, 1),
+                (-4, 2),
+                (-1, 2),
+                (2, 2),
+                (11, 3),
+                (14, 4),
+                ),
+            (
+                '-',
+                '0',
+                '+',
+                '--',
+                '-0',
+                '-+',
+                '-++',
+                '---+',
+                ))))
+def test_hwsim_int_to_trits(inputs, expected):
+    out = util.int_to_trits(*inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(BINARY, (POS, POS, POS, POS, ZERO, ZERO, POS, ZERO, NEG))))
 def test_hwsim_nand(inputs, expected):
     comp = component.NAnd()
