@@ -2,7 +2,7 @@ from hwsim.component import (
         ZERO, NEG, NAND, NANY, NCONS, NOR, NOT, PNOT, Component, Trits)
 from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
 from hwsim.logic import (
-        And12, CycleDown, CycleUp, IsZero, Not12, Mux2Way, Mux12, Mux2Way12,
+        And12, IsZero, Not12, Mux2Way, Mux12, Mux2Way12,
         ShiftLeft12, ShiftRight12)
 from hwsim.memory import Register12, ProgramCounter11
 
@@ -366,17 +366,17 @@ class CPU(Component):
     The meaning of each trit in the machine language instruction is as follows:
 
     | index | meaning                         |
-    |=======|=================================|
+    |-------|---------------------------------|
     |   0   | Jump control 1                  |
     |   1   | Jump control 2                  |
     |   2   | Reserved                        |
     |   3   | Reserved                        |
-    |   4   | Reserved                        |
-    |   5   | Shift (right/none/left)         |
-    |   6   | ALU function select (&/-1/+1/+) |
-    |   7   | X-input transform (-X/X/0)      |
-    |   8   | Y-input transform (-Y/Y/0)      |
-    |   9   | ALU input select (M+D/A+D/A+M)  |
+    |   4   | Shift (right/none/left)         |
+    |   5   | ALU function select (&/-1/+1/+) |
+    |   6   | X-input transform (-X/X/0)      |
+    |   7   | Y-input transform (-Y/Y/0)      |
+    |   8   | X-input select (A/M/D)          |
+    |   9   | Y-input select (A/M/D)          |
     |  10   | Computation target (A/M/D)      |
     |  11   | Instruction mode (load/compute) |
     """
@@ -393,10 +393,8 @@ class CPU(Component):
                     'A': Register12,
                     'D': Register12,
                     'ProgramCounter': ProgramCounter11,
-                    'X': Mux2Way12,
-                    'Y': Mux2Way12,
-                    'XM': CycleUp,
-                    'YM': CycleDown,
+                    'X': Mux12,
+                    'Y': Mux12,
                     'RegIn': Mux2Way12,
                     'ShiftL': ShiftLeft12,
                     'ShiftR': ShiftRight12,
@@ -420,22 +418,21 @@ class CPU(Component):
                     'A.in': 'RegIn.out',
                     'D.in': 'RegIn.out',
 
-                    'ALU.f': 'inst[6]',
-                    'ALU.px': 'inst[7]',
-                    'ALU.py': 'inst[8]',
+                    'ALU.f': 'inst[5]',
+                    'ALU.px': 'inst[6]',
+                    'ALU.py': 'inst[7]',
                     'ALU.x': 'X.out',
                     'ALU.y': 'Y.out',
 
-                    'XM.in': 'inst[9]',
-                    'YM.in': 'inst[9]',
+                    'X.a': 'A.out',
+                    'X.b': 'inM',
+                    'X.c': 'D.out',
+                    'X.s': 'inst[8]',
 
-                    'X.a': 'inM',
-                    'X.b': 'A.out',
-                    'X.s': 'XM.out',
-
-                    'Y.a': 'inM',
-                    'Y.b': 'D.out',
-                    'Y.s': 'YM.out',
+                    'Y.a': 'A.out',
+                    'Y.b': 'inM',
+                    'Y.c': 'D.out',
+                    'Y.s': 'inst[9]',
 
                     'RegIn.a': 'Result.out',
                     'RegIn.b[0..10]': 'inst[0..10]',
@@ -448,7 +445,7 @@ class CPU(Component):
                     'Result.a': 'ShiftR.out',
                     'Result.b': 'ALU.out',
                     'Result.c': 'ShiftL.out',
-                    'Result.s': 'inst[5]',
+                    'Result.s': 'inst[4]',
 
                     'Cmp.in': 'Result.out',
                     'outM': 'Result.out',

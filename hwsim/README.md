@@ -32,11 +32,11 @@ or false.
 
 ## Fundamental components
 
-This is *not* an electrical engineering project, so we begin by assuming
+This is *not* an electronics engineering project, so we begin by assuming
 several fundamental components, and build up the rest of the computer by making
 connections between these fundamental components.
 
-These fundamental components are:
+The fundamental components are:
 
 - Inverter (NOT)
 - Positively-biased inverter (PNOT)
@@ -116,11 +116,12 @@ a NOR b == NOT (a OR b)
 
 Outputs the inverse of the logical ANY of its two inputs.
 
-There is no direct analogue for ANY in two-valued Boolean logic. It outputs
-zero when one input is negative and the other is positive, the non-zero value
-when one of the inputs is zero and the other is non-zero, and the same value as
-the input when both inputs are equal. It can be conceptualised as the overall
-charge bias of the inputs when taken together.
+The ANY operation is particular to ternary logic, and has no direct analogue in
+two-valued Boolean logic. It outputs zero when one input is negative and the
+other is positive, the non-zero value when one of the inputs is zero and the
+other is non-zero, and the same value as the input when both inputs are equal.
+It can be conceptualised as the overall charge bias of the inputs when taken
+together.
 
 a NANY b == NOT (a ANY b)
 
@@ -134,9 +135,9 @@ a NANY b == NOT (a ANY b)
 
 Outputs the inverse of the logical CONS of its two inputs.
 
-There is no direct analogue for CONS in two-valued Boolean logic. When both
-inputs are equal (they are in "consensus"), it outputs the input value. In all
-other cases, it outputs zero.
+The CONS operation is particular to ternary logic, and has no direct analogue
+in two-valued Boolean logic. When both inputs are equal (they are in
+"consensus"), it outputs the input value. In all other cases, it outputs zero.
 
 a NCONS b == NOT (a CONS b)
 
@@ -155,7 +156,7 @@ on components.
 
 When the `tick()` method is invoked on a component, that component executes any
 behaviour that is triggered on a clock signal, and propagates the clock signal
-recursively down to its subcomponents.
+recursively down to all of its subcomponents.
 
 ### Data flip flop (DFF) 
 
@@ -189,26 +190,34 @@ a clock tick, given the current stored value and the values of the 'load' and
 ## Computer Architecture
 
 The computer uses a word size of 12 trits. It has a RAM module and a program
-ROM module, each of which can be addressed using 11 trits, for a total
-addressable space of 177,147 words, or 2,125,764 trits.
+ROM module, each of which is addressed using 11 trits, for a total addressable
+space of 177,147 words, or 2,125,764 trits.
 
 The Central Processing Unit (CPU) accepts a 12-trit machine language
-instruction, and a 12-trit value from the currently active RAM register. It
-produces the result of executing the instruction, a new RAM address to
-activate, a signal indicating whether to load, retain or reset the contents of
-that RAM address, and the address of the next instruction to execute from the
-program ROM.
+instruction, a 12-trit value from the currently active RAM register, and a
+reset signal. It produces the result of executing the instruction, a new RAM
+address to activate, a signal indicating whether to load, retain or reset the
+contents of that RAM address, and the address of the next instruction to
+execute from the program ROM.
 
-The CPU contains two main registers, named `A` and `D`. These registers,
-together with the value from the active RAM register (named `M`), can be taken
-as inputs to the Arithmetic Logic Unit (ALU).
+The CPU contains two main registers, the `A` ("Address") register and the `D`
+("Data") register.
 
-The `A` register has two additional special functions:
+The `A` register has two special functions:
 
 - Selects the active register in RAM for the next clock cycle. Thus, in any
   given clock cycle, `M` is the value in the register with the address that was
   held in `A` in the previous cycle.
 - Selects the target address in program ROM for a successful jump condition.
+
+The `D` register is a general purpose data register with no special functions.
+
+The mnemonic `M` refers to the value from the active RAM register that was
+supplied to the CPU in the current cycle.
+
+`A`, `M` and `D` are all eligible for selection as inputs to the Arithmetic
+Logic Unit (ALU), and are all eligible as targets to receive the result of a
+computation.
 
 ## Machine Language Specification
 
@@ -219,12 +228,12 @@ at them from most to least significant trit:
 |-------|---------------------------------|
 |  11   | Instruction mode (move/compute) |
 |  10   | Computation target (A/M/D)      |
-|   9   | ALU input select (M+D/A+D/A+M)  |
-|   8   | Y-input transform (-Y/Y/0)      |
-|   7   | X-input transform (-X/X/0)      |
-|   6   | ALU function select (&/-1/+1/+) |
-|   5   | Shift (right/none/left)         |
-|   4   | Reserved                        |
+|   9   | Y-input select (A/M/D)          |
+|   8   | X-input select (A/M/D)          |
+|   7   | Y-input transform (-Y/Y/0)      |
+|   6   | X-input transform (-X/X/0)      |
+|   5   | ALU function select (&/-1/+1/+) |
+|   4   | Shift (right/none/left)         |
 |   3   | Reserved                        |
 |   2   | Reserved                        |
 |   1   | Jump control 2                  |
@@ -232,22 +241,23 @@ at them from most to least significant trit:
 
 ### Instruction mode (index 11)
 
-The most significant trit at index 11 controls the overall instruction mode.
+The most significant trit, at index 11, controls the overall instruction mode.
 When it is zero, the instruction is in compute (normal) mode.
 
-When it is non-zero, the instruction treats the remaining 11 trits as a literal
-data value, and loads that value directly into either the `A` or the `D`
-register. The high bit of the target register will be set to zero.
+When it is non-zero, the instruction is in move mode. It treats the remaining
+11 trits as a literal data value, and loads that value directly into either the
+`A` or the `D` register. The high trit of the target register will be set to
+zero.
 
 To load a literal value with 12 significant trits into a register, it's
 recommended to first load in the 11 high trits using a Move instruction, then
 shift it left, then use an increment or decrement instruction to set the low
 trit.
 
-| Code | Mode |
-|------|------|
+| Code | Mode                                 |
+|------|--------------------------------------|
 |  `−` | Move literal value directly into `A` |
-|  `0` | Compute |
+|  `0` | Compute                              |
 |  `+` | Move literal value directly into `D` |
 
 ### Target select (index 10)
@@ -260,23 +270,23 @@ The trit at index 10 selects where the result of computation should be written:
 |  `0` |   `M`  |
 |  `+` |   `D`  |
 
-### ALU input select (index 9)
+### X and Y input select (indexes 8-9)
 
-The trit at index 9 selects which two inputs should be sent to the ALU for
-computation. The ALU has two inputs, named `X` and `Y`, and they are selected
-from `A`, `M` and `D` as follows:
+The trits at indexes 8 and 9 select which inputs should be sent to the ALU for
+computation. The ALU has two inputs, named `X` and `Y`. The `X` input is
+selected by index 8 and the `Y` input is selected by index 9, as follows:
 
-| Code |  X  |  Y  |
-|------|-----|-----|
-|  `−` | `M` | `D` |
-|  `0` | `A` | `D` |
-|  `+` | `A` | `M` |
+| Code | Input |
+|------|-------|
+|  `−` |  `A`  |
+|  `0` |  `M`  |
+|  `+` |  `D`  |
 
-### X and Y input transforms (indexes 7-8)
+### X and Y input transforms (indexes 6-7)
 
-The two trits at indexes 7 and 8 indicate whether to apply a transform
+The two trits at indexes 6 and 7 indicate whether to apply a transform
 operation to each of the selected X and Y inputs before sending it to the ALU;
-index 7 controls the X input, and index 8 controls the Y. Each input will
+index 6 controls the X input, and index 7 controls the Y. Each input will
 either be replaced with all zeroes, passed through as-is, or negated.
 
 Note that in balanced ternary, a tritwise logical negation and an arithmetic
@@ -288,9 +298,9 @@ negation are the same thing.
 |  `0` | Pass through |
 |  `+` | Zero out     |
 
-### ALU function select (index 6)
+### ALU function select (index 5)
 
-The trit at index 6 controls which function the ALU will apply to its inputs.
+The trit at index 5 controls which function the ALU will apply to its inputs.
 
 | Code | Operation  | Detail                          |
 |------|------------|---------------------------------|
@@ -298,23 +308,28 @@ The trit at index 6 controls which function the ALU will apply to its inputs.
 |  `0` | X+1 or X-1 | Increase or decrease X by 1     |
 |  `+` | X + Y      | Arithmetic sum of X and Y       |
 
-When the code is zero, the Y input is disregarded and instead the ALU uses the
-trit at index 8 to select a unary operation to apply to X:
+When the code at index 5 is zero, the Y input is disregarded, so the Y-input
+transform trit at index 7 has no effect on the computation. So instead the ALU
+uses the trit at index 7 to select a unary operation to apply to X:
 
-|  [8] | Operation | Detail            |
-|------|-----------|-------------------|
-|  `−` | X-1       | Subtract 1 from X |
-|  `0` | Reserved  |                   |
-|  `+` | X+1       | Add 1 to X        |
+| [5] | [7] | Operation | Detail            |
+|-----|-----|-----------|-------------------|
+| `0` | `−` | X-1       | Subtract 1 from X |
+| `0` | `0` | Reserved  |                   |
+| `0` | `+` | X+1       | Add 1 to X        |
 
-### Trit shifting (index 5)
+### Trit shifting (index 4)
 
-The trit at index 5 selects whether to shift the trits of the output from the
+The trit at index 4 selects whether to shift the trits of the output from the
 ALU.
 
-"Shift left" means the trit at index 0 is moved to index 1, and so on until the
-trit at index 10 is moved to 11, and the trit at 11 is discarded. The empty
-place at index 0 is filled with a zero.
+In a shift operation, all the trits of a value are shifted one place to the
+left or right. Here, "left" and "right" are with respect to the trits laid out
+in arithmetic order, with index 11 on the left, through to index 0 on the right.
+
+"Shift left" means the trit at index 0 is moved to index 1, index 1 is moved to
+2, and so on until the trit at index 10 is moved to 11, and the trit at 11 is
+discarded. The empty place at index 0 is filled with a zero.
 
 "Shift right" is the same but in the opposite direction.
 
@@ -353,13 +368,15 @@ address plus one.
 There are a few opportunities for future expansion in this design.
 
 - One reserved ALU operation (when both 'f' and 'py' are zero) that could be
-  made to do something useful, just not sure what.
-- Three reserved trits in the machine language.
+  made to do something useful, just not sure what. Could be a tryte swap, or a
+  tritwise reverse?
+- Two reserved trits in the machine language.
 - The 'reset' signal only has two states, zero or non-zero. There is room to
   make neg and pos behave differently, perhaps adding something like a halt?
-- Consider ways to end a program. Maybe reserve the very last address of the
-  program space as a shutdown, so if the CPU ever tries to jump there, we stop
-  running?
+- Consider ways to terminate the program. Maybe reserve the very last address
+  of the program space as a shutdown, so if the CPU ever tries to jump there,
+  we stop running? That way a shutdown is just two machine instructions -- move
+  11+ into A and then jump.
 
 ## Acknowledgements
 

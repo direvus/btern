@@ -1165,7 +1165,7 @@ def test_hwsim_cpu_add():
     assert comp.get_d() == '0+0+00000000'
 
     # Add together A and D, store the result in D
-    inputs = ('000000000000' '000000+000+0' '0')
+    inputs = ('000000000000' '00000+00-++0' '0')
     out = comp.get_outputs(inputs)
     loadm = out[23]
     addrp = out[24:35]
@@ -1204,7 +1204,7 @@ def test_hwsim_cpu_and():
     assert comp.get_d() == '-0+-0+-0+000'
 
     # Compute the logical AND of A and D, store the result in D
-    inputs = ('000000000000' '000000-000+0' '0')
+    inputs = ('000000000000' '00000-00-++0' '0')
     out = comp.get_outputs(inputs)
     loadm = out[23]
     addrp = out[24:35]
@@ -1240,7 +1240,7 @@ def test_hwsim_cpu_write_m():
     comp.tick()
 
     # Compute the value of 0+D, store the result in M
-    inputs = ('000000000000' '000000++0000' '0')
+    inputs = ('000000000000' '00000++00+00' '0')
     out = comp.get_outputs(inputs)
     addrm = out[:11]
     outm = out[11:23]
@@ -1252,12 +1252,12 @@ def test_hwsim_cpu_write_m():
     assert addrp == tuple('-0---------')
 
 
-def test_hwsim_cpu_xm():
+def test_hwsim_cpu_inc_m():
     comp = cpu.CPU()
     comp.reset()
 
     # Increment the value of M and load it back into M
-    inputs = ('+--000+++00-' '00000000+-00' '0')
+    inputs = ('+--000+++00-' '0000000+0000' '0')
     out = comp.get_outputs(inputs)
     outm = out[11:23]
     loadm = out[23]
@@ -1267,7 +1267,7 @@ def test_hwsim_cpu_xm():
     assert addrp == tuple('0----------')
 
 
-def test_hwsim_cpu_ym():
+def test_hwsim_cpu_a_m():
     comp = cpu.CPU()
     comp.reset()
 
@@ -1280,8 +1280,8 @@ def test_hwsim_cpu_ym():
     assert addrp == tuple('0----------')
     comp.tick()
 
-    # Compute A+M and load the result back into M
-    inputs = ('+--000+++00-' '000000+00+-0' '0')
+    # Compute A+M and load the result back into A
+    inputs = ('+--000+++00-' '00000+00-0-0' '0')
     out = comp.get_outputs(inputs)
     loadm = out[23]
     addrp = out[24:35]
@@ -1307,7 +1307,7 @@ def test_hwsim_cpu_shift_left():
     assert comp.get_d() == '--0++-000+-0'
 
     # Shift the value left and load it back into D
-    inputs = ('000000000000' '00000+++00+0' '0')
+    inputs = ('000000000000' '0000+++00++0' '0')
     out = comp.get_outputs(inputs)
     loadm = out[23]
     addrp = out[24:35]
@@ -1332,7 +1332,7 @@ def test_hwsim_cpu_shift_right():
     assert comp.get_d() == '--0++-000+-0'
 
     # Shift the value right and load it back into D
-    inputs = ('000000000000' '00000-++00+0' '0')
+    inputs = ('000000000000' '0000-++00++0' '0')
     out = comp.get_outputs(inputs)
     loadm = out[23]
     addrp = out[24:35]
@@ -1349,7 +1349,7 @@ def test_hwsim_computer():
     program = (
         '--0++-00+---',  # MOV A
         '++-0+-+-00-+',  # MOV D
-        '000000++0000',  # ADD 0 D M
+        '00000++00+00',  # ADD 0 D M
         )
     comp.load_program(program)
     comp.reset()
@@ -1358,3 +1358,42 @@ def test_hwsim_computer():
         comp.tick()
 
     assert seq_matches(comp.get_ram_contents('--0++-00+--'), '++-0+-+-00-0')
+
+
+def test_hwsim_computer_loop():
+    # Test basic loop operation. Load a target address into A, and a loop
+    # counter value into D. Decrement the counter and loop on that instruction
+    # until the counter reaches zero.
+    comp = computer.Computer()
+    program = (
+        '0+000000000+',  # MOV 3 D
+        '+-----------',  # MOV +---------- A
+        '-+00000-+0+0',  # DEC D D JGT
+        )
+    comp.load_program(program)
+    comp.reset()
+    assert seq_matches(comp.get_program_address(), '-----------')
+
+    comp.step()
+    assert seq_matches(comp.get_d(), '0+0000000000')
+    assert seq_matches(comp.get_program_address(), '0----------')
+
+    comp.step()
+    assert seq_matches(comp.get_a(), '+----------0')
+    assert seq_matches(comp.get_d(), '0+0000000000')
+    assert seq_matches(comp.get_program_address(), '+----------')
+
+    comp.step()
+    assert seq_matches(comp.get_a(), '+----------0')
+    assert seq_matches(comp.get_d(), '-+0000000000')
+    assert seq_matches(comp.get_program_address(), '+----------')
+
+    comp.step()
+    assert seq_matches(comp.get_a(), '+----------0')
+    assert seq_matches(comp.get_d(), '+00000000000')
+    assert seq_matches(comp.get_program_address(), '+----------')
+
+    comp.step()
+    assert seq_matches(comp.get_a(), '+----------0')
+    assert seq_matches(comp.get_d(), '000000000000')
+    assert seq_matches(comp.get_program_address(), '-0---------')
