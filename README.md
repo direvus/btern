@@ -37,6 +37,12 @@ Modules
     computer simulators (Processor), and a simple working implementation of a
     Processor (T3).
 
+Subpackages
+-----------
+
+  * [hwsim](/hwsim) is a complete hardware simulation of a balanced ternary
+    computer, built from a small set of fundamental logic gates
+
 Background
 ----------
 

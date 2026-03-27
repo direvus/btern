@@ -22,6 +22,9 @@ gives:
 
 If a trit sequence is not evenly divisible into 5-trit segments, the final
 segment is padded to 5 trits by adding '-' trits to the left.
+
+5 trits has 243 possible values, and 8 bits has 256, so there is about a 5%
+efficiency loss in the encoding.
 """
 import integer
 import trit
