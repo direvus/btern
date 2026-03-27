@@ -1,3 +1,9 @@
+# Index
+
+- [Ternary logic system](/doc/hwsim/logic.md)
+- [Fundamental components](/doc/hwsim/fundamental.md)
+- [Assembly language](/doc/hwsim/assembly.md)
+
 # Computer Architecture
 
 The computer uses a word size of 12 trits. It has a RAM module and a program

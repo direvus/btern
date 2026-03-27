@@ -1,3 +1,9 @@
+# Index
+
+- [Ternary logic system](/doc/hwsim/logic.md)
+- [Computer architecture and machine language specification](/doc/hwsim/arch.md)
+- [Assembly language](/doc/hwsim/assembly.md)
+
 # Fundamental components
 
 This is *not* an electronics engineering project, so we begin by assuming

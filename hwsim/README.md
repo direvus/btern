@@ -8,6 +8,7 @@ See the documentation for more detail:
 - [Ternary logic system](/doc/hwsim/logic.md)
 - [Fundamental components](/doc/hwsim/fundamental.md)
 - [Computer architecture and machine language specification](/doc/hwsim/arch.md)
+- [Assembly language](/doc/hwsim/assembly.md)
 
 ## Future expansion
 
