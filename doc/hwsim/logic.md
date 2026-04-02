@@ -19,9 +19,9 @@ are interpreted as follows:
 |  `0`   | Unknown |
 |  `+`   | True    |
 
-The `0` value means a value that could be either `−` or `+`, but we don't know
-which one. Otherwise, logical operations follow the same rules as normal
-two-valued Boolean logic systems.
+The `0` value represents an unknown value that could be either `−` or `+`, but
+we don't know which one. Otherwise, logical operations follow the same rules as
+normal two-valued Boolean logic systems.
 
 So, for example, a logical operation like `0 AND +` would yield `0`, because
 the left-hand operand could be either `−` or `+`, and therefore the result of
@@ -31,3 +31,14 @@ On the other hand, the operation `0 AND −` is definitively false, because the
 result cannot ever be true, regardless of whether the left-hand operand is true
 or false.
 
+Many of the familiar formulas from two-valued logic continue to hold in this
+three-valued system, for example ternary `x AND +` is equal to `x` in the same
+way that `x AND true` is equal to `x` in binary.
+
+De Morgan's Theorem applies exactly the same way in both systems:
+
+```
+NOT (NOT x AND NOT y) == x OR y
+
+NOT (NOT x OR NOT Y) == x AND y
+```

@@ -50,23 +50,8 @@ class Computer(Component):
                     'ROM.addr': 'CPU.addrP',
                     })
 
-    def get_outputs(self, inputs: Trits | None = None) -> Trits:
-        """Process the connections in the Computer.
-
-        Technically we don't have any outputs from this component, but this is
-        the method that is usually responsible for triggering a recursive
-        evaluation of subcomponents. So we do that here, in spite of the lack
-        of any real outputs.
-        """
-        self.set_inputs(inputs)
-        for name in self.components:
-            self.evaluate_subcomponent(name)
-        return tuple()
-
     def reset(self) -> None:
         """Reset the computer and advance to the next clock cycle."""
-        self.cache['RAM.out'] = ZERO * 12
-        self.cache['ROM.out'] = ZERO * 12
         self.get_outputs(POS)
         self.tick()
 
@@ -78,6 +63,9 @@ class Computer(Component):
     def load_program(self, data: Iterable[Trits]) -> None:
         """Write data to the program ROM."""
         self.components['ROM'].load(data)
+
+    def set_ram_contents(self, address: Trits, value: Trits) -> None:
+        return self.components['RAM'].set_contents(address, value)
 
     def get_ram_contents(self, address: Trits) -> Trits:
         return self.components['RAM'].get_contents(address)

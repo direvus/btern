@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 
 from hwsim.component import Component, Trit, Trits
 from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
@@ -10,7 +10,8 @@ class DataFlipFlop(Component):
     """The data flip flop has a single trit internal state value.
 
     It takes two inputs, 'in' and 'load', and has one output 'out'. The output
-    always produces the current internal state of the flip flop.
+    produces the current internal state of the flip flop, without any inputs
+    required.
 
     When the flip flop receives a clock pulse, it updates its internal value
     according to the 'in' and 'load' signals. When 'load' is zero, the internal
@@ -21,17 +22,16 @@ class DataFlipFlop(Component):
     regardless of whether the actual state value has changed.
     """
     state: Trit = ZERO
-    deferred = True
 
     def __init__(self):
         super().__init__(('in', 'load'), ('out',))
 
     def update(self) -> bool:
-        load = self.cache['load']
+        load = self.get_value('load')
         if load == ZERO:
             return False
 
-        self.state = self.cache['in']
+        self.state = self.get_value('in')
         return True
 
     def get_value(self, name: str) -> Trit:
@@ -75,8 +75,6 @@ class Register(Component):
     | +  |  +   | + | + | + |
 
     """
-    deferred = True
-
     def __init__(self):
         super().__init__(
                 ('in', 'load'),
@@ -685,11 +683,8 @@ class RAM177KMock(Component):
 
     This class imitates the overall behaviour of a memory module, without
     instantiating all of the subcomponents and tracking all of the connection
-    state between that many registers, because that is not very practical for
-    unit testing.
+    state between that many registers, because that is not very practical.
     """
-    deferred = True
-
     def __init__(self):
         super().__init__(
                 ('in[12]', 'load', 'addr[11]'),
@@ -698,9 +693,12 @@ class RAM177KMock(Component):
         self.addr = ''
         self.default_value = tuple(ZERO * 12)
 
+    def get_address(self) -> Trits:
+        return ''.join(self.get_value(f'addr[{i}]') for i in range(11))
+
     def update(self) -> bool:
-        load = self.cache['load']
-        addr = ''.join(self.cache[f'addr[{i}]'] for i in range(11))
+        load = self.get_value('load')
+        addr = self.get_address()
         if load == ZERO and self.addr == addr:
             return False
 
@@ -712,10 +710,20 @@ class RAM177KMock(Component):
             self.registers[self.addr] = value
         return True
 
+    def get_value(self, name: str) -> Trit:
+        if name in self.outputs:
+            index = self.outputs.index(name)
+            return self.registers[self.addr][index]
+        return super().get_value(name)
+
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
         if inputs is not None:
             self.set_inputs(inputs)
         return self.registers.get(self.addr, self.default_value)
+
+    def set_contents(self, addr: Trits, value: Trits) -> None:
+        addr = ''.join(addr)
+        self.registers[addr] = value
 
     def get_contents(self, addr: Trits) -> Trits:
         addr = ''.join(addr)

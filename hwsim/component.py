@@ -14,7 +14,7 @@ class Primitive:
 
     The Primitive class can be subclassed directly to create basic logic gates
     with individual input and output trits, where the output is defined in
-    software.
+    Python code, rather than in simulated circuitry.
 
     Direct subclasses of Primitive must not contain any mutable attributes, and
     would typically be used with a singleton pattern.
@@ -25,16 +25,34 @@ class Primitive:
     buses: dict | None = None
     inputs: tuple[str] = tuple()
     outputs: tuple[str] = tuple()
-    deferred: bool = False
 
     def __init__(self, inputs: Iterable[str], outputs: Iterable[str]):
         self.inputs = tuple(inputs)
         self.outputs = tuple(outputs)
 
-    def get_outputs(self, inputs: Trits) -> Trits:
+    def get_outputs(self, inputs: Trits | None = None) -> Trits:
+        """Return the outputs for this component, given its inputs."""
         raise NotImplementedError()
 
-    def tick(self) -> bool:
+    def get_output_callback(self, name: str, callback: Callable) -> Trit:
+        """Return a single output for this component, given an input callback.
+
+        This is typically how a component would be used from within the context
+        of a parent component. The parent calls this method, passing
+        in a callable that can be invoked with the name of an input to this
+        component, to discover its value. In this way components can control
+        the selection and timing of requesting inputs from their parent.
+
+        The default behaviour for a Primitive component is to request all
+        inputs up front, calculate all outputs and return the name one, but
+        inheriting classes are free to override these methods to get different
+        behaviour.
+        """
+        inputs = tuple(callback(x) for x in self.inputs)
+        index = self.outputs.index(name)
+        return self.get_outputs(inputs)[index]
+
+    def update(self) -> bool:
         """Update the component in response to a clock pulse.
 
         Return True if the component's state has changed as a result of the
@@ -42,19 +60,21 @@ class Primitive:
         """
         return False
 
+    def clear_cache(self) -> None:
+        pass
+
 
 ComponentCompatible = Primitive | Callable
 
 
 class Component(Primitive):
-    deferred: bool = False
-
     def __init__(
             self,
             inputs: Iterable[str],
             outputs: Iterable[str],
             components: dict[str, ComponentCompatible] | None = None,
             connections: dict[str, str] | None = None):
+        self.input_callback = None
         self.buses = {}
         input_items = []
         output_items = []
@@ -101,65 +121,69 @@ class Component(Primitive):
             for dest, source in connections.items():
                 self.add_connection(dest, source)
 
-    def add_connection(self, dest: str, source: str) -> None:
-        m = BUS_SLICE_RE.match(dest)
+    def expand_bus(self, name: str) -> Iterable[str]:
+        """Expand a name that could be a bus or bus slice.
+
+        If the name matches a bus on this component, it is expanded to a
+        listing of each of the connections in the bus; name[0], name[1],
+        name[2], ..., name[size-1].
+
+        If the name uses a slice notation in the form name[x..y] then it
+        expands to just the connections between x and y, inclusive.
+
+        If the name is not a bus nor a slice, then it just returns itself as an
+        iterable of one item.
+        """
+        m = BUS_SLICE_RE.match(name)
         if m:
             # Dest uses slice notation [x..y]
-            dest_name = m.group(1)
-            dest_start = int(m.group(2))
-            dest_end = int(m.group(3))
-            if dest_start > dest_end:
+            bus = m.group(1)
+            start = int(m.group(2))
+            end = int(m.group(3))
+            if start > end:
                 raise ValueError(
-                        f"Invalid bus slice {dest}: "
+                        f"Invalid bus slice {name}: "
                         "start of range is after the end")
-            dest_size = dest_end - dest_start + 1
-        elif dest in self.buses:
-            # Dest refers to a whole bus
-            dest_name = dest
-            dest_start = 0
-            dest_size = self.buses[dest]
-        else:
+            return tuple(f'{bus}[{i}]' for i in range(start, end + 1))
+
+        if name in self.buses:
+            size = self.buses[name]
+            return tuple(f'{name}[{i}]' for i in range(size))
+
+        return (name,)
+
+    def add_connection(self, dest: str, source: str) -> None:
+        dest_items = self.expand_bus(dest)
+        dest_size = len(dest_items)
+        if dest_size == 1:
             # Simple case with no buses involved, this is just a single trit
             # connection.
             self.connections[dest] = source
             return
 
-        m = BUS_SLICE_RE.match(source)
-        if m:
-            # Source uses slice notation [x..y]
-            source_name = m.group(1)
-            source_start = int(m.group(2))
-            source_end = int(m.group(3))
-            if source_start > source_end:
-                raise ValueError(
-                        f"Invalid bus slice {source}: "
-                        "start of range is after the end")
-            source_size = source_end - source_start + 1
-        elif source in self.buses:
-            # Source refers to a whole bus
-            source_name = source
-            source_start = 0
-            source_size = self.buses[source]
-        else:
-            # Source is a single trit, and dest is a bus, so fan out the single
-            # source to all wires on the destination.
-            for i in range(dest_size):
-                self.connections[f'{dest_name}[{i}]'] = source
+        source_items = self.expand_bus(source)
+        source_size = len(source_items)
+        if source_size == 1:
+            # Source is a single trit, and dest is multiple, so fan out the
+            # single source to all wires on the destination.
+            for item in dest_items:
+                self.connections[item] = source_items[0]
             return
 
         # If we've arrived here, then there is a bus (or slice) on both sides
-        # of the connection
+        # of the connection, so they had better be the same size.
         if dest_size != source_size:
             raise ValueError(
                 f"Invalid connection {dest} <- {source}: "
                 "both endpoints are buses but have different sizes")
 
-        i = dest_start
-        j = source_start
-        for _ in range(dest_size):
-            self.connections[f'{dest_name}[{i}]'] = f'{source_name}[{j}]'
-            i += 1
-            j += 1
+        self.connections.update(dict(zip(dest_items, source_items)))
+
+    def get_input(self, name: str) -> Trit:
+        if self.input_callback is None:
+            raise ValueError(
+                    f"Requested input '{name}', but no callback is set.")
+        return self.input_callback(name)
 
     def get_value(self, name: str) -> Trit:
         # Literal trit values are treated as a constant source
@@ -169,6 +193,11 @@ class Component(Primitive):
         if name in self.cache:
             return self.cache[name]
 
+        if name in self.inputs:
+            value = self.get_input(name)
+            self.cache[name] = value
+            return value
+
         if name in self.connections:
             source = self.connections[name]
             if source in self.cache:
@@ -176,9 +205,7 @@ class Component(Primitive):
 
             try:
                 if '.' in source:
-                    comp, _ = source.split('.')
-                    self.evaluate_subcomponent(comp)
-                    value = self.cache[source]
+                    value = self.get_subcomponent_output(*source.split('.'))
                     self.cache[name] = value
                     return value
                 return self.get_value(source)
@@ -189,72 +216,79 @@ class Component(Primitive):
         raise ValueError(f"'{name}' does not exist in this component")
 
     def invalidate_cache(self, name: str) -> None:
+        """Remove all cache entries for a subcomponent."""
         prefix = f'{name}.'
         self.cache = {
                 k: v for k, v in self.cache.items()
                 if k != name and not k.startswith(prefix)}
 
-    def update(self) -> bool:
+    def clear_cache(self) -> None:
+        """Clear the cache of this component and all its descendants."""
+        self.cache = {}
+        for comp in self.components.values():
+            comp.clear_cache()
+
+    def update_local(self) -> bool:
         return False
 
-    def update_subcomponents(self) -> bool:
-        changed = False
+    def update_subcomponents(self) -> set[str]:
+        """Recursively update all subcomponents.
+
+        Return the names of the subcomponents that indicated changes, as a set.
+        """
+        changed = set()
         for name, comp in self.components.items():
-            if comp.deferred:
-                # We previously deferred setting the inputs for this
-                # subcomponent, so set them now.
-                inputs = tuple(
-                        self.get_value(f'{name}.{x}') for x in comp.inputs)
-                comp.set_inputs(inputs)
-            if comp.tick():
-                changed = True
-        if changed:
-            for name in self.components.keys():
-                self.invalidate_cache(name)
+            if comp.update():
+                changed.add(name)
         return changed
 
-    def tick(self) -> bool:
+    def update(self) -> bool:
         changed = False
-        if self.update():
+        if self.update_local():
             changed = True
         if self.update_subcomponents():
             changed = True
-        self.cache = {
-                k: v for k, v in self.cache.items()
-                if k not in self.outputs}
         return changed
 
-    def evaluate_subcomponent(self, name: str) -> Trits:
-        comp = self.components[name]
-        if comp.deferred:
-            inputs = None
-        else:
-            inputs = tuple(self.get_value(f'{name}.{x}') for x in comp.inputs)
-        outputs = comp.get_outputs(inputs)
-        self.cache.update({
-            f'{name}.{comp.outputs[i]}': x for i, x in enumerate(outputs)})
-        return outputs
+    def tick(self) -> bool:
+        changed = self.update()
+        # Remove everything from the cache except for the inputs to this
+        # component, and completely clear the caches of all subcomponents.
+        self.cache = {
+                k: v for k, v in self.cache.items()
+                if k in self.inputs}
+        for comp in self.components.values():
+            comp.clear_cache()
+        return changed
+
+    def get_subcomponent_output(self, component: str, name: str) -> Trit:
+        comp = self.components[component]
+        return comp.get_output_callback(
+                name, lambda x: self.get_value(f'{component}.{x}'))
 
     def set_inputs(self, inputs: Trits) -> None:
-        changed = False
-        cache = {}
-        for i, name in enumerate(self.inputs):
-            if inputs[i] != self.cache.get(name):
-                changed = True
-            cache[name] = inputs[i]
-        if changed:
-            self.cache = cache
+        """Set this component's inputs and remove all other cache entries."""
+        self.cache = dict(zip(self.inputs, inputs))
+
+    def get_output_callback(self, name: str, callback: Callable) -> Trit:
+        """Return a single output for this component, given an input callback.
+
+        This is typically how a component would be used from within the context
+        of a parent component. The parent calls this method, passing
+        in a callable that can be invoked with the name of an input to this
+        component, to discover its value. In this way components can control
+        the selection and timing of requesting inputs from their parent.
+
+        The default behaviour is to store the callback for later reference, and
+        attempt to get the named output. As the component resolves its internal
+        connections, it will invoke the callback as necessary to produce the
+        output.
+        """
+        self.input_callback = callback
+        return self.get_value(name)
 
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
-        """Get the output values for this component.
-
-        Normal (non-deferred) components need all of their inputs defined in
-        order to calculate their outputs.
-
-        Deferred components (e.g., memory registers) can provide their outputs
-        without any inputs, but they will respond to their inputs during a
-        clock tick.
-        """
+        """Get the output values for this component, given its inputs."""
         if inputs is not None:
             self.set_inputs(inputs)
         return tuple(self.get_value(name) for name in self.outputs)
