@@ -51,7 +51,7 @@ class Computer(Component):
                     })
 
     def reset(self) -> None:
-        """Reset the computer and advance to the next clock cycle."""
+        """Signal a reset and advance to the next clock cycle."""
         self.set_inputs(POS)
         self.tick()
 

@@ -111,8 +111,6 @@ class Register12(Component):
     disregarded. When 'load' is positive, the internal state is replaced with
     the value of 'in'.
     """
-    deferred = True
-
     def __init__(self):
         super().__init__(
                 ('in[12]', 'load'),
@@ -696,17 +694,17 @@ class RAM177KMock(Component):
     def get_address(self) -> Trits:
         return ''.join(self.get_value(f'addr[{i}]') for i in range(11))
 
-    def update(self) -> bool:
+    def update_local(self) -> bool:
         load = self.get_value('load')
         addr = self.get_address()
-        if load == ZERO and self.addr == addr:
-            return False
+        if load == ZERO:
+            return self.addr != addr
 
         self.addr = addr
         if load == NEG:
             self.registers[addr] = self.default_value
         else:
-            value = tuple(self.cache[f'in[{i}]'] for i in range(12))
+            value = tuple(self.get_value(f'in[{i}]') for i in range(12))
             self.registers[addr] = value
         return True
 
@@ -746,7 +744,6 @@ class ROM177KMock(Component):
     simulating all of the subcomponents and connections between them, because
     that is not very practical for unit testing.
     """
-    deferred = True
     index = 0
 
     def __init__(self):
@@ -758,14 +755,18 @@ class ROM177KMock(Component):
         self.min_address = trits_to_int(NEG * 11)
         self.default_value = tuple(ZERO * 12)
 
+    def get_index(self) -> int:
+        addr = tuple(self.get_value(f'addr[{i}]') for i in range(11))
+        return trits_to_int(addr) - self.min_address
+
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
         if inputs is not None:
             self.set_inputs(inputs)
-        return self.registers[self.index]
+        index = self.get_index()
+        return self.registers[index]
 
-    def update(self) -> bool:
-        addr = tuple(self.cache.get(f'addr[{i}]', '0') for i in range(11))
-        index = trits_to_int(addr) - self.min_address
+    def update_local(self) -> bool:
+        index = self.get_index()
         if index != self.index and index >= 0 and index < len(self.registers):
             self.index = index
             return True
@@ -809,8 +810,6 @@ class ProgramCounter11(Component):
     the 'in' bus, and the new value will be available to read on the output bus
     on the following clock cycle.
     """
-    deferred = True
-
     def __init__(self):
         super().__init__(
                 ('in[11]',),
