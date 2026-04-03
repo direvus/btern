@@ -52,12 +52,12 @@ class Computer(Component):
 
     def reset(self) -> None:
         """Reset the computer and advance to the next clock cycle."""
-        self.get_outputs(POS)
+        self.set_inputs(POS)
         self.tick()
 
     def step(self) -> None:
         """Execute one normal clock cycle."""
-        self.get_outputs(ZERO)
+        self.set_inputs(ZERO)
         self.tick()
 
     def load_program(self, data: Iterable[Trits]) -> None:

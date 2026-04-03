@@ -1,6 +1,6 @@
 from trit import ZERO
 from hwsim.component import (
-        Component, NAND, NCONS, NOR, NANY, NOT, PNOT, NNOT)
+        Component, NAnd, NCons, NOr, NAny, Not, PNot, NNot)
 
 
 class And(Component):
@@ -8,13 +8,13 @@ class And(Component):
 
     The output is true if and only if both inputs are true.
 
-    (a AND b) == NOT (a NAND b)
+    (a AND b) == ¬(a NAND b)
     """
     def __init__(self):
         super().__init__(
                 ('a', 'b'),
                 ('out',),
-                {'Nand': NAND, 'Not': NOT},
+                {'Nand': NAnd, 'Not': Not},
                 {
                     'out': 'Not.out',
                     'Not.in': 'Nand.out',
@@ -28,13 +28,13 @@ class Or(Component):
 
     The output is true if either (or both) of the inputs are true.
 
-    (a OR b) == NOT (a NOR b)
+    (a OR b) == ¬(a NOR b)
     """
     def __init__(self):
         super().__init__(
                 ('a', 'b'),
                 ('out',),
-                {'Nor': NOR, 'Not': NOT},
+                {'Nor': NOr, 'Not': Not},
                 {
                     'out': 'Not.out',
                     'Not.in': 'Nor.out',
@@ -50,13 +50,13 @@ class Any(Component):
     Otherwise, the output is positive if there is any positive signal in the
     inputs, or negative if there is any negative signal.
 
-    (a ANY b) == NOT (a NANY b)
+    (a ANY b) == ¬(a NANY b)
     """
     def __init__(self):
         super().__init__(
                 ('a', 'b'),
                 ('out',),
-                {'NAny': NANY, 'Not': NOT},
+                {'NAny': NAny, 'Not': Not},
                 {
                     'out': 'Not.out',
                     'Not.in': 'NAny.out',
@@ -70,18 +70,18 @@ class Xor(Component):
 
     The output is true if either one of the inputs is true, but not both.
 
-    It consists of four primitive gates: a NAND, a NOT and two NORS. Both
+    It consists of four primitive gates: a NAND, a NOT and two NORs. Both
     inputs are separately passed to a NAND gate and a NOR gate, the result of
     the NAND is inverted, and those two results are passed to a NOR gate to
     produce the final output.
 
-    (a XOR b) == (NOT (a NAND b)) NOR (a NOR b)
+    (a XOR b) == (¬(a NAND b) NOR (a NOR b)
     """
     def __init__(self):
         super().__init__(
                 ('a', 'b'),
                 ('out',),
-                {'Nand': NAND, 'NorAB': NOR, 'Not': NOT, 'NorOut': NOR},
+                {'Nand': NAnd, 'NorAB': NOr, 'Not': Not, 'NorOut': NOr},
                 {
                     'out': 'NorOut.out',
                     'NorOut.a': 'Not.out',
@@ -100,18 +100,18 @@ class NXor(Component):
     The output is positive if the inputs are either both positive, or both
     negative.
 
-    It consists of four primitive gates: two NANDs, a NOR and a NOT. Both
-    inputs are separately passed to a NAND gate and a NOR gate, the result of
-    the NOR is inverted, and those two results are passed to a NAND gate to
+    It consists of four primitive gates: two NANDs, a NOr and a Not. Both
+    inputs are separately passed to a NAnd gate and a NOr gate, the result of
+    the NOr is inverted, and those two results are passed to a NAnd gate to
     produce the final output.
 
-    (a NXOR b) == (NOT (a NOR b)) NAND (a NAND b)
+    (a NXOR b) == (Not (a NOr b)) NAnd (a NAnd b)
     """
     def __init__(self):
         super().__init__(
                 ('a', 'b'),
                 ('out',),
-                {'NandAB': NAND, 'NandOut': NAND, 'Nor': NOR, 'Not': NOT},
+                {'NandAB': NAnd, 'NandOut': NAnd, 'Nor': NOr, 'Not': Not},
                 {
                     'out': 'NandOut.out',
                     'NandOut.a': 'Not.out',
@@ -135,16 +135,16 @@ class IsZero(Component):
     |  0  |  +  |
     |  +  |  -  |
 
-    ISZ(a) == PNOT(NAND(¬in, in))
+    ISZ(a) == PNot(NAnd(¬in, in))
     """
     def __init__(self):
         super().__init__(
                 ('in',),
                 ('out',),
                 {
-                    'PNot': PNOT,
-                    'Not': NOT,
-                    'NAnd': NAND,
+                    'PNot': PNot,
+                    'Not': Not,
+                    'NAnd': NAnd,
                     },
                 {
                     'out': 'PNot.out',
@@ -172,7 +172,7 @@ class CycleDown(Component):
                 ('out',),
                 {
                     'IsZ': IsZero,
-                    'NAny': NANY,
+                    'NAny': NAny,
                     },
                 {
                     'out': 'NAny.out',
@@ -198,10 +198,10 @@ class CycleUp(Component):
                 ('in',),
                 ('out',),
                 {
-                    'Not': NOT,
-                    'NNot': NNOT,
-                    'NOr': NOR,
-                    'NAny': NANY,
+                    'Not': Not,
+                    'NNot': NNot,
+                    'NOr': NOr,
+                    'NAny': NAny,
                     },
                 {
                     'out': 'NAny.out',
@@ -250,16 +250,16 @@ class Mux(Component):
                 ('a', 'b', 'c', 's'),
                 ('out',),
                 {
-                    'NandABC': NAND,
-                    'NandAB': NAND,
-                    'NandA': NAND,
-                    'NandB': NAND,
-                    'NandC': NAND,
-                    'NotAB': NOT,
-                    'NNot': NNOT,
+                    'NandABC': NAnd,
+                    'NandAB': NAnd,
+                    'NandA': NAnd,
+                    'NandB': NAnd,
+                    'NandC': NAnd,
+                    'NotAB': Not,
+                    'NNot': NNot,
                     'ISZ': IsZero,
-                    'PNot1': PNOT,
-                    'PNot2': PNOT,
+                    'PNot1': PNot,
+                    'PNot2': PNot,
                     },
                 {
                     'out': 'NandABC.out',
@@ -316,16 +316,16 @@ class Demux(Component):
                 ('in', 's'),
                 ('a', 'b', 'c'),
                 {
-                    'NotS': NOT,
-                    'NConsA': NCONS,
-                    'NConsB': NCONS,
-                    'NConsC': NCONS,
-                    'NOrA': NOR,
-                    'NOrC': NOR,
-                    'NAndA': NAND,
-                    'NAndC': NAND,
-                    'NAnyB1': NANY,
-                    'NAnyB2': NANY,
+                    'NotS': Not,
+                    'NConsA': NCons,
+                    'NConsB': NCons,
+                    'NConsC': NCons,
+                    'NOrA': NOr,
+                    'NOrC': NOr,
+                    'NAndA': NAnd,
+                    'NAndC': NAnd,
+                    'NAnyB1': NAny,
+                    'NAnyB2': NAny,
                     },
                 {
                     'a': 'NConsA.out',
@@ -359,18 +359,18 @@ class Not12(Component):
                 ('in[12]',),
                 ('out[12]',),
                 {
-                    'Not0': NOT,
-                    'Not1': NOT,
-                    'Not2': NOT,
-                    'Not3': NOT,
-                    'Not4': NOT,
-                    'Not5': NOT,
-                    'Not6': NOT,
-                    'Not7': NOT,
-                    'Not8': NOT,
-                    'Not9': NOT,
-                    'Not10': NOT,
-                    'Not11': NOT,
+                    'Not0': Not,
+                    'Not1': Not,
+                    'Not2': Not,
+                    'Not3': Not,
+                    'Not4': Not,
+                    'Not5': Not,
+                    'Not6': Not,
+                    'Not7': Not,
+                    'Not8': Not,
+                    'Not9': Not,
+                    'Not10': Not,
+                    'Not11': Not,
                     },
                 {
                     'out[0]': 'Not0.out',
@@ -480,82 +480,82 @@ class Mux12(Component):
                 ('a[12]', 'b[12]', 'c[12]', 's'),
                 ('out[12]',),
                 {
-                    'NNotS': NNOT,
+                    'NNotS': NNot,
                     'ISZ': IsZero,
-                    'PNotS': PNOT,
-                    'PNotPNotS': PNOT,
-                    'NAnd0ABC': NAND,
-                    'NAnd0AB': NAND,
-                    'NAnd0A': NAND,
-                    'NAnd0B': NAND,
-                    'NAnd0C': NAND,
-                    'Not0AB': NOT,
-                    'NAnd1ABC': NAND,
-                    'NAnd1AB': NAND,
-                    'NAnd1A': NAND,
-                    'NAnd1B': NAND,
-                    'NAnd1C': NAND,
-                    'Not1AB': NOT,
-                    'NAnd2ABC': NAND,
-                    'NAnd2AB': NAND,
-                    'NAnd2A': NAND,
-                    'NAnd2B': NAND,
-                    'NAnd2C': NAND,
-                    'Not2AB': NOT,
-                    'NAnd3ABC': NAND,
-                    'NAnd3AB': NAND,
-                    'NAnd3A': NAND,
-                    'NAnd3B': NAND,
-                    'NAnd3C': NAND,
-                    'Not3AB': NOT,
-                    'NAnd4ABC': NAND,
-                    'NAnd4AB': NAND,
-                    'NAnd4A': NAND,
-                    'NAnd4B': NAND,
-                    'NAnd4C': NAND,
-                    'Not4AB': NOT,
-                    'NAnd5ABC': NAND,
-                    'NAnd5AB': NAND,
-                    'NAnd5A': NAND,
-                    'NAnd5B': NAND,
-                    'NAnd5C': NAND,
-                    'Not5AB': NOT,
-                    'NAnd6ABC': NAND,
-                    'NAnd6AB': NAND,
-                    'NAnd6A': NAND,
-                    'NAnd6B': NAND,
-                    'NAnd6C': NAND,
-                    'Not6AB': NOT,
-                    'NAnd7ABC': NAND,
-                    'NAnd7AB': NAND,
-                    'NAnd7A': NAND,
-                    'NAnd7B': NAND,
-                    'NAnd7C': NAND,
-                    'Not7AB': NOT,
-                    'NAnd8ABC': NAND,
-                    'NAnd8AB': NAND,
-                    'NAnd8A': NAND,
-                    'NAnd8B': NAND,
-                    'NAnd8C': NAND,
-                    'Not8AB': NOT,
-                    'NAnd9ABC': NAND,
-                    'NAnd9AB': NAND,
-                    'NAnd9A': NAND,
-                    'NAnd9B': NAND,
-                    'NAnd9C': NAND,
-                    'Not9AB': NOT,
-                    'NAnd10ABC': NAND,
-                    'NAnd10AB': NAND,
-                    'NAnd10A': NAND,
-                    'NAnd10B': NAND,
-                    'NAnd10C': NAND,
-                    'Not10AB': NOT,
-                    'NAnd11ABC': NAND,
-                    'NAnd11AB': NAND,
-                    'NAnd11A': NAND,
-                    'NAnd11B': NAND,
-                    'NAnd11C': NAND,
-                    'Not11AB': NOT,
+                    'PNotS': PNot,
+                    'PNotPNotS': PNot,
+                    'NAnd0ABC': NAnd,
+                    'NAnd0AB': NAnd,
+                    'NAnd0A': NAnd,
+                    'NAnd0B': NAnd,
+                    'NAnd0C': NAnd,
+                    'Not0AB': Not,
+                    'NAnd1ABC': NAnd,
+                    'NAnd1AB': NAnd,
+                    'NAnd1A': NAnd,
+                    'NAnd1B': NAnd,
+                    'NAnd1C': NAnd,
+                    'Not1AB': Not,
+                    'NAnd2ABC': NAnd,
+                    'NAnd2AB': NAnd,
+                    'NAnd2A': NAnd,
+                    'NAnd2B': NAnd,
+                    'NAnd2C': NAnd,
+                    'Not2AB': Not,
+                    'NAnd3ABC': NAnd,
+                    'NAnd3AB': NAnd,
+                    'NAnd3A': NAnd,
+                    'NAnd3B': NAnd,
+                    'NAnd3C': NAnd,
+                    'Not3AB': Not,
+                    'NAnd4ABC': NAnd,
+                    'NAnd4AB': NAnd,
+                    'NAnd4A': NAnd,
+                    'NAnd4B': NAnd,
+                    'NAnd4C': NAnd,
+                    'Not4AB': Not,
+                    'NAnd5ABC': NAnd,
+                    'NAnd5AB': NAnd,
+                    'NAnd5A': NAnd,
+                    'NAnd5B': NAnd,
+                    'NAnd5C': NAnd,
+                    'Not5AB': Not,
+                    'NAnd6ABC': NAnd,
+                    'NAnd6AB': NAnd,
+                    'NAnd6A': NAnd,
+                    'NAnd6B': NAnd,
+                    'NAnd6C': NAnd,
+                    'Not6AB': Not,
+                    'NAnd7ABC': NAnd,
+                    'NAnd7AB': NAnd,
+                    'NAnd7A': NAnd,
+                    'NAnd7B': NAnd,
+                    'NAnd7C': NAnd,
+                    'Not7AB': Not,
+                    'NAnd8ABC': NAnd,
+                    'NAnd8AB': NAnd,
+                    'NAnd8A': NAnd,
+                    'NAnd8B': NAnd,
+                    'NAnd8C': NAnd,
+                    'Not8AB': Not,
+                    'NAnd9ABC': NAnd,
+                    'NAnd9AB': NAnd,
+                    'NAnd9A': NAnd,
+                    'NAnd9B': NAnd,
+                    'NAnd9C': NAnd,
+                    'Not9AB': Not,
+                    'NAnd10ABC': NAnd,
+                    'NAnd10AB': NAnd,
+                    'NAnd10A': NAnd,
+                    'NAnd10B': NAnd,
+                    'NAnd10C': NAnd,
+                    'Not10AB': Not,
+                    'NAnd11ABC': NAnd,
+                    'NAnd11AB': NAnd,
+                    'NAnd11A': NAnd,
+                    'NAnd11B': NAnd,
+                    'NAnd11C': NAnd,
+                    'Not11AB': Not,
                     },
                 {
                     'NNotS.in': 's',
@@ -786,10 +786,10 @@ class Mux2Way(Component):
                 ('out',),
                 {
                     'IsZ': IsZero,
-                    'NotZ': NOT,
-                    'NAndA': NAND,
-                    'NAndB': NAND,
-                    'NAndAB': NAND,
+                    'NotZ': Not,
+                    'NAndA': NAnd,
+                    'NAndB': NAnd,
+                    'NAndAB': NAnd,
                     },
                 {
                     'out': 'NAndAB.out',
@@ -827,43 +827,43 @@ class Mux2Way12(Component):
                 ('out[12]',),
                 {
                     'IsZ': IsZero,
-                    'NotZ': NOT,
-                    'NAnd0A': NAND,
-                    'NAnd0B': NAND,
-                    'NAnd0AB': NAND,
-                    'NAnd1A': NAND,
-                    'NAnd1B': NAND,
-                    'NAnd1AB': NAND,
-                    'NAnd2A': NAND,
-                    'NAnd2B': NAND,
-                    'NAnd2AB': NAND,
-                    'NAnd3A': NAND,
-                    'NAnd3B': NAND,
-                    'NAnd3AB': NAND,
-                    'NAnd4A': NAND,
-                    'NAnd4B': NAND,
-                    'NAnd4AB': NAND,
-                    'NAnd5A': NAND,
-                    'NAnd5B': NAND,
-                    'NAnd5AB': NAND,
-                    'NAnd6A': NAND,
-                    'NAnd6B': NAND,
-                    'NAnd6AB': NAND,
-                    'NAnd7A': NAND,
-                    'NAnd7B': NAND,
-                    'NAnd7AB': NAND,
-                    'NAnd8A': NAND,
-                    'NAnd8B': NAND,
-                    'NAnd8AB': NAND,
-                    'NAnd9A': NAND,
-                    'NAnd9B': NAND,
-                    'NAnd9AB': NAND,
-                    'NAnd10A': NAND,
-                    'NAnd10B': NAND,
-                    'NAnd10AB': NAND,
-                    'NAnd11A': NAND,
-                    'NAnd11B': NAND,
-                    'NAnd11AB': NAND,
+                    'NotZ': Not,
+                    'NAnd0A': NAnd,
+                    'NAnd0B': NAnd,
+                    'NAnd0AB': NAnd,
+                    'NAnd1A': NAnd,
+                    'NAnd1B': NAnd,
+                    'NAnd1AB': NAnd,
+                    'NAnd2A': NAnd,
+                    'NAnd2B': NAnd,
+                    'NAnd2AB': NAnd,
+                    'NAnd3A': NAnd,
+                    'NAnd3B': NAnd,
+                    'NAnd3AB': NAnd,
+                    'NAnd4A': NAnd,
+                    'NAnd4B': NAnd,
+                    'NAnd4AB': NAnd,
+                    'NAnd5A': NAnd,
+                    'NAnd5B': NAnd,
+                    'NAnd5AB': NAnd,
+                    'NAnd6A': NAnd,
+                    'NAnd6B': NAnd,
+                    'NAnd6AB': NAnd,
+                    'NAnd7A': NAnd,
+                    'NAnd7B': NAnd,
+                    'NAnd7AB': NAnd,
+                    'NAnd8A': NAnd,
+                    'NAnd8B': NAnd,
+                    'NAnd8AB': NAnd,
+                    'NAnd9A': NAnd,
+                    'NAnd9B': NAnd,
+                    'NAnd9AB': NAnd,
+                    'NAnd10A': NAnd,
+                    'NAnd10B': NAnd,
+                    'NAnd10AB': NAnd,
+                    'NAnd11A': NAnd,
+                    'NAnd11B': NAnd,
+                    'NAnd11AB': NAnd,
                     },
                 {
                     'IsZ.in': 's',

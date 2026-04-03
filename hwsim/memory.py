@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 
 from hwsim.component import Component, Trit, Trits
 from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
@@ -704,22 +704,25 @@ class RAM177KMock(Component):
 
         self.addr = addr
         if load == NEG:
-            self.registers[self.addr] = self.default_value
+            self.registers[addr] = self.default_value
         else:
             value = tuple(self.cache[f'in[{i}]'] for i in range(12))
-            self.registers[self.addr] = value
+            self.registers[addr] = value
         return True
 
     def get_value(self, name: str) -> Trit:
         if name in self.outputs:
             index = self.outputs.index(name)
-            return self.registers[self.addr][index]
+            addr = self.get_address()
+            contents = self.registers.get(addr, self.default_value)
+            return contents[index]
         return super().get_value(name)
 
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
         if inputs is not None:
             self.set_inputs(inputs)
-        return self.registers.get(self.addr, self.default_value)
+        addr = self.get_address()
+        return self.registers.get(addr, self.default_value)
 
     def set_contents(self, addr: Trits, value: Trits) -> None:
         addr = ''.join(addr)
@@ -769,8 +772,9 @@ class ROM177KMock(Component):
         return False
 
     def get_value(self, name: str) -> Trit:
-        if name == 'out':
-            return self.state
+        if name in self.outputs:
+            index = self.outputs.index(name)
+            return self.registers[self.index][index]
         return super().get_value(name)
 
     def load(self, values: Iterable[Trits]):

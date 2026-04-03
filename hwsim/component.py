@@ -1,3 +1,4 @@
+from __future__ import annotations
 import re
 from collections.abc import Callable, Iterable
 
@@ -16,39 +17,59 @@ class Primitive:
     with individual input and output trits, where the output is defined in
     Python code, rather than in simulated circuitry.
 
-    Direct subclasses of Primitive must not contain any mutable attributes, and
-    would typically be used with a singleton pattern.
-
     For more complex behaviour, or linking multiple components together, use
     the Component class.
     """
     buses: dict | None = None
     inputs: tuple[str] = tuple()
     outputs: tuple[str] = tuple()
+    parent: Component | None = None
+    name: str = ''
 
     def __init__(self, inputs: Iterable[str], outputs: Iterable[str]):
         self.inputs = tuple(inputs)
         self.outputs = tuple(outputs)
+        self.cache = {}
+
+    def set_name(self, name: str) -> None:
+        self.name = name
+
+    def set_parent(self, parent: Component) -> None:
+        self.parent = parent
+
+    def set_inputs(self, inputs: Trits) -> None:
+        """Set this component's inputs and remove all other cache entries."""
+        self.cache = dict(zip(self.inputs, inputs))
+
+    def get_input(self, name: str) -> Trit:
+        if name in self.cache:
+            return self.cache[name]
+
+        if self.parent is None:
+            raise ValueError(
+                    f"{self.name} needs input '{name}', but no parent is set.")
+        value = self.parent.get_value(f'{self.name}.{name}')
+        self.cache[name] = value
+        return value
 
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
-        """Return the outputs for this component, given its inputs."""
+        """Return the outputs for this component, given its inputs.
+
+        This is the method that direct inheriting classes need to override to
+        define their logic.
+        """
         raise NotImplementedError()
 
-    def get_output_callback(self, name: str, callback: Callable) -> Trit:
-        """Return a single output for this component, given an input callback.
-
-        This is typically how a component would be used from within the context
-        of a parent component. The parent calls this method, passing
-        in a callable that can be invoked with the name of an input to this
-        component, to discover its value. In this way components can control
-        the selection and timing of requesting inputs from their parent.
+    def get_output(self, name: str) -> Trit:
+        """Return a single output for this component.
 
         The default behaviour for a Primitive component is to request all
-        inputs up front, calculate all outputs and return the name one, but
+        inputs up front, calculate all outputs and return the named one, but
         inheriting classes are free to override these methods to get different
         behaviour.
         """
-        inputs = tuple(callback(x) for x in self.inputs)
+        inputs = tuple(self.get_input(x) for x in self.inputs)
+        self.set_inputs(inputs)
         index = self.outputs.index(name)
         return self.get_outputs(inputs)[index]
 
@@ -57,11 +78,13 @@ class Primitive:
 
         Return True if the component's state has changed as a result of the
         tick, and False if it has remained exactly the same.
+
+        The default behaviour is to do nothing and return False.
         """
         return False
 
     def clear_cache(self) -> None:
-        pass
+        self.cache = {}
 
 
 ComponentCompatible = Primitive | Callable
@@ -74,7 +97,6 @@ class Component(Primitive):
             outputs: Iterable[str],
             components: dict[str, ComponentCompatible] | None = None,
             connections: dict[str, str] | None = None):
-        self.input_callback = None
         self.buses = {}
         input_items = []
         output_items = []
@@ -106,12 +128,16 @@ class Component(Primitive):
         if components:
             # Each value of 'components' should be either an instance that
             # inherits Primitive, or a callable that returns such an instance.
+            # In either case, we will attach a parent reference to each
+            # instance that we add as a subcomponent.
             for name, item in components.items():
                 comp = item
                 if not isinstance(comp, Primitive):
                     # Not already an instance, try invoking it as a callable
                     comp = item()
                 assert isinstance(comp, Primitive)
+                comp.set_name(name)
+                comp.set_parent(self)
                 self.components[name] = comp
                 if comp.buses:
                     for bus, size in comp.buses.items():
@@ -178,12 +204,6 @@ class Component(Primitive):
                 "both endpoints are buses but have different sizes")
 
         self.connections.update(dict(zip(dest_items, source_items)))
-
-    def get_input(self, name: str) -> Trit:
-        if self.input_callback is None:
-            raise ValueError(
-                    f"Requested input '{name}', but no callback is set.")
-        return self.input_callback(name)
 
     def get_value(self, name: str) -> Trit:
         # Literal trit values are treated as a constant source
@@ -263,35 +283,16 @@ class Component(Primitive):
 
     def get_subcomponent_output(self, component: str, name: str) -> Trit:
         comp = self.components[component]
-        return comp.get_output_callback(
-                name, lambda x: self.get_value(f'{component}.{x}'))
-
-    def set_inputs(self, inputs: Trits) -> None:
-        """Set this component's inputs and remove all other cache entries."""
-        self.cache = dict(zip(self.inputs, inputs))
-
-    def get_output_callback(self, name: str, callback: Callable) -> Trit:
-        """Return a single output for this component, given an input callback.
-
-        This is typically how a component would be used from within the context
-        of a parent component. The parent calls this method, passing
-        in a callable that can be invoked with the name of an input to this
-        component, to discover its value. In this way components can control
-        the selection and timing of requesting inputs from their parent.
-
-        The default behaviour is to store the callback for later reference, and
-        attempt to get the named output. As the component resolves its internal
-        connections, it will invoke the callback as necessary to produce the
-        output.
-        """
-        self.input_callback = callback
-        return self.get_value(name)
+        return comp.get_output(name)
 
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
         """Get the output values for this component, given its inputs."""
         if inputs is not None:
             self.set_inputs(inputs)
         return tuple(self.get_value(name) for name in self.outputs)
+
+    def get_output(self, name: str) -> Trit:
+        return self.get_value(name)
 
 
 class NAnd(Primitive):
@@ -459,14 +460,3 @@ class NCons(Primitive):
         if a == b and a != ZERO:
             return (NEG,) if a == POS else (POS,)
         return (ZERO,)
-
-
-# The primitive gates have get_outputs as a pure function, and have no mutable
-# attributes, so prepare singletons for them.
-NOT = Not()
-NNOT = NNot()
-PNOT = PNot()
-NAND = NAnd()
-NOR = NOr()
-NANY = NAny()
-NCONS = NCons()

@@ -1,5 +1,5 @@
 from hwsim.component import (
-        Component, NCONS, NAND, NOR, NANY, NOT, PNOT, NNOT)
+        Component, NCons, NAnd, NOr, NAny, Not, PNot, NNot)
 from hwsim.logic import Any
 
 
@@ -30,7 +30,7 @@ class Sum(Component):
                     'Any1': Any,
                     'Any2': Any,
                     'Any3': Any,
-                    'NCons': NCONS,
+                    'NCons': NCons,
                     },
                 {
                     'out': 'Any3.out',
@@ -76,8 +76,8 @@ class HalfAdd(Component):
                 ('sum', 'carry'),
                 {
                     'Sum': Sum,
-                    'NCons': NCONS,
-                    'Not': NOT,
+                    'NCons': NCons,
+                    'Not': Not,
                     },
                 {
                     'sum': 'Sum.out',
@@ -139,13 +139,13 @@ class Inc(Component):
                 ('in',),
                 ('sum', 'carry'),
                 {
-                    'Not': NOT,
-                    'PNot': PNOT,
-                    'NNot': NNOT,
-                    'NAnd': NAND,
-                    'NOr': NOR,
-                    'NCons': NCONS,
-                    'NAny': NANY,
+                    'Not': Not,
+                    'PNot': PNot,
+                    'NNot': NNot,
+                    'NAnd': NAnd,
+                    'NOr': NOr,
+                    'NCons': NCons,
+                    'NAny': NAny,
                     },
                 {
                     'sum': 'NAny.out',
@@ -186,13 +186,13 @@ class Dec(Component):
                 ('in',),
                 ('sum', 'carry'),
                 {
-                    'Not': NOT,
-                    'PNot': PNOT,
-                    'NNot': NNOT,
-                    'NAnd': NAND,
-                    'NOr': NOR,
-                    'NAnySum': NANY,
-                    'NAnyCar': NANY,
+                    'Not': Not,
+                    'PNot': PNot,
+                    'NNot': NNot,
+                    'NAnd': NAnd,
+                    'NOr': NOr,
+                    'NAnySum': NAny,
+                    'NAnyCar': NAny,
                     },
                 {
                     'sum': 'NAnySum.out',
@@ -458,10 +458,10 @@ class Comparator(Component):
                 ('a', 'b'),
                 ('out',),
                 {
-                    'NAnyOut': NANY,
-                    'NAny': NANY,
-                    'NCons': NCONS,
-                    'NotB': NOT,
+                    'NAnyOut': NAny,
+                    'NAny': NAny,
+                    'NCons': NCons,
+                    'NotB': Not,
                     },
                 {
                     'out': 'NAnyOut.out',
