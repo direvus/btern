@@ -46,3 +46,14 @@ Cycle down works the same way, but in the opposite direction.
 ![CLU gate diagram](/doc/hwsim/clu.png)
 
 ![CLD gate diagram](/doc/hwsim/cld.png)
+
+## 3-way Multiplexer
+
+The 3-way multiplexer (MUX) is an essential logic gate that many of the more complex
+components are built around. It takes three data inputs 'a', 'b' and 'c', and a
+selector 's'. The output is selected from one of the three data inputs, based
+on the value of the selector: when the selector is negative, the output is 'a'.
+When the selector is zero, the output is 'b', and when the selector is
+positive, the output is 'c'.
+
+![Multiplexer gate diagram](/doc/hwsim/mux.png)
