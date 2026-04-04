@@ -41,9 +41,9 @@ The cycle up gate takes a single input, and outputs the value of its input
 bumped up one step, so a negative becomes a zero, a zero becomes a positive,
 and a positive wraps around to become negative.
 
-Cycle down works the same way, but in the opposite direction.
-
 ![CLU gate diagram](/doc/hwsim/clu.png)
+
+Cycle down works the same way, but in the opposite direction.
 
 ![CLD gate diagram](/doc/hwsim/cld.png)
 
