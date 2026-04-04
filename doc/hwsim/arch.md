@@ -42,6 +42,28 @@ supplied to the CPU in the current cycle.
 Logic Unit (ALU), and are all eligible as targets to receive the result of a
 computation.
 
+## Arithmetic Logic Unit (ALU)
+
+![ALU architecture](/doc/hwsim/alu.png)
+
+The ALU accepts two 12-trit inputs, 'x' and 'y', and three control signals
+'px', 'py' and 'f'.
+
+The 'px' and 'py' signals instruct the ALU whether to perform a transform on
+the 'x' and 'y' inputs respectively, before passing them on to the main
+function.
+
+If the 'px' or 'py' is negative, that input is negated. If the 'px' or 'py' is
+zero, that input is passed through as-is. If the 'px' or 'py' is positive, that
+input is replaced with zero.
+
+The 'f' signal instructs the ALU which function to perform on the inputs. When
+'f' is negative, the function is a logical tritwise AND. When 'f' is positive,
+the function is arithmetic addition. When 'f' is zero, we ignore the 'y' input
+and apply a unary function to 'x'. Because 'y' is ignored, we re-use the 'py'
+signal to select either increment of x (when 'py' is positive) or decrement of
+x (when 'py' is negative).
+
 # Machine Language Specification
 
 Each machine language instruction is 12 trits long, and it makes sense to look
