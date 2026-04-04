@@ -1,6 +1,8 @@
 # Index
 
 - [Ternary logic system](/doc/hwsim/logic.md)
+- Fundamental components
+- [Composite logic gates](/doc/hwsim/gates.md)
 - [Computer architecture and machine language specification](/doc/hwsim/arch.md)
 - [Assembly language](/doc/hwsim/assembly.md)
 

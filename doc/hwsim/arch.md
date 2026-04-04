@@ -2,6 +2,8 @@
 
 - [Ternary logic system](/doc/hwsim/logic.md)
 - [Fundamental components](/doc/hwsim/fundamental.md)
+- [Composite logic gates](/doc/hwsim/gates.md)
+- Computer architecture and machine language specification
 - [Assembly language](/doc/hwsim/assembly.md)
 
 # Computer Architecture
