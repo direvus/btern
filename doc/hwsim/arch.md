@@ -97,6 +97,30 @@ The Jump Calculator will output the candidate jump target address if the jump
 condition is met, or the minimum address (all `−`) if the jump control signals
 a reset, or otherwise the current address plus one.
 
+## Load Controller
+
+![Loader diagram](/doc/hwsim/loader.png)
+
+The Load Controller determines the load signals for the A register, D register
+and the RAM module.
+
+It takes as input the 'mode' and 'target' from the machine language
+instruction (trits 11 and 10), and also the 'reset' signal. It outputs three
+signals: 'loadA', 'loadM' and 'loadD'.
+
+Each output load signal instructs its register to either "clear" (negative),
+"retain" its current value (zero) or "store" a new value (positive).
+
+When the reset signal is non-zero, both loadA and loadD signals will be set
+to "clear" (negative) and loadM will be "retain" (zero).
+
+When the mode signal is non-zero, either loadA or loadD will be "store", and
+the other two will be "retain", depending on the value of 'mode'.
+
+When both mode and reset are zero, one of loadA, loadD or loadM will be
+"store", and the other two will be "retain", depending on the setting of the
+'target' input.
+
 # Machine Language Specification
 
 Each machine language instruction is 12 trits long, and it makes sense to look
