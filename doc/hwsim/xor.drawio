@@ -1,0 +1,122 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram name="Page-1" id="X2How7EcEUwtt3HheZ3H">
+    <mxGraphModel dx="752" dy="409" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="QB-60tK-8V-U85k3437g-30" connectable="0" parent="1" style="group;points=[[0,0,0,0,0],[0,0.35,0,0,0],[0,0.5,0,0,0],[0,0.65,0,0,0],[0,1,0,0,0],[0.25,0,0,0,0],[0.25,1,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.75,0,0,0,0],[0.75,1,0,0,0],[1,0,0,0,0],[1,0.25,0,0,0],[1,0.5,0,0,0],[1,0.75,0,0,0],[1,1,0,0,0]];" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="210" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-31" parent="QB-60tK-8V-U85k3437g-30" style="shape=or;whiteSpace=wrap;html=1;points=[[0,0.2,0,0,0],[0,0.5,0,0,0],[0,0.8,0,0,0],[0.7,0.1,0,0,0],[0.7,0.9,0,0,0],[1,0.5,0,0,0]];" value="" vertex="1">
+          <mxGeometry height="60" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-32" parent="QB-60tK-8V-U85k3437g-30" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;points=[[0,0.5,0,0,0],[1,0.5,0,0,0]];" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="50" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-33" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="210" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-34" parent="QB-60tK-8V-U85k3437g-33" style="shape=xor;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="60" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-35" parent="QB-60tK-8V-U85k3437g-33" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;points=[[0,0.5,0,0,0],[1,0.5,0,0,0]];" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="50" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-36" parent="1" style="verticalLabelPosition=bottom;shadow=0;dashed=0;align=center;html=1;verticalAlign=top;shape=mxgraph.electrical.logic_gates.inverter_2" value="" vertex="1">
+          <mxGeometry height="30" width="50" x="290" y="155" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-37" edge="1" parent="1" source="QB-60tK-8V-U85k3437g-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;" target="QB-60tK-8V-U85k3437g-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-38" connectable="0" parent="1" style="group" value="" vertex="1">
+          <mxGeometry height="60" width="60" x="350" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-39" parent="QB-60tK-8V-U85k3437g-38" style="shape=xor;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="60" width="50" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-43" edge="1" parent="QB-60tK-8V-U85k3437g-38" source="QB-60tK-8V-U85k3437g-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" value="&amp;nbsp;out&amp;nbsp;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="30" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-40" parent="QB-60tK-8V-U85k3437g-38" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;points=[[0,0.5,0,0,0],[1,0.5,0,0,0]];" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="50" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-41" edge="1" parent="1" source="QB-60tK-8V-U85k3437g-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="210" />
+              <mxPoint x="359" y="210" />
+            </Array>
+            <mxPoint x="360" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-42" edge="1" parent="1" source="QB-60tK-8V-U85k3437g-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.22;entryY=0.66;entryDx=0;entryDy=0;entryPerimeter=0;" target="QB-60tK-8V-U85k3437g-39">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="260" />
+              <mxPoint x="340" y="230" />
+              <mxPoint x="361" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-44" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;endArrow=oval;endFill=1;" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="110" y="160" as="sourcePoint" />
+            <mxPoint x="140" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-50" connectable="0" parent="QB-60tK-8V-U85k3437g-44" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&amp;nbsp;a&amp;nbsp;" vertex="1">
+          <mxGeometry relative="1" x="-0.3302" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-45" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;endArrow=oval;endFill=1;" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="110" y="270" as="sourcePoint" />
+            <mxPoint x="160" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-51" connectable="0" parent="QB-60tK-8V-U85k3437g-45" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&amp;nbsp;b&amp;nbsp;" vertex="1">
+          <mxGeometry relative="1" x="-0.56" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-46" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="160" y="270" as="sourcePoint" />
+            <mxPoint x="220" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-47" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;entryX=-0.004;entryY=0.671;entryDx=0;entryDy=0;entryPerimeter=0;" target="QB-60tK-8V-U85k3437g-31" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points">
+              <mxPoint x="160" y="180" />
+            </Array>
+            <mxPoint x="160" y="270" as="sourcePoint" />
+            <mxPoint x="180" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-48" edge="1" parent="1" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;entryX=-0.013;entryY=0.339;entryDx=0;entryDy=0;entryPerimeter=0;" target="QB-60tK-8V-U85k3437g-31" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points" />
+            <mxPoint x="140" y="160" as="sourcePoint" />
+            <mxPoint x="250" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="QB-60tK-8V-U85k3437g-49" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;jumpStyle=arc;" value="">
+          <mxGeometry relative="1" width="100" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="250" />
+            </Array>
+            <mxPoint x="140" y="160" as="sourcePoint" />
+            <mxPoint x="220" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
