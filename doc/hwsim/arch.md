@@ -8,6 +8,8 @@
 
 # Computer Architecture
 
+![Computer architecture diagram](/doc/hwsim/computer.png)
+
 The computer uses a word size of 12 trits. It has a RAM module and a program
 ROM module, each of which is addressed using 11 trits, for a total addressable
 space of 177,147 words, or 2,125,764 trits.
