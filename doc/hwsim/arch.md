@@ -79,6 +79,22 @@ therefore the jump signals are overridden to `00` (NOJ).
 If both 'reset' and 'mode' are zero, then the jump signals are passed through
 as-is.
 
+## Jump Calculator (JMP)
+
+![Jumper diagram](/doc/hwsim/jumper.png)
+
+The Jump Calculator computes the address of the next instruction to execute,
+which is one of the outputs of the CPU. It takes as input the current
+instruction address, a candidate jump target address, a comparison signal, and
+the jump1 and jump2 control signals from the Jump Controller.
+
+The comparison signal comes from the Comparator, and it indicates whether the
+output from the ALU was less than zero, equal to zero or greater than zero.
+
+The Jump Calculator will output the candidate jump target address if the jump
+condition is met, or the minimum address (all `−`) if the jump control signals
+a reset, or otherwise the current address plus one.
+
 # Machine Language Specification
 
 Each machine language instruction is 12 trits long, and it makes sense to look
