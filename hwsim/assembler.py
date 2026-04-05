@@ -10,7 +10,7 @@ from hwsim.util import int_to_trits
 
 
 INT_RE = re.compile(r'^[+-]?\d+$')
-LABEL_RE = re.compile(r'^([^\W_\d]\w*)\s*:$')
+SYMBOL_RE = re.compile(r'^([^\W_\d]\w*)\s*:$')
 DEST_MAP = {
         'A': '-',
         'M': '0',
@@ -41,6 +41,7 @@ SHIFT_MAP = {
         '<<': '+',
         }
 MIN_ADDR = -(3 ** 11 // 2)
+VAR_ADDR = 0
 
 
 def parse_input(text: str) -> str:
@@ -110,6 +111,7 @@ def output_stream(path):
 class Assembler:
     def __init__(self):
         self.labels = {}
+        self.variables = {}
         self.instructions = []
         self.sources = []
         self.errors = []
@@ -130,7 +132,7 @@ class Assembler:
             if not line:
                 continue
 
-            m = LABEL_RE.match(line)
+            m = SYMBOL_RE.match(line)
             if m:
                 self.labels[m.group(1)] = n
                 continue
@@ -270,20 +272,28 @@ class Assembler:
                 raise ValueError(
                         f"invalid MOV target '{args[1]}', expected A or D")
 
-            m = INT_RE.match(args[0])
+            int_match = INT_RE.match(args[0])
+            symbol_match = SYMBOL_RE.match(args[0])
             if args[0] in self.labels:
                 index = self.labels[args[0]]
-                print(f'{args[0]} is line {index}')
                 value = int_to_trits(MIN_ADDR + index, 11)
-            elif m:
+            elif args[0] in self.variables:
+                index = self.variables[args[0]]
+                value = int_to_trits(VAR_ADDR + index, 11)
+            elif int_match:
                 dec = int(args[0])
                 value = int_to_trits(dec, 11)
+            elif symbol_match:
+                # New variable, allocate it a register relative to VAR_ADDR
+                index = len(self.variables)
+                self.variables[args[0]] = index
+                value = int_to_trits(VAR_ADDR + index, 11)
             elif len(args[0]) == 11 and all(c in '-0+' for c in args[0]):
                 value = args[0]
             else:
                 raise ValueError(
-                        f"invalid MOV value '{args[0]}', expected a label "
-                        "name, decimal integer, or 11 trit sequence")
+                        f"invalid MOV value '{args[0]}', expected a symbol "
+                        "name, decimal integer, or 11-trit sequence")
 
             self.instructions.append(value + dest)
             self.sources.append(source)

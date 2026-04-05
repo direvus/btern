@@ -21,8 +21,9 @@ remaining line must be either a **label** or an **instruction**.
 
 ## Labels
 
-A label consists of an ASCII letter character, followed by any number of "word" characters (letters, digits and underscores), followed by a
-colon (:), for example:
+A label consists of an ASCII letter character, followed by any number of "word"
+characters (letters, digits and underscores), followed by a colon (:), for
+example:
 
 ```
 LOOP1:
@@ -126,6 +127,7 @@ one of:
 - A signed decimal integer, consisting of an optional sign specifier (`-` or
   `+`), followed by a sequence of digits.
 - The name of a label defined in the same program.
+- The name of a variable.
 
 The second argument is the destination, which must be either `A` or `D`.
 
@@ -135,7 +137,24 @@ For example:
 MOV -0+-------- A
 MOV 10 D
 MOV LOOP1 A
+MOV pointer A
 ```
+
+The rules for variable names follow the same pattern as for label names -- a
+letter followed by zero or more "word" characters. When the first argument to
+MOV matches this pattern, and it's not one of the defined labels for the
+program, it is taken to be a variable name.
+
+The first time a variable name is encountered in a program, it is assigned its
+own register address in memory, and that address is substituted in as the
+argument to MOV by the assembler. If that same variable name is encountered in
+other parts of the program, the assembler substitutes that same register
+address.
+
+There are no predefined or reserved variable names, and no distinction in the
+naming requirements for variables versus labels. As a matter of convention,
+it can be helpful to name all your labels with `UPPER_UNDERSCORE` and your
+variables with `lower_underscore`.
 
 ### ADD
 
