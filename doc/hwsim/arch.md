@@ -64,6 +64,21 @@ and apply a unary function to 'x'. Because 'y' is ignored, we re-use the 'py'
 signal to select either increment of x (when 'py' is positive) or decrement of
 x (when 'py' is negative).
 
+## Jump Controller (JC)
+
+![Jump Controller diagram](/doc/hwsim/jumpctl.png)
+
+The Jump Controller takes the two jump signals from the CPU instruction, 'j1'
+and 'j2', as well as the 'reset' and 'mode' signals, and computes a final pair
+of jump signals. If the 'reset' signal is non-zero, then the jump signals will
+be set to `0-` (RST) regardless of the other inputs.
+
+If the 'mode' signal is non-zero, then the CPU instruction is a MOV and
+therefore the jump signals are overridden to `00` (NOJ).
+
+If both 'reset' and 'mode' are zero, then the jump signals are passed through
+as-is.
+
 # Machine Language Specification
 
 Each machine language instruction is 12 trits long, and it makes sense to look
