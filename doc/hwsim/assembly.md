@@ -313,7 +313,7 @@ MOV LOOP A
 CHK D JGT
 ```
 
-This assembly code maps to the binary program:
+This assembly code maps to the machine code program:
 
 ```
 0+000000000-  # 1. MOV 3 A
