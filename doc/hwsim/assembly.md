@@ -277,3 +277,58 @@ computer for one cycle.
 It has no mandatory arguments.
 
 NOP is a shorthand for `ADD 0 D D`.
+
+# Example program
+
+The following example program listing performs simple multiplication by
+addition:
+
+```
+# Multiply the value in RAM address 0 by the value in address 1.
+# Store the result in address 3.
+# We will use address 2 as a loop counter.
+
+# RAM[3] = 0
+MOV 3 A
+CLR M
+
+# RAM[2] = RAM[1]
+MOV 1 A
+CPY M D
+MOV 2 A
+CPY D M
+
+# while (RAM[2] > 0):
+#     RAM[3] += RAM[0]
+#     RAM[2] -= 1
+LOOP:
+MOV 0 A
+CPY M D
+MOV 3 A
+ADD D M M
+MOV 2 A
+DEC M D
+CPY D M
+MOV LOOP A
+CHK D JGT
+```
+
+This assembly code maps to the binary program:
+
+```
+0+000000000-  # 1. MOV 3 A
+00000-++++00  # 2. CLR M
++0000000000-  # 3. MOV 1 A
+00000++0+0+0  # 4. CPY M D
+-+000000000-  # 5. MOV 2 A
+00000++0++00  # 6. CPY D M
+00000000000-  # 7. LOOP: MOV 0 A
+00000++0+0+0  # 8. CPY M D
+0+000000000-  # 9. MOV 3 A
+00000+00+000  # 10. ADD D M M
+-+000000000-  # 11. MOV 2 A
+0000000-00+0  # 12. DEC M D
+00000++0++00  # 13. CPY D M
+-+----------  # 14. MOV LOOP A
+-+000++0+++0  # 15. CHK D JGT
+```
