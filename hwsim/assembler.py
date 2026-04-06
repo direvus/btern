@@ -4,9 +4,8 @@ import math
 import os
 import re
 import sys
-from contextlib import contextmanager
 
-from hwsim.util import int_to_trits
+from hwsim.util import int_to_trits, input_stream, output_stream
 
 
 INT_RE = re.compile(r'^[+-]?\d+$')
@@ -83,30 +82,6 @@ def parse_optional(args) -> tuple[str, str]:
     return (
             jump or '00',
             shift or '0')
-
-
-@contextmanager
-def input_stream(path):
-    if path == '-':
-        yield sys.stdin
-    else:
-        fp = open(path, 'r')
-        try:
-            yield fp
-        finally:
-            fp.close()
-
-
-@contextmanager
-def output_stream(path):
-    if path == '-':
-        yield sys.stdout
-    else:
-        fp = open(path, 'w')
-        try:
-            yield fp
-        finally:
-            fp.close()
 
 
 class Assembler:

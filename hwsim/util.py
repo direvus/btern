@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from contextlib import contextmanager
 from typing import Literal
 
 from trit import ZERO, POS, NEG
@@ -6,6 +7,30 @@ from trit import ZERO, POS, NEG
 
 Trit = Literal[NEG, ZERO, POS]
 Trits = Iterable[Trit]
+
+
+@contextmanager
+def input_stream(path):
+    if path == '-':
+        yield sys.stdin
+    else:
+        fp = open(path, 'r')
+        try:
+            yield fp
+        finally:
+            fp.close()
+
+
+@contextmanager
+def output_stream(path):
+    if path == '-':
+        yield sys.stdout
+    else:
+        fp = open(path, 'w')
+        try:
+            yield fp
+        finally:
+            fp.close()
 
 
 def trits_to_int(trits: Trits) -> int:

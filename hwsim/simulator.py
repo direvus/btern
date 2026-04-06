@@ -2,25 +2,12 @@
 import argparse
 import sys
 from traceback import print_exc
-from contextlib import contextmanager
 
 from hwsim.computer import Computer
-from hwsim.util import int_to_trits, trits_to_int
+from hwsim.util import trits_to_int, input_stream
 
 
 MIN_ADDR = -(3 ** 11 // 2)
-
-
-@contextmanager
-def input_stream(path):
-    if path == '-':
-        yield sys.stdin
-    else:
-        fp = open(path, 'r')
-        try:
-            yield fp
-        finally:
-            fp.close()
 
 
 class Simulator:
