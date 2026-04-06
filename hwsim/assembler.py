@@ -10,7 +10,8 @@ from hwsim.util import int_to_trits
 
 
 INT_RE = re.compile(r'^[+-]?\d+$')
-SYMBOL_RE = re.compile(r'^([^\W_\d]\w*)\s*:$')
+LABEL_RE = re.compile(r'^([^\s]+)\s*:$')
+SYMBOL_RE = re.compile(r'^[^\W_\d]\w*$')
 DEST_MAP = {
         'A': '-',
         'M': '0',
@@ -132,9 +133,14 @@ class Assembler:
             if not line:
                 continue
 
-            m = SYMBOL_RE.match(line)
+            m = LABEL_RE.match(line)
             if m:
-                self.labels[m.group(1)] = n
+                label = m.group(1)
+                if label in self.labels:
+                    raise ValueError(
+                            f"Invalid label name {label}: label has "
+                            "been defined previously in this program")
+                self.labels[label] = n
                 continue
 
             lines.append((n, line))
