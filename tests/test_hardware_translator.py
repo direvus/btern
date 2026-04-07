@@ -32,7 +32,7 @@ def test_hardware_translator_sim():
     ass.write(machine)
 
     machine.seek(0)
-    sim.load(machine)
+    sim.load_text(machine)
     sim.execute()
 
     index = 0  # Stack should contain only the final result

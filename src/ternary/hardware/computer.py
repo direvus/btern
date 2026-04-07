@@ -1,5 +1,3 @@
-from collections.abc import Iterable
-
 from ternary.hardware.component import Component, Trits
 from ternary.hardware.cpu import CPU
 from ternary.hardware.memory import RAM177KMock, ROM177KMock
@@ -7,7 +5,7 @@ from ternary.trit import ZERO, POS
 
 
 class Computer(Component):
-    """The Computer links together a CPU with a RAM module and a program ROM.
+    """The Computer connects a CPU with a RAM module and a program ROM.
 
     It takes a single input signal 'reset', and has no outputs.
 
@@ -15,18 +13,18 @@ class Computer(Component):
     register in the program ROM. It also receives the contents of the currently
     addressed register in RAM as its 'inM' input.
 
-    The 'addrM' output from the CPU selects the active register in RAM, while
-    'outM' and 'loadM' give the result of the ALU instruction, and whether it
-    should be committed to RAM, respectively.
+    The 'addrM', 'outM' and 'loadM' outputs from the CPU are passed to the RAM
+    module, and they control which register in RAM is active, what value to
+    provide it, and what loading behaviour to apply.
 
     The 'addrP' output from CPU selects the address in ROM of the next
     instruction to execute.
 
     The 'reset' signal is passed through directly to the CPU. When it is set to
-    a non-zero value, the CPU will clear its registers and set 'addrP' to point
-    at the first register of the program ROM.
+    a non-zero value, the CPU will clear its internal registers and set 'addrP'
+    to point at the first register of the program ROM.
 
-    The normal way to operate the Computer is to load the ROM with a program,
+    The typical way to operate the Computer is to load the ROM with a program,
     then set the 'reset' signal, tick the clock, and then leave the reset
     signal at zero and continue to tick the clock while the computer runs the
     program.
@@ -60,7 +58,7 @@ class Computer(Component):
         self.set_inputs(ZERO)
         self.tick()
 
-    def load_program(self, data: Iterable[Trits]) -> None:
+    def load_program(self, data: Trits) -> None:
         """Write data to the program ROM."""
         self.components['ROM'].load(data)
 

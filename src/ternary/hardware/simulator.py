@@ -16,7 +16,8 @@ class Simulator:
         self.computer = Computer()
         self.program_length = 0
 
-    def load(self, stream):
+    def load_text(self, stream):
+        """Load a program encoded in text format."""
         codes = []
         for line in stream:
             line = line.strip()
@@ -29,7 +30,8 @@ class Simulator:
                         f"Invalid characters in '{line}': expected only "
                         "-, 0 and + in the first 12 characters of each line")
             codes.append(code)
-        self.computer.load_program(codes)
+        program = ''.join(codes)
+        self.computer.load_program(program)
         self.program_length = len(codes)
 
     def execute(self):

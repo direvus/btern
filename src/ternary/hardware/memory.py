@@ -778,25 +778,23 @@ class ROM177KMock(Component):
             return self.registers[self.index][index]
         return super().get_value(name)
 
-    def load(self, values: Iterable[Trits]):
+    def load(self, values: Trits):
         """Write data to the ROM.
 
         Starting from the lowest possible register address in the ROM
         (-----------), the values will be written sequentially into the ROM.
 
-        Each member of the `values` argument should be exactly 12 trits long.
-        If a value is longer than 12 trits, it will be truncated, and shorter
-        values will be padded on the right with zeroes.
+        The `values` argument must be an integer multiple of 12 in length.
         """
         self.registers = []
-        for value in values:
-            length = len(value)
-            if length > 12:
-                value = value[:12]
-            elif length < 12:
-                pad = tuple(ZERO) * (length - 12)
-                value = tuple(value) + pad
-            self.registers.append(tuple(value))
+        length = len(values)
+        if length % 12 != 0:
+            raise ValueError(
+                    "Invalid program data: length must be a multiple "
+                    f"of 12, but got {length}")
+
+        for i in range(0, length, 12):
+            self.registers.append(values[i:i+12])
 
 
 class ProgramCounter11(Component):
