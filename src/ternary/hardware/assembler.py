@@ -134,6 +134,9 @@ class Assembler:
             except Exception as e:
                 self.errors.append(f"{num+1}. {line}: {e}")
 
+        if self.errors:
+            raise ValueError('\n'.join(self.errors))
+
     def read_line(self, num: int, line: str):
         tokens = line.split()
         op = tokens[0].upper()
@@ -186,7 +189,7 @@ class Assembler:
         elif op == 'MOV':
             self.parse_mov(num, line, args)
         else:
-            self.errors.append(f"{num+1}: Unrecognised operation {op}")
+            raise ValueError(f"Unrecognised operation {op}")
 
     def parse_add(self, num: int, source: str, args):
         length = len(args)

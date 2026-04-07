@@ -10,6 +10,7 @@ from tests.util import seq_matches
         "inputs,expected",
         list(zip(
             (
+                '',
                 'MOV -84383 A',
                 'MOV +0-+-++0--- A',
                 'MOV 0 D',
@@ -18,6 +19,7 @@ from tests.util import seq_matches
                 'LABEL:\nMOV LABEL A',
                 ),
             (
+                '',
                 '+0-+-++0----',
                 '+0-+-++0----',
                 '00000000000+',
@@ -353,8 +355,8 @@ def test_hardware_assembler_nop():
         "inputs,expected",
         list(zip(
             (
-                'NOP RST',
-                'CHK D JMP',
+                'NOP RST # Reset',
+                'CHK D JMP ; Just jump',
                 'CHK M JGT',
                 ),
             (
@@ -375,3 +377,64 @@ def test_hardware_assembler_jump(inputs, expected):
     out = machine.read()
 
     assert seq_matches(out[:12], expected)
+
+
+@pytest.mark.parametrize(
+        "inputs",
+        [
+            'MOV 0',
+            'MOV 0 M',
+            'MOV ++ A',
+            'FOO 0 D',
+            'ADD D',
+            'ADD 1 D D',
+            'ADD 0 D D D',
+            'ADD 0 D D << >>',
+            'AND 0 D T',
+            'AND D',
+            'INC A',
+            'DEC A',
+            'CHK D JJJ',
+            'CHK D JEZ JGT',
+            ])
+def test_hardware_assembler_invalid_line(inputs):
+    ass = Assembler()
+
+    with pytest.raises(ValueError):
+        ass.read_line(1, inputs)
+
+
+def test_hardware_assembler_duplicate_label():
+    ass = Assembler()
+    assembly = StringIO(
+            'LABEL1:\n'
+            'MOV 0 D\n'
+            '\n'
+            'LABEL1:\n'
+            'NOP RST\n'
+            )
+
+    with pytest.raises(ValueError):
+        ass.read(assembly)
+
+
+def test_hardware_assembler_errors():
+    ass = Assembler()
+    assembly = StringIO(
+            'MOV 0 D\n'
+            'LABEL1:\n'
+            'MOV LABEL1 A\n'
+            'NOP JMP NOJ\n'
+            )
+
+    with pytest.raises(ValueError):
+        ass.read(assembly)
+
+
+def test_hardware_variable():
+    ass = Assembler()
+    ass.read_line(1, 'MOV sp A')
+    ass.read_line(2, 'MOV x D')
+
+    # 'x' should now be enrolled as a variable
+    assert 'x' in ass.variables
