@@ -15,7 +15,7 @@ description = "Exploration of balanced ternary logic systems, including a hardwa
 keywords = ["ternary", "logic", "hardware", "simulation"]
 
 [dependency-groups]
-test = ["pytest", "pytest-cov"]
+test = ["pytest", "pytest-cov", "flake8"]
 
 [project.scripts]
 assembler = "ternary.hwsim.assembler:cli"
