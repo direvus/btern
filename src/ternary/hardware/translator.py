@@ -6,7 +6,7 @@ import sys
 from collections.abc import Iterable
 from traceback import print_exc
 
-from ternary.hwsim.util import input_stream, output_stream
+from ternary.hardware.util import input_stream, output_stream
 
 
 SEGMENTS = {'local', 'args', 'this', 'that'}

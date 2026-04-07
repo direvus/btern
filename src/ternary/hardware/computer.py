@@ -1,8 +1,8 @@
 from collections.abc import Iterable
 
-from ternary.hwsim.component import Component, Trits
-from ternary.hwsim.cpu import CPU
-from ternary.hwsim.memory import RAM177KMock, ROM177KMock
+from ternary.hardware.component import Component, Trits
+from ternary.hardware.cpu import CPU
+from ternary.hardware.memory import RAM177KMock, ROM177KMock
 from ternary.trit import ZERO, POS
 
 

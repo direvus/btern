@@ -1,6 +1,6 @@
 import pytest
 
-from ternary.hwsim import memory
+from ternary.hardware import memory
 from tests.util import N, Z, P, TRINARY
 
 
@@ -17,7 +17,7 @@ from tests.util import N, Z, P, TRINARY
                 N, Z, P,
                 N, Z, P,
                 ))))
-def test_hwsim_dff_setup(inputs, expected):
+def test_hardware_dff_setup(inputs, expected):
     comp = memory.DataFlipFlop()
 
     load, inp, state = inputs
@@ -39,7 +39,7 @@ def test_hwsim_dff_setup(inputs, expected):
                 Z, Z, Z,
                 P, P, P,
                 ))))
-def test_hwsim_dff_update_state(inputs, expected):
+def test_hardware_dff_update_state(inputs, expected):
     comp = memory.DataFlipFlop()
 
     load, inp, state = inputs
@@ -63,7 +63,7 @@ def test_hwsim_dff_update_state(inputs, expected):
                 True, True, True,
                 True, True, True,
                 ))))
-def test_hwsim_dff_update_return(inputs, expected):
+def test_hardware_dff_update_return(inputs, expected):
     comp = memory.DataFlipFlop()
 
     load, inp, state = inputs
@@ -86,7 +86,7 @@ def test_hwsim_dff_update_return(inputs, expected):
                 N, Z, P,
                 P, P, P,
                 ))))
-def test_hwsim_register(inputs, expected):
+def test_hardware_register(inputs, expected):
     comp = memory.Register()
     inp, load, state = inputs
     comp.components['DFF'].state = state
@@ -100,7 +100,7 @@ def test_hwsim_register(inputs, expected):
     assert out == expected
 
 
-def test_hwsim_register_updates():
+def test_hardware_register_updates():
     comp = memory.Register()
     (out,) = comp.get_outputs('++')
     # The value of the register should continue to reflect the initial state
@@ -138,7 +138,7 @@ def test_hwsim_register_updates():
                 '000000000000',
                 '0-+-+---0+++',
                 ))))
-def test_hwsim_register12(inputs, expected):
+def test_hardware_register12(inputs, expected):
     comp = memory.Register12()
     out = comp.get_outputs(inputs)
     assert out == tuple('000000000000')
@@ -147,7 +147,7 @@ def test_hwsim_register12(inputs, expected):
     assert out == tuple(expected)
 
 
-def test_hwsim_register12_updates():
+def test_hardware_register12_updates():
     comp = memory.Register12()
     v = '0-+-+---0+++'
     z = '000000000000'
@@ -200,7 +200,7 @@ def test_hwsim_register12_updates():
                 '0-+-+---0+++',
                 '0-+-+---0+++',
                 ))))
-def test_hwsim_ram3(inputs, expected):
+def test_hardware_ram3(inputs, expected):
     comp = memory.RAM3()
     out = comp.get_outputs(inputs)
     assert out == tuple('000000000000')
@@ -209,7 +209,7 @@ def test_hwsim_ram3(inputs, expected):
     assert out == tuple(expected)
 
 
-def test_hwsim_ram3_updates():
+def test_hardware_ram3_updates():
     ram = memory.RAM3()
     z = '000000000000'
     v = '0-+-+---0+++'
@@ -251,7 +251,7 @@ def test_hwsim_ram3_updates():
     assert out == tuple(v)
 
 
-def test_hwsim_ram9():
+def test_hardware_ram9():
     ram = memory.RAM9()
     z = '000000000000'
     v = '0-+-+---0+++'
@@ -278,7 +278,7 @@ def test_hwsim_ram9():
     assert out == tuple(v)
 
 
-def test_hwsim_ram81():
+def test_hardware_ram81():
     ram = memory.RAM81()
     addr = '+0-+'
     value = '+--0+---00--'
@@ -311,7 +311,7 @@ def test_hwsim_ram81():
     assert out == zero
 
 
-def test_hwsim_ram177k_mock():
+def test_hardware_ram177k_mock():
     ram = memory.RAM177KMock()
     addr = '+0-+00+---0'
     value = '+--0+---00--'
@@ -344,7 +344,7 @@ def test_hwsim_ram177k_mock():
     assert out == zero
 
 
-def test_hwsim_program_counter11():
+def test_hardware_program_counter11():
     comp = memory.ProgramCounter11()
     v = '0-+-+---0++'
     z = '00000000000'

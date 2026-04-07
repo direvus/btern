@@ -1,6 +1,6 @@
-from ternary.hwsim.component import (
+from ternary.hardware.component import (
         Component, NCons, NAnd, NOr, NAny, Not, PNot, NNot)
-from ternary.hwsim.logic import Any
+from ternary.hardware.logic import Any
 
 
 class Sum(Component):

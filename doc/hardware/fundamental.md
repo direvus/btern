@@ -1,10 +1,10 @@
 # Index
 
-- [Ternary logic system](/doc/hwsim/logic.md)
+- [Ternary logic system](/doc/hardware/logic.md)
 - Fundamental components
-- [Composite logic gates](/doc/hwsim/gates.md)
-- [Computer architecture and machine language specification](/doc/hwsim/arch.md)
-- [Assembly language](/doc/hwsim/assembly.md)
+- [Composite logic gates](/doc/hardware/gates.md)
+- [Computer architecture and machine language specification](/doc/hardware/arch.md)
+- [Assembly language](/doc/hardware/assembly.md)
 
 # Fundamental components
 
@@ -26,7 +26,7 @@ The fundamental components are:
 
 ## Inverter (NOT)
 
-![NOT gate](/doc/hwsim/not.png)
+![NOT gate](/doc/hardware/not.png)
 
 Logically inverts its input:
 
@@ -38,7 +38,7 @@ Logically inverts its input:
 
 ## Positively-biased inverter (PNOT)
 
-![PNOT gate](/doc/hwsim/pnot.png)
+![PNOT gate](/doc/hardware/pnot.png)
 
 Logically inverts its input, but a zero input is biased to a positive output:
 
@@ -50,7 +50,7 @@ Logically inverts its input, but a zero input is biased to a positive output:
 
 ## Negatively-biased inverter (NNOT)
 
-![NNOT gate](/doc/hwsim/nnot.png)
+![NNOT gate](/doc/hardware/nnot.png)
 
 Logically inverts its input, but a zero input is biased to a negative output:
 
@@ -62,7 +62,7 @@ Logically inverts its input, but a zero input is biased to a negative output:
 
 ## Inverted logical conjunction (NAND)
 
-![NAND gate](/doc/hwsim/nand.png)
+![NAND gate](/doc/hardware/nand.png)
 
 Outputs the inverse of the logical AND of its two inputs:
 
@@ -76,7 +76,7 @@ a NAND b == NOT (a AND b)
 
 ## Inverted logical disjunction (NOR)
 
-![NOR gate](/doc/hwsim/nor.png)
+![NOR gate](/doc/hardware/nor.png)
 
 Outputs the inverse of the logical OR of its two inputs:
 

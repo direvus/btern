@@ -1,15 +1,15 @@
 # Index
 
-- [Ternary logic system](/doc/hwsim/logic.md)
-- [Fundamental components](/doc/hwsim/fundamental.md)
+- [Ternary logic system](/doc/hardware/logic.md)
+- [Fundamental components](/doc/hardware/fundamental.md)
 - Composite logic gates
-- [Computer architecture and machine language specification](/doc/hwsim/arch.md)
-- [Assembly language](/doc/hwsim/assembly.md)
+- [Computer architecture and machine language specification](/doc/hardware/arch.md)
+- [Assembly language](/doc/hardware/assembly.md)
 
 # Composite logic gates
 
 Composite gates are made up of connections between some set of the [fundamental
-components](/doc/hwsim/fundamental.md) NAND, NOR, NANY, NCONS, NOT, PNOT and
+components](/doc/hardware/fundamental.md) NAND, NOR, NANY, NCONS, NOT, PNOT and
 NNOT.
 
 ## AND / OR
@@ -17,7 +17,7 @@ NNOT.
 To take one of the simplest examples, an AND gate is composed of two
 fundamental components: a NAND and a NOT, connected together like so:
 
-![AND gate diagram](/doc/hwsim/and.png)
+![AND gate diagram](/doc/hardware/and.png)
 
 The OR and ANY gates follow the same pattern, but with NOR and NANY in place of
 the NAND respectively.
@@ -26,14 +26,14 @@ the NAND respectively.
 
 The XOR (exclusive OR) gate is composed of a NAND, a NOT and two NORS:
 
-![XOR gate diagram](/doc/hwsim/xor.png)
+![XOR gate diagram](/doc/hardware/xor.png)
 
 ## ISZ (is zero)
 
 The ISZ gate takes a single input, and its output is positive if the input is
 zero, and negative otherwise. It is composed of a PNOT, NOT and NAND:
 
-![ISZ gate diagram](/doc/hwsim/iszero.png)
+![ISZ gate diagram](/doc/hardware/iszero.png)
 
 ## CLU (cycle up) and CLD (cycle down)
 
@@ -41,11 +41,11 @@ The cycle up gate takes a single input, and outputs the value of its input
 bumped up one step, so a negative becomes a zero, a zero becomes a positive,
 and a positive wraps around to become negative.
 
-![CLU gate diagram](/doc/hwsim/clu.png)
+![CLU gate diagram](/doc/hardware/clu.png)
 
 Cycle down works the same way, but in the opposite direction.
 
-![CLD gate diagram](/doc/hwsim/cld.png)
+![CLD gate diagram](/doc/hardware/cld.png)
 
 ## 3-way Multiplexer
 
@@ -56,4 +56,4 @@ on the value of the selector: when the selector is negative, the output is 'a'.
 When the selector is zero, the output is 'b', and when the selector is
 positive, the output is 'c'.
 
-![Multiplexer gate diagram](/doc/hwsim/mux.png)
+![Multiplexer gate diagram](/doc/hardware/mux.png)

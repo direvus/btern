@@ -6,7 +6,7 @@ import re
 import sys
 from traceback import print_exc
 
-from ternary.hwsim.util import int_to_trits, input_stream, output_stream
+from ternary.hardware.util import int_to_trits, input_stream, output_stream
 
 
 INT_RE = re.compile(r'^[+-]?\d+$')

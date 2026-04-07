@@ -1,14 +1,14 @@
 # Index
 
-- [Ternary logic system](/doc/hwsim/logic.md)
-- [Fundamental components](/doc/hwsim/fundamental.md)
-- [Composite logic gates](/doc/hwsim/gates.md)
+- [Ternary logic system](/doc/hardware/logic.md)
+- [Fundamental components](/doc/hardware/fundamental.md)
+- [Composite logic gates](/doc/hardware/gates.md)
 - Computer architecture and machine language specification
-- [Assembly language](/doc/hwsim/assembly.md)
+- [Assembly language](/doc/hardware/assembly.md)
 
 # Computer Architecture
 
-![Computer architecture diagram](/doc/hwsim/computer.png)
+![Computer architecture diagram](/doc/hardware/computer.png)
 
 The computer uses a word size of 12 trits. It has a RAM module and a program
 ROM module, each of which is addressed using 11 trits, for a total addressable
@@ -16,7 +16,7 @@ space of 177,147 words, or 2,125,764 trits.
 
 ## CPU
 
-![CPU architecture](/doc/hwsim/cpu.png)
+![CPU architecture](/doc/hardware/cpu.png)
 
 The Central Processing Unit (CPU) accepts a 12-trit machine language
 instruction, a 12-trit value from the currently active RAM register, and a
@@ -46,7 +46,7 @@ computation.
 
 ## Arithmetic Logic Unit (ALU)
 
-![ALU architecture](/doc/hwsim/alu.png)
+![ALU architecture](/doc/hardware/alu.png)
 
 The ALU accepts two 12-trit inputs, 'x' and 'y', and three control signals
 'px', 'py' and 'f'.
@@ -68,7 +68,7 @@ x (when 'py' is negative).
 
 ## Jump Controller (JC)
 
-![Jump Controller diagram](/doc/hwsim/jumpctl.png)
+![Jump Controller diagram](/doc/hardware/jumpctl.png)
 
 The Jump Controller takes the two jump signals from the CPU instruction, 'j1'
 and 'j2', as well as the 'reset' and 'mode' signals, and computes a final pair
@@ -83,7 +83,7 @@ as-is.
 
 ## Jump Calculator (JMP)
 
-![Jumper diagram](/doc/hwsim/jumper.png)
+![Jumper diagram](/doc/hardware/jumper.png)
 
 The Jump Calculator computes the address of the next instruction to execute,
 which is one of the outputs of the CPU. It takes as input the current
@@ -99,7 +99,7 @@ a reset, or otherwise the current address plus one.
 
 ## Load Controller
 
-![Loader diagram](/doc/hwsim/loader.png)
+![Loader diagram](/doc/hardware/loader.png)
 
 The Load Controller determines the load signals for the A register, D register
 and the RAM module.

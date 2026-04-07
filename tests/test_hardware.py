@@ -1,6 +1,6 @@
 import pytest
 
-from ternary.hwsim import util
+from ternary.hardware import util
 
 
 @pytest.mark.parametrize(
@@ -26,7 +26,7 @@ from ternary.hwsim import util
                 11,
                 14,
                 ))))
-def test_hwsim_trits_to_int(inputs, expected):
+def test_hardware_trits_to_int(inputs, expected):
     out = util.trits_to_int(inputs)
     assert out == expected
 
@@ -54,6 +54,6 @@ def test_hwsim_trits_to_int(inputs, expected):
                 '-++',
                 '---+',
                 ))))
-def test_hwsim_int_to_trits(inputs, expected):
+def test_hardware_int_to_trits(inputs, expected):
     out = util.int_to_trits(*inputs)
     assert out == expected

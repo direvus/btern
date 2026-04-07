@@ -1,6 +1,6 @@
 import pytest
 
-from ternary.hwsim import cpu
+from ternary.hardware import cpu
 from tests.util import seq_matches, Z, P, TRINARY, QUATERNARY
 
 
@@ -33,7 +33,7 @@ from tests.util import seq_matches, Z, P, TRINARY, QUATERNARY
                 tuple('--0--0--0--0'),  # x & y
                 tuple('-0--0--0--0-'),  # -x & -y
                 ))))
-def test_hwsim_alu(inputs, expected):
+def test_hardware_alu(inputs, expected):
     comp = cpu.ALU()
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -52,7 +52,7 @@ def test_hwsim_alu(inputs, expected):
             '-0-', '-0-', '-0-',
             '-0-', '-0-', '-0-',
             ))))
-def test_hwsim_loader(inputs, expected):
+def test_hardware_loader(inputs, expected):
     comp = cpu.Loader()
     out = comp.get_outputs(inputs)
     assert out == tuple(expected)
@@ -136,7 +136,7 @@ def test_hwsim_loader(inputs, expected):
                 tuple('0-+-+---0++'),
                 tuple('0-+-+---0++'),
                 ))))
-def test_hwsim_jumper(inputs, expected):
+def test_hardware_jumper(inputs, expected):
     comp = cpu.Jumper()
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -155,13 +155,13 @@ def test_hwsim_jumper(inputs, expected):
             '0-', '00', '0-', '0-', '+0', '0-', '0-', '00', '0-',  # j = +0
             '0-', '00', '0-', '0-', '++', '0-', '0-', '00', '0-',  # j = ++
             ))))
-def test_hwsim_jump_controller(inputs, expected):
+def test_hardware_jump_controller(inputs, expected):
     comp = cpu.JumpController()
     out = comp.get_outputs(inputs)
     assert out == tuple(expected)
 
 
-def test_hwsim_cpu_reset():
+def test_hardware_cpu_reset():
     comp = cpu.CPU()
     # Send a reset signal with random junk in 'inM' and 'inst'. Expect that the
     # loadM output should be 0, and addrP will be all negative.
@@ -179,7 +179,7 @@ def test_hwsim_cpu_reset():
     assert comp.get_d() == '000000000000'
 
 
-def test_hwsim_cpu_load_a():
+def test_hardware_cpu_load_a():
     comp = cpu.CPU()
     comp.reset()
     assert comp.get_a() == '000000000000'
@@ -201,7 +201,7 @@ def test_hwsim_cpu_load_a():
     assert comp.get_d() == '000000000000'
 
 
-def test_hwsim_cpu_load_d():
+def test_hardware_cpu_load_d():
     comp = cpu.CPU()
     comp.reset()
     assert comp.get_a() == '000000000000'
@@ -223,7 +223,7 @@ def test_hwsim_cpu_load_d():
     assert comp.get_d() == '+-+-+-+-+-+0'
 
 
-def test_hwsim_cpu_add():
+def test_hardware_cpu_add():
     comp = cpu.CPU()
     comp.reset()
 
@@ -265,7 +265,7 @@ def test_hwsim_cpu_add():
     assert comp.get_d() == '-+0000000000'
 
 
-def test_hwsim_cpu_and():
+def test_hardware_cpu_and():
     comp = cpu.CPU()
     comp.reset()
 
@@ -304,7 +304,7 @@ def test_hwsim_cpu_and():
     assert comp.get_d() == '----00-0+000'
 
 
-def test_hwsim_cpu_read_m():
+def test_hardware_cpu_read_m():
     comp = cpu.CPU()
     comp.reset()
 
@@ -328,7 +328,7 @@ def test_hwsim_cpu_read_m():
     assert seq_matches(comp.get_d(), '--+000000000')
 
 
-def test_hwsim_cpu_write_m():
+def test_hardware_cpu_write_m():
     comp = cpu.CPU()
     comp.reset()
 
@@ -363,7 +363,7 @@ def test_hwsim_cpu_write_m():
     assert addrp == tuple('-0---------')
 
 
-def test_hwsim_cpu_inc_m():
+def test_hardware_cpu_inc_m():
     comp = cpu.CPU()
     comp.reset()
 
@@ -378,7 +378,7 @@ def test_hwsim_cpu_inc_m():
     assert addrp == tuple('0----------')
 
 
-def test_hwsim_cpu_a_m():
+def test_hardware_cpu_a_m():
     comp = cpu.CPU()
     comp.reset()
 
@@ -403,7 +403,7 @@ def test_hwsim_cpu_a_m():
     assert comp.get_a() == '0++0+-++++--'
 
 
-def test_hwsim_cpu_shift_left():
+def test_hardware_cpu_shift_left():
     comp = cpu.CPU()
     comp.reset()
 
@@ -428,7 +428,7 @@ def test_hwsim_cpu_shift_left():
     assert comp.get_d() == '0--0++-000+-'
 
 
-def test_hwsim_cpu_shift_right():
+def test_hardware_cpu_shift_right():
     comp = cpu.CPU()
     comp.reset()
 

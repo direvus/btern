@@ -1,8 +1,8 @@
-from ternary.hwsim import computer, util
+from ternary.hardware import computer, util
 from tests.util import seq_matches, N
 
 
-def test_hwsim_computer_mov_a():
+def test_hardware_computer_mov_a():
     comp = computer.Computer()
     program = (
         '--0++-00+---',  # MOV A
@@ -14,7 +14,7 @@ def test_hwsim_computer_mov_a():
     assert seq_matches(comp.get_d(), '000000000000')
 
 
-def test_hwsim_computer_mov_d():
+def test_hardware_computer_mov_d():
     comp = computer.Computer()
     program = (
         '--0++-00+--+',  # MOV D
@@ -26,7 +26,7 @@ def test_hwsim_computer_mov_d():
     assert seq_matches(comp.get_d(), '--0++-00+--0')
 
 
-def test_hwsim_computer_mov_a2():
+def test_hardware_computer_mov_a2():
     comp = computer.Computer()
     program = (
         '00000+++00+0',  # ADD 0 0 D
@@ -40,7 +40,7 @@ def test_hwsim_computer_mov_a2():
     assert seq_matches(comp.get_d(), '000000000000')
 
 
-def test_hwsim_computer_write_m():
+def test_hardware_computer_write_m():
     # Put a random literal value into D, then select a random memory address,
     # and write the value from D into memory.
     comp = computer.Computer()
@@ -66,7 +66,7 @@ def test_hwsim_computer_write_m():
     assert seq_matches(comp.get_ram_contents('--0++-00+--'), '++-0+-+-00-0')
 
 
-def test_hwsim_computer_read_m():
+def test_hardware_computer_read_m():
     # Store a random literal value into RAM[1] before starting the program. The
     # program will select address 1, then copy M into D.
     comp = computer.Computer()
@@ -88,7 +88,7 @@ def test_hwsim_computer_read_m():
     assert seq_matches(comp.get_d(), value)
 
 
-def test_hwsim_computer_loop():
+def test_hardware_computer_loop():
     # Test basic loop operation. Load a target address into A, and a loop
     # counter value into D. Decrement the counter and loop on that instruction
     # until the counter reaches zero.
@@ -127,7 +127,7 @@ def test_hwsim_computer_loop():
     assert seq_matches(comp.get_program_address(), '-0---------')
 
 
-def test_hwsim_computer_mul():
+def test_hardware_computer_mul():
     # Test a simple multiplication routine. This code should multiply the value
     # in RAM[0] by the value in RAM[1], and store the result in RAM[3].
     comp = computer.Computer()

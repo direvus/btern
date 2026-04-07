@@ -1,13 +1,13 @@
 import pytest
 
-from ternary.hwsim import component, logic
+from ternary.hardware import component, logic
 from tests.util import seq_matches, N, Z, P, UNARY, BINARY, TRINARY, QUATERNARY
 
 
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (P, P, P, P, Z, Z, P, Z, N))))
-def test_hwsim_nand(inputs, expected):
+def test_hardware_nand(inputs, expected):
     comp = component.NAnd()
 
     (out,) = comp.get_outputs(inputs)
@@ -17,7 +17,7 @@ def test_hwsim_nand(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(UNARY, (P, P, N))))
-def test_hwsim_pnot(inputs, expected):
+def test_hardware_pnot(inputs, expected):
     comp = component.PNot()
 
     (out,) = comp.get_outputs(inputs)
@@ -27,7 +27,7 @@ def test_hwsim_pnot(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(UNARY, (P, N, N))))
-def test_hwsim_nnot(inputs, expected):
+def test_hardware_nnot(inputs, expected):
     comp = component.NNot()
 
     (out,) = comp.get_outputs(inputs)
@@ -37,7 +37,7 @@ def test_hwsim_nnot(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (P, Z, N, Z, Z, N, N, N, N))))
-def test_hwsim_nor(inputs, expected):
+def test_hardware_nor(inputs, expected):
     comp = component.NOr()
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -46,7 +46,7 @@ def test_hwsim_nor(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (P, P, Z, P, Z, N, Z, N, N))))
-def test_hwsim_nany(inputs, expected):
+def test_hardware_nany(inputs, expected):
     comp = component.NAny()
 
     (out,) = comp.get_outputs(inputs)
@@ -57,7 +57,7 @@ def test_hwsim_nany(inputs, expected):
         "inputs,expected",
         list(zip(BINARY, (
             P, Z, Z, Z, Z, Z, Z, Z, N))))
-def test_hwsim_ncons(inputs, expected):
+def test_hardware_ncons(inputs, expected):
     comp = component.NCons()
 
     (out,) = comp.get_outputs(inputs)
@@ -67,7 +67,7 @@ def test_hwsim_ncons(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(UNARY, (P, Z, N))))
-def test_hwsim_not(inputs, expected):
+def test_hardware_not(inputs, expected):
     comp = component.Not()
 
     (out,) = comp.get_outputs(inputs)
@@ -77,7 +77,7 @@ def test_hwsim_not(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (N, N, N, N, Z, Z, N, Z, P))))
-def test_hwsim_and(inputs, expected):
+def test_hardware_and(inputs, expected):
     comp = logic.And()
 
     (out,) = comp.get_outputs(inputs)
@@ -87,7 +87,7 @@ def test_hwsim_and(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (N, Z, P, Z, Z, P, P, P, P))))
-def test_hwsim_or(inputs, expected):
+def test_hardware_or(inputs, expected):
     comp = logic.Or()
 
     (out,) = comp.get_outputs(inputs)
@@ -97,7 +97,7 @@ def test_hwsim_or(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (N, N, Z, N, Z, P, Z, P, P))))
-def test_hwsim_any(inputs, expected):
+def test_hardware_any(inputs, expected):
     comp = logic.Any()
 
     (out,) = comp.get_outputs(inputs)
@@ -107,7 +107,7 @@ def test_hwsim_any(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (N, Z, P, Z, Z, Z, P, Z, N))))
-def test_hwsim_xor(inputs, expected):
+def test_hardware_xor(inputs, expected):
     comp = logic.Xor()
 
     (out,) = comp.get_outputs(inputs)
@@ -117,7 +117,7 @@ def test_hwsim_xor(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(BINARY, (P, Z, N, Z, Z, Z, N, Z, P))))
-def test_hwsim_nxor(inputs, expected):
+def test_hardware_nxor(inputs, expected):
     comp = logic.NXor()
 
     (out,) = comp.get_outputs(inputs)
@@ -127,7 +127,7 @@ def test_hwsim_nxor(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(UNARY, (N, P, N))))
-def test_hwsim_isz(inputs, expected):
+def test_hardware_isz(inputs, expected):
     comp = logic.IsZero()
 
     (out,) = comp.get_outputs(inputs)
@@ -137,7 +137,7 @@ def test_hwsim_isz(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(UNARY, (P, N, Z))))
-def test_hwsim_cld(inputs, expected):
+def test_hardware_cld(inputs, expected):
     comp = logic.CycleDown()
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -146,7 +146,7 @@ def test_hwsim_cld(inputs, expected):
 @pytest.mark.parametrize(
         "inputs,expected",
         list(zip(UNARY, (Z, P, N))))
-def test_hwsim_clu(inputs, expected):
+def test_hardware_clu(inputs, expected):
     comp = logic.CycleUp()
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -167,7 +167,7 @@ def test_hwsim_clu(inputs, expected):
                 tuple('------------'),
                 tuple('000+++0-+00+'),
                 ))))
-def test_hwsim_not12(inputs, expected):
+def test_hardware_not12(inputs, expected):
     comp = logic.Not12()
 
     out = comp.get_outputs(inputs)
@@ -189,7 +189,7 @@ def test_hwsim_not12(inputs, expected):
                 tuple('++++++++++++'),
                 tuple('----00-0+-0+'),
                 ))))
-def test_hwsim_and12(inputs, expected):
+def test_hardware_and12(inputs, expected):
     comp = logic.And12()
 
     out = comp.get_outputs(inputs)
@@ -209,7 +209,7 @@ def test_hwsim_and12(inputs, expected):
             P, Z, N, P, Z, Z, P, Z, P,  # a = +, b = 0
             P, P, N, P, P, Z, P, P, P,  # a = +, b = +
             ))))
-def test_hwsim_mux(inputs, expected):
+def test_hardware_mux(inputs, expected):
     comp = logic.Mux()
 
     (out,) = comp.get_outputs(inputs)
@@ -229,7 +229,7 @@ def test_hwsim_mux(inputs, expected):
             Z, P, Z,  # a = +, b = 0
             P, P, P,  # a = +, b = +
             ))))
-def test_hwsim_mux_2way(inputs, expected):
+def test_hardware_mux_2way(inputs, expected):
     comp = logic.Mux2Way()
     (out,) = comp.get_outputs(inputs)
     assert out == expected
@@ -248,7 +248,7 @@ def test_hwsim_mux_2way(inputs, expected):
             (Z, P, Z),
             (Z, Z, P),
             ))))
-def test_hwsim_demux(inputs, expected):
+def test_hardware_demux(inputs, expected):
     comp = logic.Demux()
 
     out = comp.get_outputs(inputs)
@@ -268,7 +268,7 @@ def test_hwsim_demux(inputs, expected):
                 tuple('+-0+-0+-0+-0'),
                 tuple('0-+0-+0-+0-+'),
                 ))))
-def test_hwsim_mux12(inputs, expected):
+def test_hardware_mux12(inputs, expected):
     comp = logic.Mux12()
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -287,7 +287,7 @@ def test_hwsim_mux12(inputs, expected):
                 tuple('-0+-0+-0+-0+'),
                 tuple('+-0+-0+-0+-0'),
                 ))))
-def test_hwsim_mux2way12(inputs, expected):
+def test_hardware_mux2way12(inputs, expected):
     comp = logic.Mux2Way12()
     out = comp.get_outputs(inputs)
     assert out == expected
@@ -308,7 +308,7 @@ def test_hwsim_mux2way12(inputs, expected):
                 '0+++++++++++',
                 '0---0++00-+-',
                 ))))
-def test_hwsim_shift_left12(inputs, expected):
+def test_hardware_shift_left12(inputs, expected):
     comp = logic.ShiftLeft12()
     out = comp.get_outputs(inputs)
     assert seq_matches(out, expected)
@@ -329,7 +329,7 @@ def test_hwsim_shift_left12(inputs, expected):
                 '+++++++++++0',
                 '--0++00-+--0',
                 ))))
-def test_hwsim_shift_right12(inputs, expected):
+def test_hardware_shift_right12(inputs, expected):
     comp = logic.ShiftRight12()
     out = comp.get_outputs(inputs)
     assert seq_matches(out, expected)

@@ -3,7 +3,7 @@ import re
 from collections.abc import Callable, Iterable
 
 from ternary.trit import ZERO, POS, NEG
-from ternary.hwsim.util import Trit, Trits
+from ternary.hardware.util import Trit, Trits
 
 
 BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')

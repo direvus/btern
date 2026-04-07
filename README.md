@@ -8,14 +8,14 @@ This library implements computations over values expressed in Balanced Ternary
 form.
 
 Balanced Ternary is a numeral system with three symbols, equating to the
-decimal values -1, 0 and +1.  We use the characters -, 0 and + to represents these
-values respectively.  Each digit in ternary is called a 'trit' (**tr**inary
-dig**it**).
+quantities −1, 0 and 1.  We use the characters `−`, `0` and `+` to
+represents these values respectively.  A single symbol digit in ternary is
+called a 'trit' (**tr**inary dig**it**).
 
 When performing logical operations with balanced ternary values, we use the
-Kleene ternary propositional logic system, where - represents False, +
-represents True, and 0 represents an indeterminate value, which is either True
-or False.
+Kleene ternary propositional logic system, in which `−` represents False, `+`
+represents True, and `0` represents an indeterminate value, which is either
+True or False.
 
 Modules
 -------
@@ -37,11 +37,12 @@ Modules
     computer simulators (Processor), and a simple working implementation of a
     Processor (T3).
 
-Subpackages
+Hardware Simulator
 -----------
 
-  * [hwsim](/hwsim) is a complete hardware simulation of a balanced ternary
-    computer, built from a small set of fundamental logic gates
+The [hardware](/src/ternary/hardware) subpackage is a complete hardware
+simulation of a balanced ternary computer, built from a small set of
+fundamental logic gates.
 
 Background
 ----------

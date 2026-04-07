@@ -1,10 +1,10 @@
 # Index
 
 - Ternary logic system
-- [Fundamental components](/doc/hwsim/fundamental.md)
-- [Composite logic gates](/doc/hwsim/gates.md)
-- [Computer architecture and machine language specification](/doc/hwsim/arch.md)
-- [Assembly language](/doc/hwsim/assembly.md)
+- [Fundamental components](/doc/hardware/fundamental.md)
+- [Composite logic gates](/doc/hardware/gates.md)
+- [Computer architecture and machine language specification](/doc/hardware/arch.md)
+- [Assembly language](/doc/hardware/assembly.md)
 
 # Ternary logic system
 

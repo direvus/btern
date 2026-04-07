@@ -3,8 +3,8 @@ import argparse
 import sys
 from traceback import print_exc
 
-from ternary.hwsim.computer import Computer
-from ternary.hwsim.util import trits_to_int, input_stream
+from ternary.hardware.computer import Computer
+from ternary.hardware.util import trits_to_int, input_stream
 
 
 MIN_ADDR = -(3 ** 11 // 2)
