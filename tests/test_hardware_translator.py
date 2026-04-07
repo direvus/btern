@@ -26,8 +26,6 @@ def test_hardware_translator_sim():
     tr.write(assembly)
 
     assembly.seek(0)
-    print(assembly.read())
-    assembly.seek(0)
     ass.read(assembly)
     ass.write(machine)
 

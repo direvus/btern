@@ -59,6 +59,8 @@ def int_to_trits(n: int, size: int) -> Trits:
     Raises an error if the given integer cannot be represented in the given
     number of trits.
     """
+    if size <= 0:
+        raise ValueError(f"Invalid trit size {size}")
     trit_map = '-0+'
     m = (3 ** size) // 2
     if n < -m or n > m:

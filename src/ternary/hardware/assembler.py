@@ -56,7 +56,7 @@ def parse_input(text: str) -> str:
     except KeyError:
         keys = ', '.join(INPUT_MAP.keys())
         raise ValueError(
-                f"Invalid destination {text}, expected one of: {keys}")
+                f"Invalid input '{text}', expected one of: {keys}")
 
 
 def parse_dest(text: str) -> str:
@@ -65,7 +65,7 @@ def parse_dest(text: str) -> str:
     except KeyError:
         keys = ', '.join(DEST_MAP.keys())
         raise ValueError(
-                f"Invalid destination {text}, expected one of: {keys}")
+                f"Invalid destination '{text}', expected one of: {keys}")
 
 
 def parse_optional(args) -> tuple[str, str]:
@@ -137,13 +137,17 @@ class Assembler:
         args = list(tokens[1:])
 
         if op == 'NOP':
-            self.parse_add(num, line, ('0', 'D', 'D'))
+            args = ['0', 'D', 'D'] + args
+            self.parse_add(num, line, args)
         elif op == 'ADD':
             self.parse_add(num, line, args)
         elif op == 'SUB':
-            # SUB is just ADD with the second input inverted
+            # SUB is just ADD with the second input inverted -- we remove the
+            # negation prefix if it is already there, or add it if not, and
+            # pass the command along to parse_add().
             b = args[1]
-            b = b[1:] if b.startswith('-') else '-' + b
+            if b != '0':
+                b = b[1:] if b.startswith('-') else '-' + b
             args[1] = b
             self.parse_add(num, line, args)
         elif op == 'CHK':

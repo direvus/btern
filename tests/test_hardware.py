@@ -57,3 +57,16 @@ def test_hardware_trits_to_int(inputs, expected):
 def test_hardware_int_to_trits(inputs, expected):
     out = util.int_to_trits(*inputs)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs",
+        [
+            (1, 0),
+            (1, -1),
+            (2, 1),
+            (1e8, 12),
+            ])
+def test_hardware_int_to_trits_err(inputs):
+    with pytest.raises(ValueError):
+        util.int_to_trits(*inputs)
