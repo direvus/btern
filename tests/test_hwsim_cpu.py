@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import cpu
+from ternary.hwsim import cpu
 from tests.util import seq_matches, Z, P, TRINARY, QUATERNARY
 
 

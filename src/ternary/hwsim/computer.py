@@ -1,9 +1,9 @@
 from collections.abc import Iterable
 
-from hwsim.component import Component, Trits
-from hwsim.cpu import CPU
-from hwsim.memory import RAM177KMock, ROM177KMock
-from trit import ZERO, POS
+from ternary.hwsim.component import Component, Trits
+from ternary.hwsim.cpu import CPU
+from ternary.hwsim.memory import RAM177KMock, ROM177KMock
+from ternary.trit import ZERO, POS
 
 
 class Computer(Component):

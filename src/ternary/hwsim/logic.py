@@ -1,5 +1,5 @@
-from trit import ZERO
-from hwsim.component import (
+from ternary.trit import ZERO
+from ternary.hwsim.component import (
         Component, NAnd, NCons, NOr, NAny, Not, PNot, NNot)
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import memory
+from ternary.hwsim import memory
 from tests.util import N, Z, P, TRINARY
 
 

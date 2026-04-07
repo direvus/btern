@@ -2,8 +2,8 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Iterable
 
-from trit import ZERO, POS, NEG
-from hwsim.util import Trit, Trits
+from ternary.trit import ZERO, POS, NEG
+from ternary.hwsim.util import Trit, Trits
 
 
 BUS_RE = re.compile(r'^(\w+)\[(\d+)]$')

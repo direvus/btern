@@ -3,15 +3,13 @@
 import unittest
 import string
 
-import binary
-import integer
-import processor
-import trit
-from trit import Trit, Trits, GLYPHS, NEG, ZERO, POS
-from trit import TRITS, TRIT_NEG, TRIT_ZERO, TRIT_POS
-from integer import Int, UInt
-from character import UTF6t
-from processor import Register
+from ternary import binary, integer, processor, trit
+from ternary.trit import (
+        Trit, Trits, GLYPHS, NEG, ZERO, POS, TRITS, TRIT_NEG, TRIT_ZERO,
+        TRIT_POS)
+from ternary.integer import Int, UInt
+from ternary.character import UTF6t
+from ternary.processor import Register
 
 
 # The set of all possible 3-trit sequences

@@ -2,8 +2,7 @@
 # coding=utf-8
 import numbers
 
-import trit
-import integer
+from ternary import trit, integer
 
 
 class Register(trit.Trits):

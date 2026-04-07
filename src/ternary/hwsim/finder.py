@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from itertools import product
 
-from trit import NEG, ZERO, POS
+from ternary.trit import NEG, ZERO, POS
 
 
 N = NEG

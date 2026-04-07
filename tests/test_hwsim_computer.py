@@ -1,5 +1,5 @@
-from hwsim import computer, util
-from tests.util import seq_matches, Z, N
+from ternary.hwsim import computer, util
+from tests.util import seq_matches, N
 
 
 def test_hwsim_computer_mov_a():

@@ -5,7 +5,7 @@ import os
 import sys
 from collections.abc import Iterable
 
-from hwsim.util import input_stream, output_stream
+from ternary.hwsim.util import input_stream, output_stream
 
 
 SEGMENTS = {'local', 'args', 'this', 'that'}

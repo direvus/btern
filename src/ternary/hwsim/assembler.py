@@ -5,7 +5,7 @@ import os
 import re
 import sys
 
-from hwsim.util import int_to_trits, input_stream, output_stream
+from ternary.hwsim.util import int_to_trits, input_stream, output_stream
 
 
 INT_RE = re.compile(r'^[+-]?\d+$')

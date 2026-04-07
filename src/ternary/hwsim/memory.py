@@ -1,9 +1,9 @@
 from collections.abc import Iterable
 
-from hwsim.component import Component, Trit, Trits
-from hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
-from hwsim.util import trits_to_int
-from trit import NEG, ZERO, POS
+from ternary.hwsim.component import Component, Trit, Trits
+from ternary.hwsim.logic import Mux, Mux12, Demux, Mux9Way12, Demux9Way
+from ternary.hwsim.util import trits_to_int
+from ternary.trit import NEG, ZERO, POS
 
 
 class DataFlipFlop(Component):

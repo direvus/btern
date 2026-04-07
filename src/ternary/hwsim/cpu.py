@@ -1,10 +1,10 @@
-from hwsim.component import (
+from ternary.hwsim.component import (
         ZERO, NEG, NAnd, NAny, NCons, NOr, Not, PNot, Component, Trits)
-from hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
-from hwsim.logic import (
+from ternary.hwsim.arithmetic import Add12, Inc12, Dec12, Comparator12
+from ternary.hwsim.logic import (
         And12, IsZero, Not12, Mux2Way, Mux12, Mux2Way12,
         ShiftLeft12, ShiftRight12)
-from hwsim.memory import Register12, ProgramCounter11
+from ternary.hwsim.memory import Register12, ProgramCounter11
 
 
 class ALU(Component):

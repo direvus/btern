@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import component, logic
+from ternary.hwsim import component, logic
 from tests.util import seq_matches, N, Z, P, UNARY, BINARY, TRINARY, QUATERNARY
 
 

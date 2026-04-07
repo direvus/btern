@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ternary"
+version = "1.0"
+requires-python = ">= 3.10"
+authors = [
+  {name = "Brendan Jurd", email = "direvus@gmail.com"},
+]
+readme = "README.md"
+license = "BSD-2-Clause"
+description = "Exploration of balanced ternary logic systems, including a hardware simulation of a ternary computer"
+keywords = ["ternary", "logic", "hardware", "simulation"]
+
+[dependency-groups]
+test = ["pytest", "pytest-cov"]
+
+[project.urls]
+Repository = "https://github.com/direvus/btern.git"

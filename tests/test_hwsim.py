@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import util
+from ternary.hwsim import util
 
 
 @pytest.mark.parametrize(

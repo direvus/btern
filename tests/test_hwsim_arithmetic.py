@@ -1,6 +1,6 @@
 import pytest
 
-from hwsim import arithmetic
+from ternary.hwsim import arithmetic
 from tests.util import N, Z, P, UNARY, BINARY, TRINARY
 
 

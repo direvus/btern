@@ -2,7 +2,7 @@ from collections.abc import Iterable
 from contextlib import contextmanager
 from typing import Literal
 
-from trit import ZERO, POS, NEG
+from ternary.trit import ZERO, POS, NEG
 
 
 Trit = Literal[NEG, ZERO, POS]

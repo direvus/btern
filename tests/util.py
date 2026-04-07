@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 
-from trit import ZERO, POS, NEG
+from ternary.trit import ZERO, POS, NEG
 
 
 N = NEG
