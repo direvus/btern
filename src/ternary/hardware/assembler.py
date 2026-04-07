@@ -129,7 +129,10 @@ class Assembler:
 
         # Second pass: parse the instructions into machine code
         for num, line in lines:
-            self.read_line(num, line)
+            try:
+                self.read_line(num, line)
+            except Exception as e:
+                self.errors.append(f"{num+1}. {line}: {e}")
 
     def read_line(self, num: int, line: str):
         tokens = line.split()
@@ -186,110 +189,95 @@ class Assembler:
             self.errors.append(f"{num+1}: Unrecognised operation {op}")
 
     def parse_add(self, num: int, source: str, args):
-        try:
-            length = len(args)
-            if length < 3 or length > 5:
-                raise ValueError(f"expected 3-5 arguments, got {length}")
-            px, x = parse_input(args[0])
-            py, y = parse_input(args[1])
-            dest = parse_dest(args[2])
-            jump, shift = parse_optional(args[3:])
+        length = len(args)
+        if length < 3 or length > 5:
+            raise ValueError(f"expected 3-5 arguments, got {length}")
+        px, x = parse_input(args[0])
+        py, y = parse_input(args[1])
+        dest = parse_dest(args[2])
+        jump, shift = parse_optional(args[3:])
 
-            inst = ''.join((jump, '00', shift, '+', px, py, x, y, dest, '0'))
-            self.instructions.append(inst)
-            self.sources.append(source)
-        except Exception as e:
-            self.errors.append(f"{num+1}. {source}: {e}")
+        inst = ''.join((jump, '00', shift, '+', px, py, x, y, dest, '0'))
+        self.instructions.append(inst)
+        self.sources.append(source)
 
     def parse_and(self, num: int, source: str, args):
-        try:
-            length = len(args)
-            if length < 3 or length > 5:
-                raise ValueError(f"expected 3-5 arguments, got {length}")
-            px, x = parse_input(args[0])
-            py, y = parse_input(args[1])
-            dest = parse_dest(args[2])
-            jump, shift = parse_optional(args[3:])
+        length = len(args)
+        if length < 3 or length > 5:
+            raise ValueError(f"expected 3-5 arguments, got {length}")
+        px, x = parse_input(args[0])
+        py, y = parse_input(args[1])
+        dest = parse_dest(args[2])
+        jump, shift = parse_optional(args[3:])
 
-            inst = ''.join((jump, '00', shift, '-', px, py, x, y, dest, '0'))
-            self.instructions.append(inst)
-            self.sources.append(source)
-        except Exception as e:
-            self.errors.append(f"{num+1}. {source}: {e}")
+        inst = ''.join((jump, '00', shift, '-', px, py, x, y, dest, '0'))
+        self.instructions.append(inst)
+        self.sources.append(source)
 
     def parse_inc(self, num: int, source: str, args):
-        try:
-            length = len(args)
-            if length < 2 or length > 4:
-                raise ValueError(f"expected 2-4 arguments, got {length}")
-            px, x = parse_input(args[0])
-            py, y = '+0'
-            dest = parse_dest(args[1])
-            jump, shift = parse_optional(args[2:])
+        length = len(args)
+        if length < 2 or length > 4:
+            raise ValueError(f"expected 2-4 arguments, got {length}")
+        px, x = parse_input(args[0])
+        py, y = '+0'
+        dest = parse_dest(args[1])
+        jump, shift = parse_optional(args[2:])
 
-            inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
-            self.instructions.append(inst)
-            self.sources.append(source)
-        except Exception as e:
-            self.errors.append(f"{num+1}. {source}: {e}")
+        inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
+        self.instructions.append(inst)
+        self.sources.append(source)
 
     def parse_dec(self, num: int, source: str, args):
-        try:
-            length = len(args)
-            if length < 2 or length > 4:
-                raise ValueError(f"expected 2-4 arguments, got {length}")
-            px, x = parse_input(args[0])
-            py, y = '-0'
-            dest = parse_dest(args[1])
-            jump, shift = parse_optional(args[2:])
+        length = len(args)
+        if length < 2 or length > 4:
+            raise ValueError(f"expected 2-4 arguments, got {length}")
+        px, x = parse_input(args[0])
+        py, y = '-0'
+        dest = parse_dest(args[1])
+        jump, shift = parse_optional(args[2:])
 
-            inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
-            self.instructions.append(inst)
-            self.sources.append(source)
-        except Exception as e:
-            self.errors.append(f"{num+1}. {source}: {e}")
+        inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
+        self.instructions.append(inst)
+        self.sources.append(source)
 
     def parse_mov(self, num: int, source: str, args):
-        try:
-            length = len(args)
-            if length != 2:
-                raise ValueError(f"expected exactly 2 arguments, got {length}")
+        length = len(args)
+        if length != 2:
+            raise ValueError(f"expected exactly 2 arguments, got {length}")
 
-            if args[1] == 'A':
-                dest = '-'
-            elif args[1] == 'D':
-                dest = '+'
-            else:
-                raise ValueError(
-                        f"invalid MOV target '{args[1]}', expected A or D")
+        if args[1] == 'A':
+            dest = '-'
+        elif args[1] == 'D':
+            dest = '+'
+        else:
+            raise ValueError(
+                    f"invalid MOV target '{args[1]}', expected A or D")
 
-            int_match = INT_RE.match(args[0])
-            symbol_match = SYMBOL_RE.match(args[0])
-            if args[0] in self.labels:
-                index = self.labels[args[0]]
-                value = int_to_trits(MIN_ADDR + index, 11)
-            elif args[0] in self.variables:
-                index = self.variables[args[0]]
-                value = int_to_trits(VAR_ADDR + index, 11)
-            elif int_match:
-                dec = int(args[0])
-                value = int_to_trits(dec, 11)
-            elif symbol_match:
-                # New variable, allocate it a register relative to VAR_ADDR
-                index = len(self.variables)
-                self.variables[args[0]] = index
-                value = int_to_trits(VAR_ADDR + index, 11)
-            elif len(args[0]) == 11 and all(c in '-0+' for c in args[0]):
-                value = args[0]
-            else:
-                raise ValueError(
-                        f"invalid MOV value '{args[0]}', expected a symbol "
-                        "name, decimal integer, or 11-trit sequence")
+        int_match = INT_RE.match(args[0])
+        symbol_match = SYMBOL_RE.match(args[0])
+        if args[0] in self.labels:
+            index = self.labels[args[0]]
+            value = int_to_trits(MIN_ADDR + index, 11)
+        elif args[0] in self.variables:
+            index = self.variables[args[0]]
+            value = int_to_trits(VAR_ADDR + index, 11)
+        elif int_match:
+            dec = int(args[0])
+            value = int_to_trits(dec, 11)
+        elif symbol_match:
+            # New variable, allocate it a register relative to VAR_ADDR
+            index = len(self.variables)
+            self.variables[args[0]] = index
+            value = int_to_trits(VAR_ADDR + index, 11)
+        elif len(args[0]) == 11 and all(c in '-0+' for c in args[0]):
+            value = args[0]
+        else:
+            raise ValueError(
+                    f"invalid MOV value '{args[0]}', expected a symbol "
+                    "name, decimal integer, or 11-trit sequence")
 
-            self.instructions.append(value + dest)
-            self.sources.append(source)
-        except Exception as e:
-            self.errors.append(f"{num+1}. {source}: {e}")
+        self.instructions.append(value + dest)
+        self.sources.append(source)
 
     def write(self, stream):
         if not self.instructions:
