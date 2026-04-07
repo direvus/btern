@@ -150,7 +150,11 @@ argument to MOV by the assembler. If that same variable name is encountered in
 other parts of the program, the assembler substitutes that same register
 address.
 
-There are no predefined or reserved variable names.
+There are a few predefined variables:
+
+- `sp` for the stack pointer
+- `local` for the current local variable memory segment
+- `args` for the current function arguments memory segment
 
 ### ADD
 

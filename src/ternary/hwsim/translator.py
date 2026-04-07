@@ -10,9 +10,57 @@ from ternary.hwsim.util import input_stream, output_stream
 
 
 SEGMENTS = {'local', 'args', 'this', 'that'}
+# Codes that always produce the same static assembly output and require no
+# substitutions.
+STATIC_CODES = {
+        'add': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'ADD M D M',
+            ),
+        }
 
 
 class Translator:
+    def __init__(self):
+        self.program = []
+
+    def read(self, stream):
+        n = 1
+        for line in stream:
+            line = line.strip()
+            if not line:
+                continue
+            code = self.translate(line, n)
+            self.program.extend(code)
+            n += 1
+
+    def write(self, stream):
+        for line in self.program:
+            stream.write(f'{line}\n')
+
+    def translate(self, line: str, num: int) -> Iterable[str]:
+        tokens = line.split()
+        name = tokens[0]
+        args = tokens[1:]
+
+        if name in STATIC_CODES:
+            # Append a comment to the first line of the static assembly code,
+            # otherwise return it as-is.
+            code = list(STATIC_CODES[name])
+            code[0] = f'{code[0]}  # {line}'
+            return code
+
+        if name == 'push':
+            return self.translate_push(*args)
+        elif name == 'pop':
+            return self.translate_pop(*args)
+
+        raise ValueError(f"Invalid operation '{name}' at line {num}")
+
     def translate_push(self, segment: str, offset: int) -> Iterable[str]:
         """Translate a `push` instruction into assembly.
 
@@ -36,16 +84,21 @@ class Translator:
         Return an iterable of assembly code instructions as strings.
         """
         if segment in SEGMENTS:
-            return (
-                    f'MOV {segment} A  # push {segment} {offset}',
-                    'MOV {offset} D',
-                    'ADD A D A',
+            code = [f'MOV {segment} A  # push {segment} {offset}']
+            # Skip adding the offset if it's zero
+            if offset != 0:
+                code.extend((
+                        f'MOV {offset} D',
+                        'ADD A D A',
+                        ))
+            code.extend((
                     'CPY M D',
                     'MOV sp A',
                     'INC M M',
                     'DEC M A',
                     'CPY D M',
-                    )
+                    ))
+            return code
         elif segment == 'constant':
             return (
                     f'MOV {offset} D  # push constant {offset}',
@@ -76,10 +129,14 @@ class Translator:
         Return an iterable of assembly code instructions as strings.
         """
         if segment in SEGMENTS:
-            return (
-                    f'MOV {segment} A  # pop {segment} {offset}',
-                    f'MOV {offset} D',
-                    'ADD A D D',
+            code = [f'MOV {segment} A  # pop {segment} {offset}']
+            # Skip adding the offset if it's zero
+            if offset != 0:
+                code.extend((
+                        f'MOV {offset} D',
+                        'ADD A D D',
+                        ))
+            code.extend((
                     'MOV addr A',
                     'CPY D M',
                     'MOV sp A',
@@ -89,7 +146,8 @@ class Translator:
                     'MOV addr A',
                     'CPY M A',
                     'CPY D M',
-                    )
+                    ))
+            return code
         elif segment == 'constant':
             raise ValueError("Pop to constant is not valid.")
 

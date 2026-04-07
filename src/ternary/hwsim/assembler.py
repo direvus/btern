@@ -41,6 +41,11 @@ SHIFT_MAP = {
         '>>': '-',
         '<<': '+',
         }
+PREDEF_VARS = {
+        'sp': 0,
+        'local': 1,
+        'args': 2,
+        }
 MIN_ADDR = -(3 ** 11 // 2)
 VAR_ADDR = 0
 
@@ -88,7 +93,7 @@ def parse_optional(args) -> tuple[str, str]:
 class Assembler:
     def __init__(self):
         self.labels = {}
-        self.variables = {}
+        self.variables = PREDEF_VARS.copy()
         self.instructions = []
         self.sources = []
         self.errors = []
