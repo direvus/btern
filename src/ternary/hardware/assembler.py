@@ -47,7 +47,7 @@ PREDEF_VARS = {
         'args': 2,
         }
 MIN_ADDR = -(3 ** 11 // 2)
-VAR_ADDR = 0
+VAR_ADDR = -13
 
 
 def parse_input(text: str) -> str:
@@ -288,6 +288,9 @@ class Assembler:
             self.errors.append(f"{num+1}. {source}: {e}")
 
     def write(self, stream):
+        if not self.instructions:
+            return
+
         width = max(1, int(math.log(len(self.instructions), 10)) + 1)
         for i, inst in enumerate(self.instructions):
             labels = (k for k, v in self.labels.items() if v == i)

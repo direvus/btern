@@ -4,7 +4,7 @@ import sys
 from traceback import print_exc
 
 from ternary.hardware.computer import Computer
-from ternary.hardware.util import trits_to_int, input_stream
+from ternary.hardware.util import int_to_trits, trits_to_int, input_stream
 
 
 MIN_ADDR = -(3 ** 11 // 2)
@@ -44,26 +44,35 @@ class Simulator:
         pc = trits_to_int(self.computer.get_program_address())
         while pc < exit_address:
             self.computer.step()
-            a = trits_to_int(self.computer.get_a())
-            d = trits_to_int(self.computer.get_d())
             pc = trits_to_int(self.computer.get_program_address())
 
-            print(f"{a} {d} {pc}")
+    def get_ram_contents(self, index: int) -> int:
+        addr = int_to_trits(index, 11)
+        value = self.computer.get_ram_contents(addr)
+        return trits_to_int(value)
 
 
-def main(input_path: str = '-', watch: list[str] | None = None):
+def main(
+        input_path: str = '-',
+        select: list[int] | None = None):
     sim = Simulator()
     with input_stream(input_path) as stream:
         sim.load(stream)
 
     sim.execute()
+    if select:
+        for index in select:
+            value = sim.get_ram_contents(index)
+            print(value)
+
     return True
 
 
 def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
-    parser.add_argument('-w', '--watch', nargs='*', action='append')
+    parser.add_argument(
+            '-s', '--select', type='int', nargs='*', action='append')
 
     args = parser.parse_args()
     success = False
