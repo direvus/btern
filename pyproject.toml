@@ -17,5 +17,10 @@ keywords = ["ternary", "logic", "hardware", "simulation"]
 [dependency-groups]
 test = ["pytest", "pytest-cov"]
 
+[project.scripts]
+assembler = "ternary.hwsim.assembler:cli"
+simulator = "ternary.hwsim.simulator:cli"
+translator = "ternary.hwsim.translator:cli"
+
 [project.urls]
 Repository = "https://github.com/direvus/btern.git"

@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 from collections.abc import Iterable
+from traceback import print_exc
 
 from ternary.hwsim.util import input_stream, output_stream
 
@@ -114,14 +115,18 @@ def main(input_path: str = '-'):
     return True
 
 
-if __name__ == '__main__':
+def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
     args = parser.parse_args()
     success = False
     try:
         success = main(**vars(args))
-    except Exception as e:
-        print(e, file=sys.stderr, flush=True)
+    except Exception:
+        print_exc()
         sys.exit(1)
     sys.exit(0 if success else 1)
+
+
+if __name__ == '__main__':
+    cli()

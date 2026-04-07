@@ -231,7 +231,7 @@ def find_unary_gates(name, expected):
         print(f"No matches found for {name}")
 
 
-if __name__ == '__main__':
+def cli():
     parser = ArgumentParser()
     parser.add_argument('-s', '--select')
 
@@ -244,3 +244,7 @@ if __name__ == '__main__':
     for name, expected in UNARY_TARGETS.items():
         if args.select is None or args.select in name:
             find_unary_gates(name, expected)
+
+
+if __name__ == '__main__':
+    cli()

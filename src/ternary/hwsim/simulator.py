@@ -60,7 +60,7 @@ def main(input_path: str = '-', watch: list[str] | None = None):
     return True
 
 
-if __name__ == '__main__':
+def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
     parser.add_argument('-w', '--watch', nargs='*', action='append')
@@ -73,3 +73,7 @@ if __name__ == '__main__':
         print_exc()
         sys.exit(1)
     sys.exit(0 if success else 1)
+
+
+if __name__ == '__main__':
+    cli()
