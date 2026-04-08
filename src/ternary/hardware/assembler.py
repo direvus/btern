@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 import argparse
+import io
 import math
 import os
 import re
 import sys
 from traceback import print_exc
 
+from ternary import binary
 from ternary.hardware.util import int_to_trits, input_stream, output_stream
 
 
@@ -283,15 +285,31 @@ class Assembler:
         self.sources.append(source)
 
     def write(self, stream):
+        """Output the machine code program to the stream.
+
+        If the stream is in text mode (it inherits from io.TextIOBase) then the
+        program will be written in a text encoding, with one instruction per
+        line. The first 12 characters on each line will be the machine code
+        instruction, and the remaining characters will be a comment showing the
+        original assembly source code for that instruction.
+
+        If the stream is not in text mode, the program will be written in
+        binary encoding, with all of the instructions packed into one
+        continuous sequence.
+        """
         if not self.instructions:
             return
 
-        width = max(1, int(math.log(len(self.instructions), 10)) + 1)
-        for i, inst in enumerate(self.instructions):
-            labels = (k for k, v in self.labels.items() if v == i)
-            source = ''.join(f'{x}: ' for x in labels) + self.sources[i]
-            linenum = f'{i + 1:0{width}d}'
-            stream.write(f'{inst}  # {linenum}. {source}\n')
+        if isinstance(stream, io.TextIOBase):
+            width = max(1, int(math.log(len(self.instructions), 10)) + 1)
+            for i, inst in enumerate(self.instructions):
+                labels = (k for k, v in self.labels.items() if v == i)
+                source = ''.join(f'{x}: ' for x in labels) + self.sources[i]
+                linenum = f'{i + 1:0{width}d}'
+                stream.write(f'{inst}  # {linenum}. {source}\n')
+        else:
+            program = ''.join(self.instructions)
+            stream.write(binary.encode(program))
 
 
 def main(input_path: str = '-'):

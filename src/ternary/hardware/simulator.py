@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import argparse
+import io
 import sys
 from traceback import print_exc
 
+from ternary import binary
 from ternary.hardware.computer import Computer
 from ternary.hardware.util import int_to_trits, trits_to_int, input_stream
 
@@ -16,7 +18,18 @@ class Simulator:
         self.computer = Computer()
         self.program_length = 0
 
-    def load_text(self, stream):
+    def load_binary(self, stream) -> None:
+        """Load a program encoded in binary format."""
+        program = str(binary.decode(stream.read()))
+        length = len(program)
+        if length % 12 != 0:
+            raise ValueError(
+                    "Invalid length for binary-encoded program: "
+                    f"expected a multiple of 12 but got {length}")
+        self.computer.load_program(program)
+        self.program_length = length // 12
+
+    def load_text(self, stream: io.TextIOBase) -> None:
         """Load a program encoded in text format."""
         codes = []
         for line in stream:
@@ -33,6 +46,17 @@ class Simulator:
         program = ''.join(codes)
         self.computer.load_program(program)
         self.program_length = len(codes)
+
+    def load(self, stream) -> None:
+        """Load a program encoded in either text or binary format.
+
+        This method will try to auto-detect which format the stream is in, and
+        call load_text() or load_binary() as appropriate.
+        """
+        if isinstance(stream, io.TextIOBase):
+            self.load_text(stream)
+        else:
+            self.load_binary(stream)
 
     def execute(self):
         """Run the loaded program.
