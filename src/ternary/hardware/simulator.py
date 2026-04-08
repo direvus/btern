@@ -98,7 +98,7 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
     parser.add_argument(
-            '-s', '--select', type='int', nargs='*', action='append')
+            '-s', '--select', type=int, action='append')
 
     args = parser.parse_args()
     success = False

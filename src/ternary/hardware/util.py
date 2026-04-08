@@ -9,6 +9,13 @@ from ternary.trit import ZERO, POS, NEG
 Trit = Literal[NEG, ZERO, POS]
 Trits = Iterable[Trit]
 
+WORD_SIZE = 12
+ADDR_SIZE = 11
+MAX_ADDR = (3 ** ADDR_SIZE) // 2
+MIN_ADDR = -MAX_ADDR
+MAX_INT = (3 ** WORD_SIZE) // 2
+MIN_INT = -MAX_INT
+
 
 @contextmanager
 def input_stream(path):

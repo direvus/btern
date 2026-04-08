@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 """VM translator: translates VM code into assembly"""
 import argparse
+import io
 import os
 import sys
 from collections.abc import Iterable
 from traceback import print_exc
 
-from ternary.hardware.util import input_stream, output_stream
+from ternary.trit import NEG, POS
+from ternary.hardware.util import (
+        input_stream, output_stream, int_to_trits,
+        MIN_ADDR, MAX_ADDR, MIN_INT, MAX_INT)
 
 
 SEGMENTS = {'local', 'args', 'this', 'that'}
@@ -21,15 +25,68 @@ STATIC_CODES = {
             'DEC A A',
             'ADD M D M',
             ),
+        'sub': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'ADD M -D M',
+            ),
+        'and': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'AND M D M',
+            ),
+        'or': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'AND -M -D M',
+            'CPY -M M',
+            ),
+        'not': (
+            'MOV sp A',
+            'DEC M A',
+            'CPY -M M',
+            ),
+        'shiftl': (
+            'MOV sp A',
+            'DEC M A',
+            'SHL M M',
+            ),
+        'shiftr': (
+            'MOV sp A',
+            'DEC M A',
+            'SHR M M',
+            ),
+        'inc': (
+            'MOV sp A',
+            'DEC M A',
+            'INC M M',
+            ),
+        'dec': (
+            'MOV sp A',
+            'DEC M A',
+            'DEC M M',
+            ),
         }
 
 
 class Translator:
     def __init__(self):
         self.program = []
+        self.module = ''
 
-    def read(self, stream):
+    def read(self, stream: io.TextIOBase, filename: str):
         n = 1
+        self.module = filename
+        self.program.append(f"### Module: {filename}")
         for line in stream:
             line = line.strip()
             if not line:
@@ -38,7 +95,7 @@ class Translator:
             self.program.extend(code)
             n += 1
 
-    def write(self, stream):
+    def write(self, stream: io.TextIOBase):
         for line in self.program:
             stream.write(f'{line}\n')
 
@@ -83,6 +140,7 @@ class Translator:
 
         Return an iterable of assembly code instructions as strings.
         """
+        offset = int(offset)
         if segment in SEGMENTS:
             code = [f'MOV {segment} A  # push {segment} {offset}']
             # Skip adding the offset if it's zero
@@ -100,13 +158,37 @@ class Translator:
                     ))
             return code
         elif segment == 'constant':
-            return (
-                    f'MOV {offset} D  # push constant {offset}',
+            code = []
+            if offset < MIN_INT or offset > MAX_INT:
+                raise ValueError(
+                        f"Invalid constant value {offset}: cannot be "
+                        "represented within 12 trits.")
+            if offset < MIN_ADDR or offset > MAX_ADDR:
+                # This constant value needs 12 trits to represent, so we're
+                # going to MOV the most significant 11 trits in first, shift
+                # them left and then use INC or DEC as needed to populate the
+                # least significant trit.
+                trits = int_to_trits(offset, 12)
+                code.extend((
+                        f'MOV {trits[1:]} D  # push constant {offset}',
+                        'SHL D D',
+                        ))
+                if trits[0] == POS:
+                    code.append('INC D D')
+                if trits[0] == NEG:
+                    code.append('DEC D D')
+            else:
+                # Constant value fits within 11 trits, so just use a literal
+                # MOV.
+                code.append(f'MOV {offset} D  # push constant {offset}')
+
+            code.extend((
                     'MOV sp A',
                     'INC M M',
                     'DEC M A',
                     'CPY D M',
-                    )
+                    ))
+            return code
 
         raise ValueError(f"Invalid segment name '{segment}'.")
 
@@ -165,7 +247,10 @@ def main(input_path: str = '-'):
 
     translator = Translator()
     with input_stream(input_path) as stream:
-        translator.read(stream)
+        filename = 'stdin'
+        if stream != sys.stdin:
+            filename = os.path.basename(input_path)
+        translator.read(stream, filename)
 
     with output_stream(output_path) as stream:
         translator.write(stream)

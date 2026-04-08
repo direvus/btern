@@ -22,7 +22,7 @@ def test_hardware_translator_sim():
     assembly = StringIO()
     machine = BytesIO()
 
-    tr.read(StringIO(program))
+    tr.read(StringIO(program), 'test')
     tr.write(assembly)
 
     assembly.seek(0)
