@@ -6,9 +6,9 @@ Balanced ternary binary encoding
 
 Tools for encoding balanced ternary data into binary formats and back again.
 
-The encoding scheme used here uses 8-bit segments to represent 5-trit segments.
-Each 5-trit segment is mapped to an 8-bit binary value which corresponds to its
-value as an unsigned integer.
+This encoding scheme has a one byte header, followed by zero or more data
+bytes. Each data byte encodes the value of a 5-trit ternary segment, by taking
+its value as an unsigned integer.
 
 So, for example, consider the trit sequence:
 
@@ -20,30 +20,51 @@ gives:
 
     0011 0011
 
-If a trit sequence is not evenly divisible into 5-trit segments, the final
-segment is padded to 5 trits by adding '-' trits to the left.
+If the trit sequence being encoded is not evenly divisible into 5-trit
+segments, the sequence is padded to by adding '-' trits to the start. The
+header byte is equal to the number of padding trits that were added, plus 243:
 
-5 trits has 243 possible values, and 8 bits has 256, so there is about a 5%
-efficiency loss in the encoding.
+| header | hex    | padding |
+| ----   | ----   | ----    |
+|    243 | `0xf3` |       0 |
+|    244 | `0xf4` |       1 |
+|    245 | `0xf5` |       2 |
+|    246 | `0xf6` |       3 |
+|    247 | `0xf7` |       4 |
+
 """
 from ternary import integer, trit
 
 
-def encode(source):
-    result = bytearray()
-    for i in range(0, len(source), 5):
-        value = integer.UInt(source[i:i+5], 5)
+def encode(source) -> bytes:
+    mod = len(source) % 5
+    padding = 5 - mod if mod else 0
+    header = 243 + padding
+    result = bytearray((header,))
+    data = '-' * padding + source
+    for i in range(0, len(data), 5):
+        value = integer.UInt(data[i:i+5])
         result.append(int(value))
     return bytes(result)
 
 
-def decode(source):
-    result = trit.Trits('')
+def decode(source) -> trit.Trits:
+    result = []
     binary = bytearray(source)
+
+    length = 5
     for i in range(len(binary)):
         value = binary[i]
-        if value > 242:
+        if value > 247:
             raise ValueError(
                     "Invalid byte at position {}: {:#02x}".format(i, value))
-        result += integer.UInt(value, 5)
-    return result
+
+        if value > 242:
+            # Header byte, remove padding from next byte
+            length = 5 - (value - 243)
+            continue
+
+        result.extend(integer.UInt(value, length))
+        # Reset the length
+        length = 5
+    return trit.Trits(result)
