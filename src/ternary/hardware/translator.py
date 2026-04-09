@@ -75,6 +75,22 @@ STATIC_CODES = {
             'DEC M A',
             'DEC M M',
             ),
+        'lt': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'SUB D M M',
+            ),
+        'gt': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'SUB M D M',
+            ),
         }
 
 
@@ -82,24 +98,29 @@ class Translator:
     def __init__(self):
         self.program = []
         self.module = ''
+        self.linenum = 0
 
     def read(self, stream: io.TextIOBase, filename: str):
-        n = 1
+        self.linenum = 1
         self.module = filename
         self.program.append(f"### Module: {filename}")
         for line in stream:
             line = line.strip()
             if not line:
                 continue
-            code = self.translate(line, n)
+            try:
+                code = self.translate(line)
+            except ValueError as e:
+                raise ValueError(
+                        f"{e} at {self.module} line {self.linenum}")
             self.program.extend(code)
-            n += 1
+            self.linenum += 1
 
     def write(self, stream: io.TextIOBase):
         for line in self.program:
             stream.write(f'{line}\n')
 
-    def translate(self, line: str, num: int) -> Iterable[str]:
+    def translate(self, line: str) -> Iterable[str]:
         tokens = line.split()
         name = tokens[0]
         args = tokens[1:]
@@ -113,10 +134,27 @@ class Translator:
 
         if name == 'push':
             return self.translate_push(*args)
-        elif name == 'pop':
+
+        if name == 'pop':
             return self.translate_pop(*args)
 
-        raise ValueError(f"Invalid operation '{name}' at line {num}")
+        if name == 'eq':
+            return self.translate_eq()
+
+        if name == 'ne':
+            return self.translate_ne()
+
+        if name == 'label':
+            return (f'{self.module}.{args[0]}:',)
+
+        if name == 'goto':
+            label = f'{self.module}.{args[0]}'
+            return (
+                    f'MOV {label} A  # goto {args[0]}',
+                    'NOP JMP',
+                    )
+
+        raise ValueError(f"Invalid operation '{name}'")
 
     def translate_push(self, segment: str, offset: int) -> Iterable[str]:
         """Translate a `push` instruction into assembly.
@@ -235,6 +273,62 @@ class Translator:
 
         raise ValueError(f"Invalid segment name '{segment}'.")
 
+    def translate_eq(self) -> Iterable[str]:
+        """Translate an `eq` instruction into assembly.
+
+        `eq` removes the top two values from the stack, and then places a
+        positive value on the stack if those values are equal, or a negative
+        value if they are unequal.
+        """
+        label = f'{self.module}.{self.linenum}.eq'
+        return (
+                'MOV sp A  # eq',
+                'DEC M M',
+                'CPY M A',
+                'CPY M D',
+                'DEC A A',
+                'SUB D M D',
+                f'MOV {label}.true A',
+                'CHK D JEZ',
+                f'MOV {label}.end A',
+                'MOV -1 D',
+                'NOP JMP',
+                f'{label}.true:',
+                'MOV 1 D',
+                f'{label}.end:',
+                'MOV sp A',
+                'DEC M A',
+                'CPY D M',
+                )
+
+    def translate_ne(self) -> Iterable[str]:
+        """Translate a `ne` instruction into assembly.
+
+        `ne` removes the top two values from the stack, and then places a
+        positive value on the stack if those values are equal, or a negative
+        value if they are unequal.
+        """
+        label = f'{self.module}.{self.linenum}.ne'
+        return (
+                'MOV sp A  # ne',
+                'DEC M M',
+                'CPY M A',
+                'CPY M D',
+                'DEC A A',
+                'SUB D M D',
+                f'MOV {label}.true A',
+                'CHK D JNZ',
+                f'MOV {label}.end A',
+                'MOV -1 D',
+                'NOP JMP',
+                f'{label}.true:',
+                'MOV 1 D',
+                f'{label}.end:',
+                'MOV sp A',
+                'DEC M A',
+                'CPY D M',
+                )
+
 
 def main(input_path: str = '-'):
     if input_path == '-':
@@ -249,7 +343,7 @@ def main(input_path: str = '-'):
     with input_stream(input_path) as stream:
         filename = 'stdin'
         if stream != sys.stdin:
-            filename = os.path.basename(input_path)
+            filename = input_path
         translator.read(stream, filename)
 
     with output_stream(output_path) as stream:
