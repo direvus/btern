@@ -459,6 +459,81 @@ class And12(Component):
                     })
 
 
+class IsZero2(Component):
+    def __init__(self):
+        super().__init__(
+                ('a', 'b'),
+                ('out',),
+                {
+                    'NAny': NAny,
+                    'NAnd': NAnd,
+                    'NOr': NOr,
+                    'PNot1': PNot,
+                    'PNot2': PNot,
+                    },
+                {
+                    'out': 'PNot2.out',
+                    'PNot2.in': 'NAnd.out',
+                    'NAnd.a': 'PNot1.out',
+                    'NAnd.b': 'NOr.out',
+                    'PNot1.in': 'NAny.out',
+                    'NAny.a': 'a',
+                    'NAny.b': 'b',
+                    'NOr.a': 'a',
+                    'NOr.b': 'b',
+                    })
+
+
+class IsZero12(Component):
+    def __init__(self):
+        super().__init__(
+                ('in[12]',),
+                ('out',),
+                {
+                    'Not': Not,
+                    'NOrA': NOr,
+                    'NOrB': NOr,
+                    'NAndA': NAnd,
+                    'NAndB': NAnd,
+                    'NAndC': NAnd,
+                    'NAndOut': NAnd,
+                    'IszA': IsZero2,
+                    'IszB': IsZero2,
+                    'IszC': IsZero2,
+                    'IszD': IsZero2,
+                    'IszE': IsZero2,
+                    'IszF': IsZero2,
+                    },
+                {
+                    'out': 'Not.out',
+                    'Not.in': 'NAndOut.out',
+                    'NAndOut.a': 'NOrA.out',
+                    'NAndOut.b': 'NOrB.out',
+                    'NOrA.a': 'NAndA.out',
+                    'NOrA.b': 'NAndB.out',
+                    'NOrB.a': 'NAndB.out',
+                    'NOrB.b': 'NAndC.out',
+                    'NAndA.a': 'IszA.out',
+                    'NAndA.b': 'IszB.out',
+                    'NAndB.a': 'IszC.out',
+                    'NAndB.b': 'IszD.out',
+                    'NAndC.a': 'IszE.out',
+                    'NAndC.b': 'IszF.out',
+                    'IszA.a': 'in[0]',
+                    'IszA.b': 'in[1]',
+                    'IszB.a': 'in[2]',
+                    'IszB.b': 'in[3]',
+                    'IszC.a': 'in[4]',
+                    'IszC.b': 'in[5]',
+                    'IszD.a': 'in[6]',
+                    'IszD.b': 'in[7]',
+                    'IszE.a': 'in[8]',
+                    'IszE.b': 'in[9]',
+                    'IszF.a': 'in[10]',
+                    'IszF.b': 'in[11]',
+                    })
+
+
 class Mux12(Component):
     """A 12 trit, 3-way multiplexer.
 

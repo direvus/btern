@@ -198,6 +198,78 @@ def test_hardware_and12(inputs, expected):
 
 @pytest.mark.parametrize(
         "inputs,expected",
+        list(zip(BINARY, (N, N, N, N, P, N, N, N, N))))
+def test_hardware_isz2(inputs, expected):
+    comp = logic.IsZero2()
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
+                '000000000000',
+                '+00000000000',
+                '0+0000000000',
+                '00+000000000',
+                '000+00000000',
+                '0000+0000000',
+                '00000+000000',
+                '000000+00000',
+                '0000000+0000',
+                '00000000+000',
+                '000000000+00',
+                '0000000000+0',
+                '00000000000+',
+                '-00000000000',
+                '0-0000000000',
+                '00-000000000',
+                '000-00000000',
+                '0000-0000000',
+                '00000-000000',
+                '000000-00000',
+                '0000000-0000',
+                '00000000-000',
+                '000000000-00',
+                '0000000000-0',
+                '00000000000-',
+                ),
+            (
+                '+',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                '-',
+                ))))
+def test_hardware_isz12(inputs, expected):
+    comp = logic.IsZero12()
+    (out,) = comp.get_outputs(inputs)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
         list(zip(QUATERNARY, (
             N, N, N, N, N, Z, N, N, P,  # a = -, b = -
             N, Z, N, N, Z, Z, N, Z, P,  # a = -, b = 0

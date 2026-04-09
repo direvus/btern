@@ -91,6 +91,25 @@ STATIC_CODES = {
             'DEC A A',
             'SUB M D M',
             ),
+        'eq': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'SUB D M D',
+            'ISZ D M',
+            ),
+        'ne': (
+            'MOV sp A',
+            'DEC M M',
+            'CPY M A',
+            'CPY M D',
+            'DEC A A',
+            'SUB D M D',
+            'ISZ D D',
+            'CPY -D M',
+            ),
         }
 
 
@@ -137,12 +156,6 @@ class Translator:
 
         if name == 'pop':
             return self.translate_pop(*args)
-
-        if name == 'eq':
-            return self.translate_eq()
-
-        if name == 'ne':
-            return self.translate_ne()
 
         if name == 'label':
             return (f'{self.module}.{args[0]}:',)
@@ -272,62 +285,6 @@ class Translator:
             raise ValueError("Pop to constant is not valid.")
 
         raise ValueError(f"Invalid segment name '{segment}'.")
-
-    def translate_eq(self) -> Iterable[str]:
-        """Translate an `eq` instruction into assembly.
-
-        `eq` removes the top two values from the stack, and then places a
-        positive value on the stack if those values are equal, or a negative
-        value if they are unequal.
-        """
-        label = f'{self.module}.{self.linenum}.eq'
-        return (
-                'MOV sp A  # eq',
-                'DEC M M',
-                'CPY M A',
-                'CPY M D',
-                'DEC A A',
-                'SUB D M D',
-                f'MOV {label}.true A',
-                'CHK D JEZ',
-                f'MOV {label}.end A',
-                'MOV -1 D',
-                'NOP JMP',
-                f'{label}.true:',
-                'MOV 1 D',
-                f'{label}.end:',
-                'MOV sp A',
-                'DEC M A',
-                'CPY D M',
-                )
-
-    def translate_ne(self) -> Iterable[str]:
-        """Translate a `ne` instruction into assembly.
-
-        `ne` removes the top two values from the stack, and then places a
-        positive value on the stack if those values are equal, or a negative
-        value if they are unequal.
-        """
-        label = f'{self.module}.{self.linenum}.ne'
-        return (
-                'MOV sp A  # ne',
-                'DEC M M',
-                'CPY M A',
-                'CPY M D',
-                'DEC A A',
-                'SUB D M D',
-                f'MOV {label}.true A',
-                'CHK D JNZ',
-                f'MOV {label}.end A',
-                'MOV -1 D',
-                'NOP JMP',
-                f'{label}.true:',
-                'MOV 1 D',
-                f'{label}.end:',
-                'MOV sp A',
-                'DEC M A',
-                'CPY D M',
-                )
 
 
 def main(input_path: str = '-'):

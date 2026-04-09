@@ -188,6 +188,8 @@ class Assembler:
             self.parse_inc(num, line, args)
         elif op == 'DEC':
             self.parse_dec(num, line, args)
+        elif op == 'ISZ':
+            self.parse_isz(num, line, args)
         elif op == 'MOV':
             self.parse_mov(num, line, args)
         else:
@@ -238,6 +240,19 @@ class Assembler:
             raise ValueError(f"expected 2-4 arguments, got {length}")
         px, x = parse_input(args[0])
         py, y = '-0'
+        dest = parse_dest(args[1])
+        jump, shift = parse_optional(args[2:])
+
+        inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
+        self.instructions.append(inst)
+        self.sources.append(source)
+
+    def parse_isz(self, num: int, source: str, args):
+        length = len(args)
+        if length < 2 or length > 4:
+            raise ValueError(f"expected 2-4 arguments, got {length}")
+        px, x = parse_input(args[0])
+        py, y = '00'
         dest = parse_dest(args[1])
         jump, shift = parse_optional(args[2:])
 

@@ -56,18 +56,19 @@ operation. These are explained in detail below.
 The first element of each instruction must be one of the following operation
 names:
 
-- MOV
+- MOV (move)
 - ADD
-- SUB
-- CHK
-- CLR
-- CPY
-- AND
-- INC
-- DEC
-- SHL
-- SHR
-- NOP
+- SUB (subtract)
+- CHK (check)
+- CLR (clear)
+- CPY (copy)
+- AND (logical and)
+- INC (increment)
+- DEC (decrement)
+- ISZ (is zero)
+- SHL (shift left)
+- SHR (shift right)
+- NOP (no operation)
 
 The MOV operation is a special operation with its own distinct rules. All other
 operations are **compute** operations.
@@ -114,7 +115,7 @@ instruction at that address in the next cycle.
 The code `NOJ` (no jump) has the same effect as omitting the jump specifier
 entirely.
 
-### MOV
+### MOV (move)
 
 The MOV (move) instruction puts a literal value directly into the A or D
 register.
@@ -167,7 +168,7 @@ It has three mandatory arguments, the two inputs and the destination register.
 ADD A D M
 ```
 
-### SUB
+### SUB (subtract)
 
 The SUB (subtract) instruction subtracts the second input from the first, and
 writes the result to a register.
@@ -181,7 +182,7 @@ SUB M D M
 
 SUB is a convenient shorthand for calling ADD with the second input negated.
 
-### CHK
+### CHK (check)
 
 The CHK (check) instruction does not modify any register, but selects a
 register as the input of computation, typically so that it can be used as the
@@ -198,7 +199,7 @@ CHK D
 CHK is a convenient shorthand for adding zero to the register, and writing the
 result back to the same register.
 
-### CLR
+### CLR (clear)
 
 The CLR (clear) instruction sets a register to zero.
 
@@ -211,7 +212,7 @@ CLR M
 ```
 CLR is a convenient shorthand for `AND 0 0 <dest>`
 
-### CPY
+### CPY (copy)
 
 The CPY (copy) instruction copies the contents of one register to another.
 
@@ -221,7 +222,7 @@ register.
 CPY is a convenient shorthand for adding zero to the source and writing the
 result to the destination.
 
-### AND
+### AND (logical and)
 
 The AND instruction performs logical AND on its inputs.
 
@@ -232,7 +233,7 @@ for example:
 AND A D D
 ```
 
-### INC
+### INC (increment)
 
 The INC (increment) instruction adds one to its input.
 
@@ -243,7 +244,7 @@ for example:
 INC D D
 ```
 
-### DEC
+### DEC (decrement)
 
 The DEC (decrement) instruction subtracts one from its input.
 
@@ -254,7 +255,16 @@ for example:
 DEC D D
 ```
 
-### SHL
+### ISZ (is zero)
+
+The ISZ (is zero) instruction finds whether the input is equal to zero. It
+outputs `1` if the input is equal to zero, or `-1` otherwise.
+
+```
+ISZ M D
+```
+
+### SHL (shift left)
 
 The SHL (shift left) instruction shifts the trits in the input one position to
 the left.
@@ -271,7 +281,7 @@ SHL is a convenient shorthand for `ADD 0 <in> <dest> <<`
 Because SHL applies its own shift argument to the instruction, it is an error
 to specify a shift to this operation.
 
-### SHR
+### SHR (shift right)
 
 The SHR (shift right) instruction shifts the trits in the input one position to
 the right.
@@ -288,7 +298,7 @@ SHR is a convenient shorthand for `ADD 0 <in> <dest> >>`
 Because SHR applies its own shift argument to the instruction, it is an error
 to specify a shift to this operation.
 
-### NOP
+### NOP (no operation)
 
 The NOP (no operation) instruction doesn't do anything apart from occupy the
 computer for one cycle.

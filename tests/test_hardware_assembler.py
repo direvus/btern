@@ -281,6 +281,35 @@ def test_hardware_assembler_dec(inputs, expected):
         "inputs,expected",
         list(zip(
             (
+                'ISZ D D',
+                'ISZ A M',
+                'ISZ -M D',
+                ),
+            (
+                '00000000+0+0',
+                '00000000-000',
+                '000000-000+0',
+                ))))
+def test_hardware_assembler_isz(inputs, expected):
+    ass = Assembler()
+
+    assembly = StringIO(inputs)
+    machine = StringIO()
+    assembly.seek(0)
+
+    ass.read(assembly)
+    ass.write(machine)
+
+    machine.seek(0)
+    out = machine.read()
+
+    assert seq_matches(out[:12], expected)
+
+
+@pytest.mark.parametrize(
+        "inputs,expected",
+        list(zip(
+            (
                 'SHL D D',
                 'SHL A M',
                 'SHL M A',

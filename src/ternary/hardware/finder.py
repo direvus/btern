@@ -25,6 +25,7 @@ BINARY_TARGETS = {
         'jump_mode': (Z, Z, Z, N, Z, P, Z, Z, Z),
         'jump2_reset': (N, N, N, N, Z, P, N, N, N),
         'zero_if_both_zero': (N, N, N, N, Z, N, N, N, N),
+        'eq_zero': (N, N, N, N, P, N, N, N, N),
         'load_a': (P, P, P, P, Z, Z, Z, Z, Z),
         'load_m': (Z, Z, Z, Z, P, Z, Z, Z, Z),
         'load_d': (Z, Z, Z, Z, Z, P, P, P, P),

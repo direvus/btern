@@ -126,20 +126,20 @@ When both mode and reset are zero, one of loadA, loadD or loadM will be
 Each machine language instruction is 12 trits long, and it makes sense to look
 at them from most to least significant trit:
 
-| Index | Meaning                         |
-|-------|---------------------------------|
-|  11   | Instruction mode (move/compute) |
-|  10   | Computation target (A/M/D)      |
-|   9   | Y-input select (A/M/D)          |
-|   8   | X-input select (A/M/D)          |
-|   7   | Y-input transform (-Y/Y/0)      |
-|   6   | X-input transform (-X/X/0)      |
-|   5   | ALU function select (&/-1/+1/+) |
-|   4   | Shift (right/none/left)         |
-|   3   | Reserved                        |
-|   2   | Reserved                        |
-|   1   | Jump control 2                  |
-|   0   | Jump control 1                  |
+| Index | Meaning                             |
+|-------|-------------------------------------|
+|  11   | Instruction mode (move/compute)     |
+|  10   | Computation target (A/M/D)          |
+|   9   | Y-input select (A/M/D)              |
+|   8   | X-input select (A/M/D)              |
+|   7   | Y-input transform (-Y/Y/0)          |
+|   6   | X-input transform (-X/X/0)          |
+|   5   | ALU function select (&/-1/isz/+1/+) |
+|   4   | Shift (right/none/left)             |
+|   3   | Reserved                            |
+|   2   | Reserved                            |
+|   1   | Jump control 2                      |
+|   0   | Jump control 1                      |
 
 ## Instruction mode (index 11)
 
@@ -204,21 +204,22 @@ negation are the same thing.
 
 The trit at index 5 controls which function the ALU will apply to its inputs.
 
-| Code | Operation  | Detail                          |
-|------|------------|---------------------------------|
-|  `−` | X AND Y    | Tritwise logical AND of X and Y |
-|  `0` | X+1 or X-1 | Increase or decrease X by 1     |
-|  `+` | X + Y      | Arithmetic sum of X and Y       |
+| Code | Operation  | Detail                                         |
+|------|------------|------------------------------------------------|
+|  `−` | X AND Y    | Tritwise logical AND of X and Y                |
+|  `0` | Unary X    | Increment X, decrement X, or compare X to zero |
+|  `+` | X + Y      | Arithmetic sum of X and Y                      |
 
-When the code at index 5 is zero, the Y input is disregarded, so the Y-input
-transform trit at index 7 has no effect on the computation. So instead the ALU
-uses the trit at index 7 to select a unary operation to apply to X:
+When the code at index 5 is zero, the function is a unary operation on X. The Y
+input is disregarded, therefore the Y-input transform trit at index 7 has no
+effect on the computation. So instead the ALU uses the trit at index 7 to
+select which unary operation to apply to X:
 
-| [5] | [7] | Operation | Detail            |
-|-----|-----|-----------|-------------------|
-| `0` | `−` | X-1       | Subtract 1 from X |
-| `0` | `0` | Reserved  |                   |
-| `0` | `+` | X+1       | Add 1 to X        |
+| [5] | [7] | Operation | Detail                         |
+|-----|-----|-----------|--------------------------------|
+| `0` | `−` | X - 1     | Subtract 1 from X              |
+| `0` | `0` | X == 0    | 1 if X is equal to 0, else -1  |
+| `0` | `+` | X + 1     | Add 1 to X                     |
 
 ## Trit shifting (index 4)
 

@@ -2,7 +2,7 @@ from ternary.hardware.component import (
         ZERO, NEG, NAnd, NAny, NCons, NOr, Not, PNot, Component, Trits)
 from ternary.hardware.arithmetic import Add12, Inc12, Dec12, Comparator12
 from ternary.hardware.logic import (
-        And12, IsZero, Not12, Mux2Way, Mux12, Mux2Way12,
+        And12, IsZero, IsZero12, Not12, Mux2Way, Mux12, Mux2Way12,
         ShiftLeft12, ShiftRight12)
 from ternary.hardware.memory import Register12, ProgramCounter11
 
@@ -29,41 +29,41 @@ class ALU(Component):
     The behaviour when 'f' and 'py' are both zero is reserved for future
     expansion.
 
-    | p | transform         |    | f | function   |
-    |===|===================|    |===|============|
-    | - | invert            |    | - | x & y      |
-    | 0 | none              |    | 0 | x++ or x-- |
-    | + | replace with zero |    | + | x + y      |
+    |  p  | transform         |    |  f  | function   |
+    |-----|-------------------|    |-----|------------|
+    | `−` | invert            |    | `−` | x & y      |
+    | `0` | none              |    | `0` | x++ or x-- |
+    | `+` | replace with zero |    | `+` | x + y      |
 
-    | px  | py  | f |   out   |  equiv. |
-    |=====|=====|===|=========|=========|
-    |  -  |  -  | - | -x & -y | x NOR y |
-    |  -  |  -  | 0 | -x - 1  |         |
-    |  -  |  -  | + | -x + -y | -x - y  |
-    |  -  |  0  | - | -x & y  |         |
-    |  -  |  0  | 0 |         |         |
-    |  -  |  0  | + | -x + y  | y - x   |
-    |  -  |  +  | - | -x & 0  |         |
-    |  -  |  +  | 0 | -x + 1  |         |
-    |  -  |  +  | + | -x + 0  | -x      |
-    |  0  |  -  | - | x & -y  |         |
-    |  0  |  -  | 0 | x - 1   |         |
-    |  0  |  -  | + | x + -y  | x - y   |
-    |  0  |  0  | - | x & y   |         |
-    |  0  |  0  | 0 |         |         |
-    |  0  |  0  | + | x + y   |         |
-    |  0  |  +  | - | x & 0   |         |
-    |  0  |  +  | 0 | x + 1   |         |
-    |  0  |  +  | + | x + 0   | x       |
-    |  +  |  -  | - | 0 & -y  |         |
-    |  +  |  -  | 0 | 0 - 1   | -1      |
-    |  +  |  -  | + | 0 + -y  | -y      |
-    |  +  |  0  | - | 0 & y   |         |
-    |  +  |  0  | 0 |         |         |
-    |  +  |  0  | + | 0 + y   | y       |
-    |  +  |  +  | - | 0 & 0   | 0       |
-    |  +  |  +  | 0 | 0 + 1   | 1       |
-    |  +  |  +  | + | 0 + 0   | 0       |
+    | px  | py  |  f  |   out   |  equiv. |
+    |-----|-----|-----|---------|---------|
+    | `−` | `−` | `−` | -x & -y | x NOR y |
+    | `−` | `−` | `0` | -x - 1  |         |
+    | `−` | `−` | `+` | -x + -y | -x - y  |
+    | `−` | `0` | `−` | -x & y  |         |
+    | `−` | `0` | `0` | -x == 0 |         |
+    | `−` | `0` | `+` | -x + y  | y - x   |
+    | `−` | `+` | `−` | -x & 0  |         |
+    | `−` | `+` | `0` | -x + 1  |         |
+    | `−` | `+` | `+` | -x + 0  | -x      |
+    | `0` | `−` | `−` | x & -y  |         |
+    | `0` | `−` | `0` | x - 1   |         |
+    | `0` | `−` | `+` | x + -y  | x - y   |
+    | `0` | `0` | `−` | x & y   |         |
+    | `0` | `0` | `0` | x == 0  |         |
+    | `0` | `0` | `+` | x + y   |         |
+    | `0` | `+` | `−` | x & 0   |         |
+    | `0` | `+` | `0` | x + 1   |         |
+    | `0` | `+` | `+` | x + 0   | x       |
+    | `+` | `−` | `−` | 0 & -y  |         |
+    | `+` | `−` | `0` | 0 - 1   | -1      |
+    | `+` | `−` | `+` | 0 + -y  | -y      |
+    | `+` | `0` | `−` | 0 & y   |         |
+    | `+` | `0` | `0` | 0 == 0  | 1       |
+    | `+` | `0` | `+` | 0 + y   | y       |
+    | `+` | `+` | `−` | 0 & 0   | 0       |
+    | `+` | `+` | `0` | 0 + 1   | 1       |
+    | `+` | `+` | `+` | 0 + 0   | 0       |
     """
     def __init__(self):
         super().__init__(
@@ -80,6 +80,7 @@ class ALU(Component):
                     'Inc': Inc12,
                     'Dec': Dec12,
                     'And': And12,
+                    'IsZero': IsZero12,
                     },
                 {
                     'out': 'MuxOut.out',
@@ -88,13 +89,15 @@ class ALU(Component):
                     'MuxOut.c': 'Add.out',
                     'MuxOut.s': 'f',
                     'UnaryX.a': 'Dec.out',
-                    'UnaryX.b': ZERO,
+                    'UnaryX.b[0]': 'IsZero.out',
+                    'UnaryX.b[1..11]': ZERO,
                     'UnaryX.c': 'Inc.out',
                     'UnaryX.s': 'py',
                     'Add.a': 'PreX.out',
                     'Add.b': 'PreY.out',
                     'And.a': 'PreX.out',
                     'And.b': 'PreY.out',
+                    'IsZero.in': 'PreX.out',
                     'Inc.in': 'PreX.out',
                     'Dec.in': 'PreX.out',
                     'PreX.a': 'NotX.out',
@@ -365,20 +368,20 @@ class CPU(Component):
 
     The meaning of each trit in the machine language instruction is as follows:
 
-    | index | meaning                         |
-    |-------|---------------------------------|
-    |   0   | Jump control 1                  |
-    |   1   | Jump control 2                  |
-    |   2   | Reserved                        |
-    |   3   | Reserved                        |
-    |   4   | Shift (right/none/left)         |
-    |   5   | ALU function select (&/-1/+1/+) |
-    |   6   | X-input transform (-X/X/0)      |
-    |   7   | Y-input transform (-Y/Y/0)      |
-    |   8   | X-input select (A/M/D)          |
-    |   9   | Y-input select (A/M/D)          |
-    |  10   | Computation target (A/M/D)      |
-    |  11   | Instruction mode (load/compute) |
+    | index | meaning                             |
+    |-------|-------------------------------------|
+    |   0   | Jump control 1                      |
+    |   1   | Jump control 2                      |
+    |   2   | Reserved                            |
+    |   3   | Reserved                            |
+    |   4   | Shift (right/none/left)             |
+    |   5   | ALU function select (&/-1/isz/+1/+) |
+    |   6   | X-input transform (-X/X/0)          |
+    |   7   | Y-input transform (-Y/Y/0)          |
+    |   8   | X-input select (A/M/D)              |
+    |   9   | Y-input select (A/M/D)              |
+    |  10   | Computation target (A/M/D)          |
+    |  11   | Instruction mode (load/compute)     |
     """
     def __init__(self):
         super().__init__(
