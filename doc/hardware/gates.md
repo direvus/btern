@@ -35,6 +35,20 @@ zero, and negative otherwise. It is composed of a PNOT, NOT and NAND:
 
 ![ISZ gate diagram](/doc/hardware/iszero.png)
 
+## 2-way ISZ
+
+The 2-way ISZ gate takes two inputs, and its output is positive only if both
+inputs are zero, and negative otherwise.
+
+![ISZ2 gate diagram](/doc/hardware/iszero2.png)
+
+## 12-way ISZ
+
+The 12-way ISZ gate takes a 12-trit input bus. Its output is positive only if
+all 12 inputs are zero, and negative otherwise.
+
+![ISZ12 gate diagram](/doc/hardware/iszero12.png)
+
 ## CLU (cycle up) and CLD (cycle down)
 
 The cycle up gate takes a single input, and outputs the value of its input
