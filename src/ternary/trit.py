@@ -29,6 +29,7 @@ INTEGERS = {
         POS:  1}
 INPUTS = {
         NEG:  NEG,
+        '−': NEG,
         '-1': NEG,
         '✗':  NEG,
         ZERO: ZERO,

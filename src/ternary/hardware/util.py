@@ -15,6 +15,7 @@ MAX_ADDR = (3 ** ADDR_SIZE) // 2
 MIN_ADDR = -MAX_ADDR
 MAX_INT = (3 ** WORD_SIZE) // 2
 MIN_INT = -MAX_INT
+INT_RANGE = 3 ** 12
 
 
 @contextmanager
