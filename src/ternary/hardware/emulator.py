@@ -71,6 +71,7 @@ class Emulator:
         self.pc = 0
         self.ram = {}
         self.program = []
+        self.comments = {}
         self.ticks = 0
         self.speed = 1000  # 1 kHz
         self.cycle_time = 1.0 / self.speed
@@ -85,23 +86,31 @@ class Emulator:
                     "Invalid length for binary-encoded program: "
                     f"expected a multiple of 12 but got {length}")
         self.program = []
+        self.comments = {}
         for i in range(0, length, 12):
             self.program.append(program[i:i+12])
 
     def load_text(self, stream: io.TextIOBase) -> None:
         """Load a program encoded in text format."""
         codes = []
+        comments = {}
+        i = 0
         for line in stream:
             line = line.strip()
             if not line:
                 continue
             code = line[:12]
+            comment = line[12:].strip() if len(line) > 12 else ""
+
             if any(c not in '-0+' for c in code):
                 raise ValueError(
                         f"Invalid characters in '{line}': expected only "
                         "-, 0 and + in the first 12 characters of each line")
             codes.append(code)
+            comments[i] = comment
+            i += 1
         self.program = codes
+        self.comments = comments
 
     def load(self, stream) -> None:
         """Load a program encoded in either text or binary format.
@@ -119,6 +128,9 @@ class Emulator:
 
     def set_ram(self, address: int, value: int) -> None:
         self.ram[address] = value
+
+    def get_m(self) -> int:
+        return self.get_ram(self.a)
 
     def reset(self):
         self.a = 0

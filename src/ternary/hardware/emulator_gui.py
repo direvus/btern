@@ -16,9 +16,11 @@ class EmulatorGUI:
         self.root.geometry("1000x700")
 
         self.emulator = Emulator()
-        self.program_labels = []
+        self.program_rows = []
         self.running = False
         self.after_id = None
+        self.mono_font = ("Courier New", 10)
+        self.mono_comment_font = ("Courier New", 9)
 
         self.create_layout()
         self.update_debug()
@@ -29,20 +31,12 @@ class EmulatorGUI:
         main_frame.grid_rowconfigure(0, weight=1)
         main_frame.grid_columnconfigure(1, weight=1)
 
-        left_frame = ctk.CTkFrame(main_frame, width=240)
+        left_frame = ctk.CTkFrame(main_frame, width=288)
         left_frame.grid(row=0, column=0, sticky="ns", padx=5, pady=5)
-        left_frame.grid_rowconfigure(1, weight=1)
+        left_frame.grid_rowconfigure(0, weight=1)
 
-        program_title = ctk.CTkLabel(
-            left_frame,
-            text="Loaded Program",
-            anchor="w",
-            font=(None, 16, "bold"),
-        )
-        program_title.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="ew")
-
-        self.program_frame = ctk.CTkScrollableFrame(left_frame, width=220, height=560)
-        self.program_frame.grid(row=1, column=0, padx=10, pady=5, sticky="nsew")
+        self.program_frame = ctk.CTkScrollableFrame(left_frame, width=264, height=600)
+        self.program_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         self.program_frame.grid_columnconfigure(0, weight=1)
 
         canvas_frame = ctk.CTkFrame(main_frame)
@@ -98,28 +92,25 @@ class EmulatorGUI:
         info_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=5)
         info_frame.grid_columnconfigure(0, weight=1)
 
-        self.label_status = ctk.CTkLabel(info_frame, text="Program: none", anchor="w")
-        self.label_status.grid(row=0, column=0, padx=10, pady=(10, 3), sticky="ew")
+        self.label_a = ctk.CTkLabel(info_frame, text="A: 0 (000000000000)", anchor="w", font=self.mono_font)
+        self.label_a.grid(row=0, column=0, padx=10, pady=(10, 3), sticky="ew")
 
-        self.label_a = ctk.CTkLabel(info_frame, text="A: 0 (000000000000)", anchor="w")
-        self.label_a.grid(row=1, column=0, padx=10, pady=3, sticky="ew")
-
-        self.label_d = ctk.CTkLabel(info_frame, text="D: 0 (000000000000)", anchor="w")
+        self.label_d = ctk.CTkLabel(info_frame, text="D: 0 (000000000000)", anchor="w", font=self.mono_font)
         self.label_d.grid(row=2, column=0, padx=10, pady=3, sticky="ew")
 
+        self.label_m = ctk.CTkLabel(info_frame, text="M: 0 (000000000000)", anchor="w", font=self.mono_font)
+        self.label_m.grid(row=3, column=0, padx=10, pady=3, sticky="ew")
+
         self.label_pc = ctk.CTkLabel(info_frame, text="PC: 0", anchor="w")
-        self.label_pc.grid(row=3, column=0, padx=10, pady=3, sticky="ew")
+        self.label_pc.grid(row=4, column=0, padx=10, pady=3, sticky="ew")
 
         self.label_ticks = ctk.CTkLabel(info_frame, text="Ticks: 0", anchor="w")
-        self.label_ticks.grid(row=4, column=0, padx=10, pady=3, sticky="ew")
-
-        self.label_instruction = ctk.CTkLabel(info_frame, text="Instruction: —", anchor="w")
-        self.label_instruction.grid(row=5, column=0, padx=10, pady=(3, 10), sticky="ew")
+        self.label_ticks.grid(row=5, column=0, padx=10, pady=(3, 10), sticky="ew")
 
     def load_program(self):
         path = filedialog.askopenfilename(
             title="Select Ternary Program",
-            filetypes=[("Ternary text", "*.txt"), ("Binary program", "*.bin"), ("All files", "*")],
+            filetypes=[("Ternary text", ["*.t12", "*.txt"]),  ("Binary program", "*.bin"), ("All files", "*")],
         )
         if not path:
             return
@@ -143,46 +134,63 @@ class EmulatorGUI:
         self.run_button.configure(state="normal")
 
     def refresh_program_list(self):
-        for label in self.program_labels:
-            label.destroy()
-        self.program_labels.clear()
+        for row, inst_label, comment_label in self.program_rows:
+            row.destroy()
+        self.program_rows.clear()
 
         for index, instruction in enumerate(self.emulator.program):
-            label = ctk.CTkLabel(
-                self.program_frame,
+            row = ctk.CTkFrame(self.program_frame, fg_color="transparent")
+            row.grid(row=index, column=0, padx=5, pady=(2, 0), sticky="ew")
+            row.grid_columnconfigure(0, weight=1)
+            row.grid_columnconfigure(1, weight=1)
+
+            inst_label = ctk.CTkLabel(
+                row,
                 text=f"{index:04d}: {instruction}",
                 anchor="w",
-                width=220,
                 fg_color="transparent",
                 corner_radius=8,
+                font=self.mono_font,
             )
-            label.grid(row=index, column=0, padx=5, pady=2, sticky="ew")
-            self.program_labels.append(label)
+            inst_label.grid(row=0, column=0, sticky="ew", padx=(0, 8), pady=2)
+
+            comment_text = self.emulator.comments.get(index, "")
+            comment_label = None
+            if comment_text:
+                comment_label = ctk.CTkLabel(
+                    row,
+                    text=comment_text,
+                    anchor="w",
+                    text_color="#888888",
+                    fg_color="transparent",
+                    font=self.mono_comment_font,
+                )
+                comment_label.grid(row=0, column=1, sticky="ew", pady=2)
+
+            self.program_rows.append((row, inst_label, comment_label))
 
         self.highlight_current_instruction()
-        self.label_status.configure(text=f"Program: {len(self.emulator.program)} instructions")
 
     def highlight_current_instruction(self):
         index = self.emulator.pc - MIN_ADDR
-        for idx, label in enumerate(self.program_labels):
+        for idx, (_, inst_label, _) in enumerate(self.program_rows):
             if idx == index:
-                label.configure(fg_color="#2f95ff", text_color="white")
+                inst_label.configure(fg_color="#2f95ff", text_color="white")
             else:
-                label.configure(fg_color="transparent", text_color="white")
+                inst_label.configure(fg_color="transparent", text_color="white")
 
     def update_debug(self):
         a_trits = int_to_trits(self.emulator.a, 12)
         d_trits = int_to_trits(self.emulator.d, 12)
+        m_value = self.emulator.get_m()
+        m_trits = int_to_trits(m_value, 12)
         index = self.emulator.pc - MIN_ADDR
-        current_instruction = "—"
-        if 0 <= index < len(self.emulator.program):
-            current_instruction = self.emulator.program[index]
 
         self.label_a.configure(text=f"A: {self.emulator.a} ({a_trits})")
         self.label_d.configure(text=f"D: {self.emulator.d} ({d_trits})")
+        self.label_m.configure(text=f"M: {m_value} ({m_trits})")
         self.label_pc.configure(text=f"PC: {self.emulator.pc} (idx {index})")
         self.label_ticks.configure(text=f"Ticks: {self.emulator.ticks}")
-        self.label_instruction.configure(text=f"Instruction: {current_instruction}")
         self.highlight_current_instruction()
 
     def reset_emulator(self):
