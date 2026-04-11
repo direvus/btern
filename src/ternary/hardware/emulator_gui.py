@@ -1,13 +1,14 @@
 ﻿import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
+import sys
 
 import customtkinter as ctk
 from ternary.hardware.emulator import Emulator
-from ternary.hardware.util import int_to_trits, MIN_ADDR
+from ternary.hardware.util import int_to_trits, MIN_ADDR, input_stream
 
 
 class EmulatorGUI:
-    def __init__(self):
+    def __init__(self, input_path=None):
         ctk.set_appearance_mode("system")
         ctk.set_default_color_theme("blue")
 
@@ -24,6 +25,9 @@ class EmulatorGUI:
 
         self.create_layout()
         self.update_debug()
+
+        if input_path:
+            self.root.after(100, lambda: self.load_program_from_path(input_path))
 
     def create_layout(self):
         main_frame = ctk.CTkFrame(self.root)
@@ -65,13 +69,13 @@ class EmulatorGUI:
         self.load_button = ctk.CTkButton(control_frame, text="Load Program", command=self.load_program)
         self.load_button.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-        self.reset_button = ctk.CTkButton(control_frame, text="Reset", command=self.reset_emulator)
+        self.reset_button = ctk.CTkButton(control_frame, text="Reset", command=self.reset_emulator, state="disabled")
         self.reset_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        self.step_button = ctk.CTkButton(control_frame, text="Step", command=self.step_emulator)
+        self.step_button = ctk.CTkButton(control_frame, text="Step", command=self.step_emulator, state="disabled")
         self.step_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-        self.run_button = ctk.CTkButton(control_frame, text="Run", command=self.start_running)
+        self.run_button = ctk.CTkButton(control_frame, text="Run", command=self.start_running, state="disabled")
         self.run_button.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
 
         pause_frame = ctk.CTkFrame(self.debug_frame)
@@ -107,6 +111,30 @@ class EmulatorGUI:
         self.label_ticks = ctk.CTkLabel(info_frame, text="Ticks: 0", anchor="w")
         self.label_ticks.grid(row=5, column=0, padx=10, pady=(3, 10), sticky="ew")
 
+    def load_program_from_path(self, path):
+        try:
+            with input_stream(path) as stream:
+                self.emulator.load(stream)
+        except Exception as e:
+            self.show_error_dialog("Program Load Error", f"Failed to load program from {path}:\n\n{str(e)}")
+            return
+
+        self.emulator.reset()
+        self.running = False
+        if self.after_id is not None:
+            self.root.after_cancel(self.after_id)
+            self.after_id = None
+
+        self.refresh_program_list()
+        self.update_debug()
+        self.reset_button.configure(state="normal")
+        self.step_button.configure(state="normal")
+        self.run_button.configure(state="normal")
+        self.pause_button.configure(state="disabled")
+
+    def show_error_dialog(self, title, message):
+        messagebox.showerror(title, message)
+
     def load_program(self):
         path = filedialog.askopenfilename(
             title="Select Ternary Program",
@@ -130,8 +158,10 @@ class EmulatorGUI:
 
         self.refresh_program_list()
         self.update_debug()
-        self.pause_button.configure(state="disabled")
+        self.reset_button.configure(state="normal")
+        self.step_button.configure(state="normal")
         self.run_button.configure(state="normal")
+        self.pause_button.configure(state="disabled")
 
     def refresh_program_list(self):
         for row, inst_label, comment_label in self.program_rows:
@@ -252,5 +282,10 @@ class EmulatorGUI:
 
 
 if __name__ == "__main__":
-    gui = EmulatorGUI()
+    import argparse
+    parser = argparse.ArgumentParser(description="Ternary Computer Emulator GUI")
+    parser.add_argument("program", nargs="?", default=None, help="Path to the ternary program file to load")
+    args = parser.parse_args()
+
+    gui = EmulatorGUI(input_path=args.program)
     gui.run()
