@@ -14,6 +14,9 @@ PAUSE_BUTTON_LABEL = "⏸ Pause"
 CONTROL_BUTTON_WIDTH = 120
 SPEED_MIN_HZ = 1
 SPEED_MAX_HZ = 1_000_000
+SCREEN_WIDTH = 320
+SCREEN_HEIGHT = 200
+SCREEN_SCALE = 2
 
 
 def format_frequency_hz(hz):
@@ -70,13 +73,23 @@ class EmulatorGUI:
 
         self.canvas = tk.Canvas(
             canvas_frame,
-            width=640,
-            height=400,
+            width=SCREEN_WIDTH * SCREEN_SCALE,
+            height=SCREEN_HEIGHT * SCREEN_SCALE,
             bg="black",
             highlightthickness=1,
             highlightbackground="#777",
         )
         self.canvas.grid(row=0, column=0, sticky="", padx=10, pady=10)
+
+        self.pixels = []
+        for y in range(SCREEN_HEIGHT):
+            for x in range(SCREEN_WIDTH):
+                x0 = x * SCREEN_SCALE
+                y0 = y * SCREEN_SCALE
+                x1 = x0 + SCREEN_SCALE
+                y1 = y0 + SCREEN_SCALE
+                item = self.canvas.create_rectangle(x0, y0, x1, y1)
+                self.pixels.append(item)
 
         self.system_tray_frame = ctk.CTkFrame(main_frame, height=80)
         self.system_tray_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
