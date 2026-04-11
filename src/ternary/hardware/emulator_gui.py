@@ -33,18 +33,17 @@ class EmulatorGUI:
 
         self.root = ctk.CTk()
         self.root.title("Ternary Computer Emulator")
-        self.root.geometry("1000x700")
+        self.root.geometry("1100x700")
 
         self.emulator = Emulator()
         self.program_rows = []
         self.running = False
         self.after_id = None
         self.speed_hz = 1000
-        self.mono_font = ("Courier New", 10)
-        self.mono_comment_font = ("Courier New", 9)
+        self.mono_font = ("Courier New", 11)
 
         self.create_layout()
-        self.update_debug()
+        self.update_tray()
 
         if input_path:
             self.root.after(100, lambda: self.load_program_from_path(input_path))
@@ -60,9 +59,9 @@ class EmulatorGUI:
         left_frame.grid(row=0, column=0, sticky="ns", padx=5, pady=5)
         left_frame.grid_rowconfigure(0, weight=1)
 
-        self.program_frame = ctk.CTkScrollableFrame(left_frame, width=264, height=600)
+        self.program_frame = ctk.CTkScrollableFrame(left_frame, width=364, height=600)
         self.program_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        self.program_frame.grid_columnconfigure(0, weight=1)
+        self.program_frame.grid_columnconfigure(1, weight=1)
 
         canvas_frame = ctk.CTkFrame(main_frame)
         canvas_frame.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
@@ -73,11 +72,11 @@ class EmulatorGUI:
             canvas_frame,
             width=640,
             height=400,
-            bg="white",
+            bg="black",
             highlightthickness=1,
             highlightbackground="#777",
         )
-        self.canvas.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.canvas.grid(row=0, column=0, sticky="", padx=10, pady=10)
 
         self.system_tray_frame = ctk.CTkFrame(main_frame, height=80)
         self.system_tray_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
@@ -113,7 +112,7 @@ class EmulatorGUI:
             item_frame.grid_columnconfigure(1, weight=0)
             
             label = ctk.CTkLabel(item_frame, text=label_text, fg_color="#404040", text_color="#a0a0a0", 
-                                corner_radius=4, padx=6, pady=2, font=("Courier New", 9))
+                                corner_radius=4, padx=6, pady=2, font=self.mono_font)
             label.grid(row=0, column=0, padx=(0, 4), sticky="w")
             
             value = ctk.CTkLabel(item_frame, text="0", fg_color="transparent", text_color="white",
@@ -152,7 +151,7 @@ class EmulatorGUI:
             self.after_id = None
 
         self.refresh_program_list()
-        self.update_debug()
+        self.update_tray()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
         self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
@@ -255,63 +254,59 @@ class EmulatorGUI:
             self.after_id = None
 
         self.refresh_program_list()
-        self.update_debug()
+        self.update_tray()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
         self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def refresh_program_list(self):
-        for row, inst_label, comment_label in self.program_rows:
-            row.destroy()
+        for inst_label, comment_label in self.program_rows:
+            inst_label.destroy()
+            comment_label.destroy()
         self.program_rows.clear()
 
         for index, instruction in enumerate(self.emulator.program):
-            row = ctk.CTkFrame(self.program_frame, fg_color="transparent")
-            row.grid(row=index, column=0, padx=5, pady=(2, 0), sticky="ew")
-            row.grid_columnconfigure(0, weight=1)
-            row.grid_columnconfigure(1, weight=1)
-
             inst_label = ctk.CTkLabel(
-                row,
+                self.program_frame,
                 text=f"{index:04d}: {instruction}",
                 anchor="w",
                 fg_color="transparent",
                 corner_radius=8,
                 font=self.mono_font,
             )
-            inst_label.grid(row=0, column=0, sticky="ew", padx=(0, 8), pady=2)
+            inst_label.grid(row=index, column=0, sticky="ew", padx=(0, 8), pady=2)
 
             comment_text = self.emulator.comments.get(index, "")
             comment_label = None
             if comment_text:
                 comment_label = ctk.CTkLabel(
-                    row,
+                    self.program_frame,
                     text=comment_text,
                     anchor="w",
                     text_color="#888888",
                     fg_color="transparent",
-                    font=self.mono_comment_font,
+                    font=self.mono_font,
                 )
-                comment_label.grid(row=0, column=1, sticky="ew", pady=2)
+                comment_label.grid(row=index, column=1, sticky="w", pady=2)
 
-            self.program_rows.append((row, inst_label, comment_label))
+            self.program_rows.append((inst_label, comment_label))
 
         self.highlight_current_instruction()
 
     def highlight_current_instruction(self):
         index = self.emulator.pc - MIN_ADDR
-        for idx, (_, inst_label, _) in enumerate(self.program_rows):
+        for idx, (inst_label, _) in enumerate(self.program_rows):
             if idx == index:
                 inst_label.configure(fg_color="#2f95ff", text_color="white")
             else:
                 inst_label.configure(fg_color="transparent", text_color="white")
 
-    def update_debug(self):
+    def update_tray(self):
         a_trits = int_to_trits(self.emulator.a, 12)
         d_trits = int_to_trits(self.emulator.d, 12)
         m_value = self.emulator.get_m()
         m_trits = int_to_trits(m_value, 12)
-        pc_trits = int_to_trits(self.emulator.pc, 12)
+        pc_trits = int_to_trits(self.emulator.pc, 11)
 
         self.label_a.configure(text=f"{self.emulator.a} ({a_trits})")
         self.label_d.configure(text=f"{self.emulator.d} ({d_trits})")
@@ -326,7 +321,7 @@ class EmulatorGUI:
         if self.after_id is not None:
             self.root.after_cancel(self.after_id)
             self.after_id = None
-        self.update_debug()
+        self.update_tray()
         self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def step_emulator(self):
@@ -338,7 +333,7 @@ class EmulatorGUI:
             return
 
         self.emulator.step()
-        self.update_debug()
+        self.update_tray()
 
     def toggle_running(self):
         if self.running:
@@ -371,7 +366,7 @@ class EmulatorGUI:
             return
 
         self.emulator.step()
-        self.update_debug()
+        self.update_tray()
 
         speed = self.speed_hz
         delay = max(1, int(1000 / speed))
