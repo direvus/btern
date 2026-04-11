@@ -313,6 +313,20 @@ class EmulatorGUI:
                 inst_label.configure(fg_color="#2f95ff", text_color="white")
             else:
                 inst_label.configure(fg_color="transparent", text_color="white")
+        
+        # Scroll to keep active instruction centered
+        if self.program_rows:
+            total_rows = len(self.program_rows)
+            visible_rows = 20  # Approximate based on height=600 and row_height~30
+            if total_rows > visible_rows:
+                center_offset = visible_rows // 2
+                if index <= center_offset:
+                    fraction = 0.0
+                elif index >= total_rows - center_offset:
+                    fraction = 1.0
+                else:
+                    fraction = (index - center_offset) / (total_rows - visible_rows)
+                self.program_frame._parent_canvas.yview_moveto(fraction)
 
     def update_tray(self):
         a_trits = int_to_trits(self.emulator.a, 12)
