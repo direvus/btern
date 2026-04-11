@@ -6,6 +6,25 @@ import customtkinter as ctk
 from ternary.hardware.emulator import Emulator
 from ternary.hardware.util import int_to_trits, MIN_ADDR, input_stream
 
+LOAD_BUTTON_LABEL = "📂 Load"
+RESET_BUTTON_LABEL = "↺ Reset"
+STEP_BUTTON_LABEL = "⏭ Step"
+RUN_BUTTON_LABEL = "▶ Run"
+PAUSE_BUTTON_LABEL = "⏸ Pause"
+CONTROL_BUTTON_WIDTH = 120
+SPEED_MIN_HZ = 1
+SPEED_MAX_HZ = 1_000_000
+
+
+def format_frequency_hz(hz):
+    """Convert Hz to human-readable format (Hz, kHz, or MHz)."""
+    if hz >= 1_000_000:
+        return f"{hz / 1_000_000:.0f} MHz"
+    elif hz >= 1_000:
+        return f"{hz / 1_000:.0f} kHz"
+    else:
+        return f"{hz} Hz"
+
 
 class EmulatorGUI:
     def __init__(self, input_path=None):
@@ -20,6 +39,7 @@ class EmulatorGUI:
         self.program_rows = []
         self.running = False
         self.after_id = None
+        self.speed_hz = 1000
         self.mono_font = ("Courier New", 10)
         self.mono_comment_font = ("Courier New", 9)
 
@@ -64,30 +84,22 @@ class EmulatorGUI:
 
         control_frame = ctk.CTkFrame(self.debug_frame)
         control_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=(10, 5))
-        control_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        control_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
-        self.load_button = ctk.CTkButton(control_frame, text="Load Program", command=self.load_program)
+        self.load_button = ctk.CTkButton(control_frame, text=LOAD_BUTTON_LABEL, command=self.load_program, width=CONTROL_BUTTON_WIDTH)
         self.load_button.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-        self.reset_button = ctk.CTkButton(control_frame, text="Reset", command=self.reset_emulator, state="disabled")
+        self.reset_button = ctk.CTkButton(control_frame, text=RESET_BUTTON_LABEL, command=self.reset_emulator, state="disabled", width=CONTROL_BUTTON_WIDTH)
         self.reset_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        self.step_button = ctk.CTkButton(control_frame, text="Step", command=self.step_emulator, state="disabled")
+        self.step_button = ctk.CTkButton(control_frame, text=STEP_BUTTON_LABEL, command=self.step_emulator, state="disabled", width=CONTROL_BUTTON_WIDTH)
         self.step_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-        self.run_button = ctk.CTkButton(control_frame, text="Run", command=self.toggle_running, state="disabled")
+        self.run_button = ctk.CTkButton(control_frame, text=RUN_BUTTON_LABEL, command=self.toggle_running, state="disabled", width=CONTROL_BUTTON_WIDTH)
         self.run_button.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
 
-        pause_frame = ctk.CTkFrame(self.debug_frame)
-        pause_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=5)
-        pause_frame.grid_columnconfigure(0, weight=1)
-
-        self.speed_slider = ctk.CTkSlider(pause_frame, from_=100, to=5000, number_of_steps=49)
-        self.speed_slider.set(1000)
-        self.speed_slider.grid(row=0, column=0, padx=(5, 0), pady=5, sticky="ew")
-
-        speed_label = ctk.CTkLabel(pause_frame, text="Speed")
-        speed_label.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        self.speed_button = ctk.CTkButton(control_frame, text=self.get_speed_button_text(), command=self.open_speed_dialog, width=CONTROL_BUTTON_WIDTH)
+        self.speed_button.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
         info_frame = ctk.CTkFrame(self.debug_frame)
         info_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=5)
@@ -126,7 +138,80 @@ class EmulatorGUI:
         self.update_debug()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
-        self.run_button.configure(state="normal", text="Run")
+        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
+
+    def get_speed_button_text(self):
+        return f"⚙ Speed: {format_frequency_hz(self.speed_hz)}"
+
+    def open_speed_dialog(self):
+        dialog = ctk.CTkToplevel(self.root)
+        dialog.title("Adjust Speed")
+        dialog.geometry("480x150")
+        dialog.grab_set()
+        dialog.transient(self.root)
+        dialog.grid_columnconfigure(0, weight=1)
+        dialog.grid_columnconfigure(1, weight=0)
+
+        label = ctk.CTkLabel(dialog, text=f"Set execution speed ({format_frequency_hz(SPEED_MIN_HZ)} to {format_frequency_hz(SPEED_MAX_HZ)}):", anchor="w")
+        label.grid(row=0, column=0, columnspan=2, padx=16, pady=(16, 8), sticky="ew")
+
+        speed_var = tk.StringVar(value=str(self.speed_hz))
+
+        def update_entry(value):
+            speed_var.set(str(int(float(value))))
+
+        slider = ctk.CTkSlider(dialog, from_=SPEED_MIN_HZ, to=SPEED_MAX_HZ, command=update_entry)
+        slider.set(self.speed_hz)
+        slider.grid(row=1, column=0, padx=16, pady=(0, 8), sticky="ew")
+
+        input_frame = ctk.CTkFrame(dialog)
+        input_frame.grid(row=1, column=1, padx=(8, 16), pady=(0, 8), sticky="ew")
+        input_frame.grid_columnconfigure(0, weight=1)
+
+        speed_entry = ctk.CTkEntry(input_frame, textvariable=speed_var, width=80)
+        speed_entry.grid(row=0, column=0, padx=(0, 4), pady=5, sticky="ew")
+
+        hz_label = ctk.CTkLabel(input_frame, text="Hz", anchor="w")
+        hz_label.grid(row=0, column=1, padx=(0, 0), pady=5, sticky="w")
+
+        def validate_speed(value_str):
+            try:
+                value = int(value_str)
+            except ValueError:
+                raise ValueError("Enter an integer value for Hz.")
+            if value < SPEED_MIN_HZ or value > SPEED_MAX_HZ:
+                raise ValueError(f"Speed must be between {SPEED_MIN_HZ} and {SPEED_MAX_HZ} Hz.")
+            return value
+
+        def apply_speed():
+            try:
+                speed_value = validate_speed(speed_var.get())
+            except ValueError as exc:
+                messagebox.showerror("Invalid speed", str(exc), parent=dialog)
+                return
+            self.speed_hz = speed_value
+            self.speed_button.configure(text=self.get_speed_button_text())
+            dialog.destroy()
+
+        def on_entry_return(event):
+            try:
+                speed_value = validate_speed(speed_var.get())
+            except ValueError:
+                return
+            slider.set(speed_value)
+
+        speed_entry.bind("<Return>", on_entry_return)
+        speed_entry.bind("<FocusOut>", lambda event: on_entry_return(event))
+
+        button_frame = ctk.CTkFrame(dialog)
+        button_frame.grid(row=2, column=0, columnspan=2, padx=16, pady=(0, 16), sticky="ew")
+        button_frame.grid_columnconfigure((0, 1), weight=1)
+
+        cancel_button = ctk.CTkButton(button_frame, text="Cancel", command=dialog.destroy)
+        cancel_button.grid(row=0, column=0, padx=5, sticky="ew")
+
+        ok_button = ctk.CTkButton(button_frame, text="OK", command=apply_speed)
+        ok_button.grid(row=0, column=1, padx=5, sticky="ew")
 
     def show_error_dialog(self, title, message):
         messagebox.showerror(title, message)
@@ -156,7 +241,7 @@ class EmulatorGUI:
         self.update_debug()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
-        self.run_button.configure(state="normal", text="Run")
+        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def refresh_program_list(self):
         for row, inst_label, comment_label in self.program_rows:
@@ -225,7 +310,7 @@ class EmulatorGUI:
             self.root.after_cancel(self.after_id)
             self.after_id = None
         self.update_debug()
-        self.run_button.configure(state="normal", text="Run")
+        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def step_emulator(self):
         if not self.emulator.program:
@@ -249,7 +334,7 @@ class EmulatorGUI:
             return
 
         self.running = True
-        self.run_button.configure(text="Pause")
+        self.run_button.configure(text=PAUSE_BUTTON_LABEL)
         self.schedule_step()
 
     def pause_running(self):
@@ -257,7 +342,7 @@ class EmulatorGUI:
             self.root.after_cancel(self.after_id)
             self.after_id = None
         self.running = False
-        self.run_button.configure(state="normal", text="Run")
+        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def schedule_step(self):
         if not self.running:
@@ -271,7 +356,7 @@ class EmulatorGUI:
         self.emulator.step()
         self.update_debug()
 
-        speed = self.speed_slider.get()
+        speed = self.speed_hz
         delay = max(1, int(1000 / speed))
         self.after_id = self.root.after(delay, self.schedule_step)
 
