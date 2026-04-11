@@ -53,6 +53,7 @@ class EmulatorGUI:
         main_frame = ctk.CTkFrame(self.root)
         main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         main_frame.grid_rowconfigure(0, weight=1)
+        main_frame.grid_rowconfigure(1, weight=0)
         main_frame.grid_columnconfigure(1, weight=1)
 
         left_frame = ctk.CTkFrame(main_frame, width=288)
@@ -78,11 +79,12 @@ class EmulatorGUI:
         )
         self.canvas.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        self.debug_frame = ctk.CTkFrame(main_frame, height=140)
-        self.debug_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
-        self.debug_frame.grid_columnconfigure((0, 1), weight=1)
+        self.system_tray_frame = ctk.CTkFrame(main_frame, height=80)
+        self.system_tray_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
+        self.system_tray_frame.grid_columnconfigure(0, weight=1)
+        self.system_tray_frame.grid_columnconfigure(1, weight=1)
 
-        control_frame = ctk.CTkFrame(self.debug_frame)
+        control_frame = ctk.CTkFrame(self.system_tray_frame)
         control_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=(10, 5))
         control_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
@@ -101,24 +103,39 @@ class EmulatorGUI:
         self.speed_button = ctk.CTkButton(control_frame, text=self.get_speed_button_text(), command=self.open_speed_dialog, width=CONTROL_BUTTON_WIDTH)
         self.speed_button.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
-        info_frame = ctk.CTkFrame(self.debug_frame)
-        info_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=5)
-        info_frame.grid_columnconfigure(0, weight=1)
+        tray_items_frame = ctk.CTkFrame(self.system_tray_frame)
+        tray_items_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=(5, 10))
+        tray_items_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
-        self.label_a = ctk.CTkLabel(info_frame, text="A: 0 (000000000000)", anchor="w", font=self.mono_font)
-        self.label_a.grid(row=0, column=0, padx=10, pady=(10, 3), sticky="ew")
+        def create_register_item(parent, label_text):
+            item_frame = ctk.CTkFrame(parent, fg_color="transparent")
+            item_frame.grid_columnconfigure(0, weight=0)
+            item_frame.grid_columnconfigure(1, weight=0)
+            
+            label = ctk.CTkLabel(item_frame, text=label_text, fg_color="#404040", text_color="#a0a0a0", 
+                                corner_radius=4, padx=6, pady=2, font=("Courier New", 9))
+            label.grid(row=0, column=0, padx=(0, 4), sticky="w")
+            
+            value = ctk.CTkLabel(item_frame, text="0", fg_color="transparent", text_color="white",
+                                anchor="w", font=self.mono_font)
+            value.grid(row=0, column=1, sticky="w")
+            
+            return item_frame, value
 
-        self.label_d = ctk.CTkLabel(info_frame, text="D: 0 (000000000000)", anchor="w", font=self.mono_font)
-        self.label_d.grid(row=2, column=0, padx=10, pady=3, sticky="ew")
+        self.item_a, self.label_a = create_register_item(tray_items_frame, "A")
+        self.item_a.grid(row=0, column=0, padx=5, sticky="nsew")
 
-        self.label_m = ctk.CTkLabel(info_frame, text="M: 0 (000000000000)", anchor="w", font=self.mono_font)
-        self.label_m.grid(row=3, column=0, padx=10, pady=3, sticky="ew")
+        self.item_d, self.label_d = create_register_item(tray_items_frame, "D")
+        self.item_d.grid(row=0, column=1, padx=5, sticky="nsew")
 
-        self.label_pc = ctk.CTkLabel(info_frame, text="PC: 0", anchor="w")
-        self.label_pc.grid(row=4, column=0, padx=10, pady=3, sticky="ew")
+        self.item_m, self.label_m = create_register_item(tray_items_frame, "M")
+        self.item_m.grid(row=0, column=2, padx=5, sticky="nsew")
 
-        self.label_ticks = ctk.CTkLabel(info_frame, text="Ticks: 0", anchor="w")
-        self.label_ticks.grid(row=5, column=0, padx=10, pady=(3, 10), sticky="ew")
+        self.item_pc, self.label_pc = create_register_item(tray_items_frame, "PC")
+        self.item_pc.grid(row=0, column=3, padx=5, sticky="nsew")
+
+        self.item_ticks, self.label_ticks = create_register_item(tray_items_frame, "Ticks")
+        self.item_ticks.grid(row=0, column=4, padx=5, sticky="nsew")
 
     def load_program_from_path(self, path):
         try:
@@ -294,13 +311,13 @@ class EmulatorGUI:
         d_trits = int_to_trits(self.emulator.d, 12)
         m_value = self.emulator.get_m()
         m_trits = int_to_trits(m_value, 12)
-        index = self.emulator.pc - MIN_ADDR
+        pc_trits = int_to_trits(self.emulator.pc, 12)
 
-        self.label_a.configure(text=f"A: {self.emulator.a} ({a_trits})")
-        self.label_d.configure(text=f"D: {self.emulator.d} ({d_trits})")
-        self.label_m.configure(text=f"M: {m_value} ({m_trits})")
-        self.label_pc.configure(text=f"PC: {self.emulator.pc} (idx {index})")
-        self.label_ticks.configure(text=f"Ticks: {self.emulator.ticks}")
+        self.label_a.configure(text=f"{self.emulator.a} ({a_trits})")
+        self.label_d.configure(text=f"{self.emulator.d} ({d_trits})")
+        self.label_m.configure(text=f"{m_value} ({m_trits})")
+        self.label_pc.configure(text=f"{self.emulator.pc} ({pc_trits})")
+        self.label_ticks.configure(text=f"{self.emulator.ticks}")
         self.highlight_current_instruction()
 
     def reset_emulator(self):
