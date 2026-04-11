@@ -131,6 +131,13 @@ class Emulator:
 
     def get_m(self) -> int:
         return self.get_ram(self.a)
+    
+    def set_speed(self, speed: int) -> None:
+        self.speed = int(speed)
+        self.cycle_time = 1.0 / self.speed
+
+    def set_rate_limit(self, value: bool) -> None:
+        self.rate_limit = bool(value)
 
     def reset(self):
         self.a = 0

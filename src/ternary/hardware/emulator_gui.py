@@ -19,7 +19,7 @@ SCREEN_HEIGHT = 200
 SCREEN_SCALE = 2
 
 
-def format_frequency_hz(hz):
+def format_clock_speed(hz):
     """Convert Hz to human-readable format (Hz, kHz, or MHz)."""
     if hz >= 1_000_000:
         return f"{hz / 1_000_000:.0f} MHz"
@@ -170,7 +170,7 @@ class EmulatorGUI:
         self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def get_speed_button_text(self):
-        return f"⚙ Speed: {format_frequency_hz(self.speed_hz)}"
+        return f"⚙ Speed: {format_clock_speed(self.speed_hz)}"
 
     def open_speed_dialog(self):
         dialog = ctk.CTkToplevel(self.root)
@@ -181,7 +181,7 @@ class EmulatorGUI:
         dialog.grid_columnconfigure(0, weight=1)
         dialog.grid_columnconfigure(1, weight=0)
 
-        label = ctk.CTkLabel(dialog, text=f"Set execution speed ({format_frequency_hz(SPEED_MIN_HZ)} to {format_frequency_hz(SPEED_MAX_HZ)}):", anchor="w")
+        label = ctk.CTkLabel(dialog, text=f"Set execution speed ({format_clock_speed(SPEED_MIN_HZ)} to {format_clock_speed(SPEED_MAX_HZ)}):", anchor="w")
         label.grid(row=0, column=0, columnspan=2, padx=16, pady=(16, 8), sticky="ew")
 
         speed_var = tk.StringVar(value=str(self.speed_hz))
