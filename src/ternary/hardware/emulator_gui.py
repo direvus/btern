@@ -75,22 +75,19 @@ class EmulatorGUI:
         self.step_button = ctk.CTkButton(control_frame, text="Step", command=self.step_emulator, state="disabled")
         self.step_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-        self.run_button = ctk.CTkButton(control_frame, text="Run", command=self.start_running, state="disabled")
+        self.run_button = ctk.CTkButton(control_frame, text="Run", command=self.toggle_running, state="disabled")
         self.run_button.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
 
         pause_frame = ctk.CTkFrame(self.debug_frame)
         pause_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=5)
-        pause_frame.grid_columnconfigure(1, weight=1)
-
-        self.pause_button = ctk.CTkButton(pause_frame, text="Pause", command=self.pause_running, state="disabled")
-        self.pause_button.grid(row=0, column=0, padx=(0, 5), pady=5, sticky="ew")
+        pause_frame.grid_columnconfigure(0, weight=1)
 
         self.speed_slider = ctk.CTkSlider(pause_frame, from_=100, to=5000, number_of_steps=49)
         self.speed_slider.set(1000)
-        self.speed_slider.grid(row=0, column=1, padx=(5, 0), pady=5, sticky="ew")
+        self.speed_slider.grid(row=0, column=0, padx=(5, 0), pady=5, sticky="ew")
 
         speed_label = ctk.CTkLabel(pause_frame, text="Speed")
-        speed_label.grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        speed_label.grid(row=0, column=1, padx=5, pady=5, sticky="w")
 
         info_frame = ctk.CTkFrame(self.debug_frame)
         info_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=5)
@@ -129,8 +126,7 @@ class EmulatorGUI:
         self.update_debug()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
-        self.run_button.configure(state="normal")
-        self.pause_button.configure(state="disabled")
+        self.run_button.configure(state="normal", text="Run")
 
     def show_error_dialog(self, title, message):
         messagebox.showerror(title, message)
@@ -160,8 +156,7 @@ class EmulatorGUI:
         self.update_debug()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
-        self.run_button.configure(state="normal")
-        self.pause_button.configure(state="disabled")
+        self.run_button.configure(state="normal", text="Run")
 
     def refresh_program_list(self):
         for row, inst_label, comment_label in self.program_rows:
@@ -230,8 +225,7 @@ class EmulatorGUI:
             self.root.after_cancel(self.after_id)
             self.after_id = None
         self.update_debug()
-        self.pause_button.configure(state="disabled")
-        self.run_button.configure(state="normal")
+        self.run_button.configure(state="normal", text="Run")
 
     def step_emulator(self):
         if not self.emulator.program:
@@ -244,13 +238,18 @@ class EmulatorGUI:
         self.emulator.step()
         self.update_debug()
 
+    def toggle_running(self):
+        if self.running:
+            self.pause_running()
+        else:
+            self.start_running()
+
     def start_running(self):
         if not self.emulator.program or self.running:
             return
 
         self.running = True
-        self.pause_button.configure(state="normal")
-        self.run_button.configure(state="disabled")
+        self.run_button.configure(text="Pause")
         self.schedule_step()
 
     def pause_running(self):
@@ -258,8 +257,7 @@ class EmulatorGUI:
             self.root.after_cancel(self.after_id)
             self.after_id = None
         self.running = False
-        self.run_button.configure(state="normal")
-        self.pause_button.configure(state="disabled")
+        self.run_button.configure(state="normal", text="Run")
 
     def schedule_step(self):
         if not self.running:
