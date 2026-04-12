@@ -16,10 +16,12 @@ keywords = ["ternary", "logic", "hardware", "simulation"]
 
 [dependency-groups]
 test = ["pytest", "pytest-cov", "flake8"]
+gui = ["customtkinter"]
 
 [project.scripts]
 assembler = "ternary.hardware.assembler:cli"
 emulator = "ternary.hardware.emulator:cli"
+emulator_gui = "ternary.hardware.emulator_gui:cli"
 simulator = "ternary.hardware.simulator:cli"
 translator = "ternary.hardware.translator:cli"
 

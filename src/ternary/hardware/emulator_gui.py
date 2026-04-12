@@ -1,5 +1,5 @@
-﻿import tkinter as tk
-from tkinter import filedialog, messagebox
+﻿#!/usr/bin/env python
+import tkinter as tk
 import sys
 
 import customtkinter as ctk
@@ -17,6 +17,18 @@ SPEED_MAX_HZ = 1_000_000
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 200
 SCREEN_SCALE = 2
+
+# Colour scheme: (light_mode, dark_mode) tuples
+COLOURS = {
+    "register_label_bg": "transparent",
+    "register_label_text": ("#333333", "#a0a0a0"),
+    "register_value_text": ("#e0e0e0", "#e0e0e0"),
+    "register_value_bg": ("#888888", "#404040"),
+    "instruction_text": ("#000000", "#e0e0e0"),
+    "instruction_highlight_bg": ("#0066cc", "#2f95ff"),
+    "instruction_highlight_text": ("white", "white"),
+    "comment_text": ("#666666", "#888888"),
+}
 
 
 def format_clock_speed(hz):
@@ -117,20 +129,20 @@ class EmulatorGUI:
 
         tray_items_frame = ctk.CTkFrame(self.system_tray_frame)
         tray_items_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=(5, 10))
-        tray_items_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+        tray_items_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1, uniform='all')
 
         def create_register_item(parent, label_text):
             item_frame = ctk.CTkFrame(parent, fg_color="transparent")
             item_frame.grid_columnconfigure(0, weight=0)
-            item_frame.grid_columnconfigure(1, weight=0)
+            item_frame.grid_columnconfigure(1, weight=1)
             
-            label = ctk.CTkLabel(item_frame, text=label_text, fg_color="#404040", text_color="#a0a0a0", 
+            label = ctk.CTkLabel(item_frame, text=label_text, fg_color=COLOURS["register_label_bg"], text_color=COLOURS["register_label_text"], 
                                 corner_radius=4, padx=6, pady=2, font=self.mono_font)
             label.grid(row=0, column=0, padx=(0, 4), sticky="w")
             
-            value = ctk.CTkLabel(item_frame, text="0", fg_color="transparent", text_color="white",
-                                anchor="w", font=self.mono_font)
-            value.grid(row=0, column=1, sticky="w")
+            value = ctk.CTkLabel(item_frame, text="0", fg_color=COLOURS["register_value_bg"], text_color=COLOURS["register_value_text"],
+                                corner_radius=4, padx=6, pady=2, anchor="w", font=self.mono_font)
+            value.grid(row=0, column=1, sticky="nesw")
             
             return item_frame, value
 
@@ -216,7 +228,7 @@ class EmulatorGUI:
             try:
                 speed_value = validate_speed(speed_var.get())
             except ValueError as exc:
-                messagebox.showerror("Invalid speed", str(exc), parent=dialog)
+                tk.messagebox.showerror("Invalid speed", str(exc), parent=dialog)
                 return
             self.speed_hz = speed_value
             self.speed_button.configure(text=self.get_speed_button_text())
@@ -243,10 +255,10 @@ class EmulatorGUI:
         ok_button.grid(row=0, column=1, padx=5, sticky="ew")
 
     def show_error_dialog(self, title, message):
-        messagebox.showerror(title, message)
+        tk.messagebox.showerror(title, message)
 
     def load_program(self):
-        path = filedialog.askopenfilename(
+        path = tk.filedialog.askopenfilename(
             title="Select Ternary Program",
             filetypes=[("Ternary text", ["*.t12", "*.txt"]),  ("Binary program", "*.bin"), ("All files", "*")],
         )
@@ -284,6 +296,7 @@ class EmulatorGUI:
                 text=f"{index:04d}: {instruction}",
                 anchor="w",
                 fg_color="transparent",
+                text_color=COLOURS["instruction_text"],
                 corner_radius=8,
                 font=self.mono_font,
             )
@@ -296,7 +309,7 @@ class EmulatorGUI:
                     self.program_frame,
                     text=comment_text,
                     anchor="w",
-                    text_color="#888888",
+                    text_color=COLOURS["comment_text"],
                     fg_color="transparent",
                     font=self.mono_font,
                 )
@@ -310,9 +323,9 @@ class EmulatorGUI:
         index = self.emulator.pc - MIN_ADDR
         for idx, (inst_label, _) in enumerate(self.program_rows):
             if idx == index:
-                inst_label.configure(fg_color="#2f95ff", text_color="white")
+                inst_label.configure(fg_color=COLOURS["instruction_highlight_bg"], text_color=COLOURS["instruction_highlight_text"])
             else:
-                inst_label.configure(fg_color="transparent", text_color="white")
+                inst_label.configure(fg_color="transparent", text_color=COLOURS["instruction_text"])
         
         # Scroll to keep active instruction centered
         if self.program_rows:
@@ -403,7 +416,7 @@ class EmulatorGUI:
         self.root.mainloop()
 
 
-if __name__ == "__main__":
+def cli():
     import argparse
     parser = argparse.ArgumentParser(description="Ternary Computer Emulator GUI")
     parser.add_argument("program", nargs="?", default=None, help="Path to the ternary program file to load")
@@ -411,3 +424,8 @@ if __name__ == "__main__":
 
     gui = EmulatorGUI(input_path=args.program)
     gui.run()
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    cli()
