@@ -13,6 +13,7 @@ import argparse
 import io
 import sys
 import time
+from collections.abc import Callable
 from traceback import print_exc
 
 from ternary import binary
@@ -76,6 +77,7 @@ class Emulator:
         self.speed = 1000  # 1 kHz
         self.cycle_time = 1.0 / self.speed
         self.rate_limit = False
+        self.memory_callback = None
 
     def load_binary(self, stream) -> None:
         """Load a program encoded in binary format."""
@@ -123,11 +125,16 @@ class Emulator:
         else:
             self.load_binary(stream)
 
+    def set_memory_callback(self, callback: Callable) -> None:
+        self.memory_callback = callback
+
     def get_ram(self, address: int) -> int:
         return self.ram.get(address, 0)
 
     def set_ram(self, address: int, value: int) -> None:
         self.ram[address] = value
+        if self.memory_callback:
+            self.memory_callback(address, value)
 
     def get_m(self) -> int:
         return self.get_ram(self.a)
@@ -204,7 +211,7 @@ class Emulator:
             if t == '-':
                 self.a = result
             elif t == '0':
-                self.ram[self.a] = result
+                self.set_ram(self.a, result)
             else:
                 self.d = result
         else:
@@ -246,8 +253,7 @@ def main(
 def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
-    parser.add_argument(
-            '-s', '--select', type=int, action='append')
+    parser.add_argument('-s', '--select', type=int, action='append')
 
     args = parser.parse_args()
     success = False

@@ -4,7 +4,7 @@ import sys
 
 import customtkinter as ctk
 from ternary.hardware.emulator import Emulator
-from ternary.hardware.util import int_to_trits, MIN_ADDR, input_stream
+from ternary.hardware.util import MIN_ADDR, int_to_trits, trits_to_colour, input_stream
 
 LOAD_BUTTON_LABEL = "📂 Load"
 RESET_BUTTON_LABEL = "↺ Reset"
@@ -17,6 +17,7 @@ SPEED_MAX_HZ = 1_000_000
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 200
 SCREEN_SCALE = 2
+SCREEN_MAX_ADDR = MIN_ADDR + (SCREEN_WIDTH * SCREEN_HEIGHT / 4)
 
 # Colour scheme: (light_mode, dark_mode) tuples
 COLOURS = {
@@ -42,7 +43,7 @@ def format_clock_speed(hz):
 
 
 class EmulatorGUI:
-    def __init__(self, input_path=None):
+    def __init__(self, input_path=None, breaks=None):
         ctk.set_appearance_mode("system")
         ctk.set_default_color_theme("blue")
 
@@ -51,7 +52,9 @@ class EmulatorGUI:
         self.root.geometry("1100x700")
 
         self.emulator = Emulator()
+        self.emulator.set_memory_callback(self.update_memory)
         self.program_rows = []
+        self.breaks = set(breaks) if breaks is not None else set()
         self.running = False
         self.after_id = None
         self.speed_hz = 1000
@@ -100,7 +103,7 @@ class EmulatorGUI:
                 y0 = y * SCREEN_SCALE
                 x1 = x0 + SCREEN_SCALE
                 y1 = y0 + SCREEN_SCALE
-                item = self.canvas.create_rectangle(x0, y0, x1, y1)
+                item = self.canvas.create_rectangle(x0, y0, x1, y1, outline='')
                 self.pixels.append(item)
 
         self.system_tray_frame = ctk.CTkFrame(main_frame, height=80)
@@ -354,6 +357,19 @@ class EmulatorGUI:
         self.label_pc.configure(text=f"{self.emulator.pc} ({pc_trits})")
         self.label_ticks.configure(text=f"{self.emulator.ticks}")
         self.highlight_current_instruction()
+        
+    def set_pixel(self, index: int, colour: str):
+        pixel = self.pixels[index]
+        self.canvas.itemconfig(pixel, fill=colour)
+
+    def update_memory(self, addr: int, value: int):
+        if addr < SCREEN_MAX_ADDR:
+            i = 4 * (addr - MIN_ADDR)
+            word = int_to_trits(value, 12)
+            self.set_pixel(i, '#' + trits_to_colour(word[:3]))
+            self.set_pixel(i + 1, '#' + trits_to_colour(word[3:6]))
+            self.set_pixel(i + 2, '#' + trits_to_colour(word[6:9]))
+            self.set_pixel(i + 3, '#' + trits_to_colour(word[9:]))
 
     def reset_emulator(self):
         self.emulator.reset()
@@ -401,7 +417,7 @@ class EmulatorGUI:
             return
 
         index = self.emulator.pc - MIN_ADDR
-        if not (0 <= index < len(self.emulator.program)):
+        if index in self.breaks or not (0 <= index < len(self.emulator.program)):
             self.pause_running()
             return
 
@@ -420,9 +436,10 @@ def cli():
     import argparse
     parser = argparse.ArgumentParser(description="Ternary Computer Emulator GUI")
     parser.add_argument("program", nargs="?", default=None, help="Path to the ternary program file to load")
+    parser.add_argument('-b', '--breakpoint', type=int, action='append')
     args = parser.parse_args()
 
-    gui = EmulatorGUI(input_path=args.program)
+    gui = EmulatorGUI(input_path=args.program, breaks=args.breakpoint)
     gui.run()
     sys.exit(0)
 
