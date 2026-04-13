@@ -16,10 +16,16 @@ import time
 from collections.abc import Callable
 from traceback import print_exc
 
+from PIL import Image, ImageDraw, ImagePalette
+
 from ternary import binary
 from ternary.hardware.util import (
-        int_to_trits, trits_to_int, input_stream, MIN_ADDR, MIN_INT,
-        INT_RANGE, Trit)
+        int_to_trits, trits_to_int, input_stream, output_stream,
+        MIN_ADDR, MIN_INT, INT_RANGE, COLOURS_3T, Trit)
+
+
+SCREEN_WIDTH = 320
+SCREEN_HEIGHT = 200
 
 
 def do_and(a: int, b: int) -> int:
@@ -77,6 +83,8 @@ class Emulator:
         self.speed = 1000  # 1 kHz
         self.cycle_time = 1.0 / self.speed
         self.rate_limit = False
+        self.palette = None
+        self.palette_map = {}
         self.memory_callback = None
 
     def load_binary(self, stream) -> None:
@@ -125,6 +133,24 @@ class Emulator:
         else:
             self.load_binary(stream)
 
+    def get_palette(self) -> ImagePalette.ImagePalette:
+        if self.palette is not None:
+            return self.palette
+        
+        self.palette_map = {}
+        seq = []
+        count = 0
+        for key, colour in COLOURS_3T.items():
+            r = int(colour[:2], 16)
+            g = int(colour[2:4], 16)
+            b = int(colour[4:], 16)
+            self.palette_map[key] = count
+            seq.extend((r, g, b))
+            count += 1
+
+        self.palette = ImagePalette.ImagePalette('RGB', seq)
+        return self.palette
+        
     def set_memory_callback(self, callback: Callable) -> None:
         self.memory_callback = callback
 
@@ -232,16 +258,48 @@ class Emulator:
 
     def get_ram_contents(self, index: int) -> int:
         return self.ram.get(index, 0)
+    
+    def render(self, scale: int = 1) -> Image:
+        width = SCREEN_WIDTH * scale
+        height = SCREEN_HEIGHT * scale
+        im = Image.new('P', (width, height))
+        im.putpalette(self.get_palette())
+        draw = ImageDraw.Draw(im)
+        addr = MIN_ADDR
+        for y in range(SCREEN_HEIGHT):
+            x = 0
+            while x < SCREEN_WIDTH:
+                value = int_to_trits(self.get_ram(addr), 12)[::-1]
+                for i in range(0, 12, 3):
+                    key = value[i:i+3]
+                    colour_index = self.palette_map[key]
+                    x0 = x * scale
+                    y0 = y * scale
+                    x1 = x0 + scale - 1
+                    y1 = y0 + scale - 1
+                    bounds = [(x0, y0), (x1, y1)]
+                    draw.rectangle(bounds, fill=colour_index, width=0)
+                    x += 1
+                addr += 1
+        return im
 
 
 def main(
         input_path: str = '-',
-        select: list[int] | None = None):
+        select: list[int] | None = None,
+        render_path: str = '',
+        screen_scale: int = 1):
     emu = Emulator()
     with input_stream(input_path) as stream:
         emu.load(stream)
 
     emu.execute()
+    
+    if render_path:
+        im = emu.render(screen_scale)
+        with output_stream(render_path, binary=True) as stream:
+            im.save(stream, format='PNG')
+
     if select:
         for index in select:
             value = emu.get_ram_contents(index)
@@ -254,6 +312,8 @@ def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
     parser.add_argument('-s', '--select', type=int, action='append')
+    parser.add_argument('-r', '--render-path', type=str)
+    parser.add_argument('-x', '--screen-scale', type=int, default=1)
 
     args = parser.parse_args()
     success = False

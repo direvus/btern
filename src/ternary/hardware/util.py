@@ -59,11 +59,12 @@ def input_stream(path):
 
 
 @contextmanager
-def output_stream(path):
+def output_stream(path, binary: bool = False):
     if path == '-':
-        yield sys.stdout
+        yield sys.stdout.buffer if binary else sys.stdout
     else:
-        fp = open(path, 'w')
+        mode = 'wb' if binary else 'w'
+        fp = open(path, mode)
         try:
             yield fp
         finally:
