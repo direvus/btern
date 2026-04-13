@@ -16,7 +16,7 @@ SPEED_MIN_HZ = 1
 SPEED_MAX_HZ = 1_000_000
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 200
-SCREEN_SCALE = 2
+SCREEN_SCALE = 4
 SCREEN_MAX_ADDR = MIN_ADDR + (SCREEN_WIDTH * SCREEN_HEIGHT / 4)
 
 # Colour scheme: (light_mode, dark_mode) tuples
@@ -49,7 +49,7 @@ class EmulatorGUI:
 
         self.root = ctk.CTk()
         self.root.title("Ternary Computer Emulator")
-        self.root.geometry("1100x700")
+        self.root.geometry("1650x950")
 
         self.emulator = Emulator()
         self.emulator.set_memory_callback(self.update_memory)
