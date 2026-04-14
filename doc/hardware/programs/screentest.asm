@@ -1,8 +1,12 @@
 # Test the computer's graphics, by drawing a colour palette.
-# Each colour in the palette will occupy a 4x4 pixel square, and the 27 colours will be displayed in 3 rows and 9 columns of squares, starting in the upper left corner of the screen.
+#
+# Each colour in the palette will occupy a 4x4 pixel square, and the 27 colours
+# will be displayed in 3 rows and 9 columns of squares, starting in the upper
+# left corner of the screen.
 
 MOV ----------- A
 
+# RGB = ---
 MOV ----------- D
 SHL D D
 DEC D D
@@ -28,56 +32,7 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV 0--0--0--0- D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 0--0--0--0- D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 0--0--0--0- D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 0--0--0--0- D
-SHL D D
-DEC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
-MOV +--+--+--+- D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +--+--+--+- D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +--+--+--+- D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +--+--+--+- D
-SHL D D
-DEC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
+# RGB = -0-
 MOV -0--0--0--0 D
 SHL D D
 DEC D D
@@ -103,56 +58,7 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV 00-00-00-00 D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 00-00-00-00 D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 00-00-00-00 D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 00-00-00-00 D
-SHL D D
-DEC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
-MOV +0-+0-+0-+0 D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +0-+0-+0-+0 D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +0-+0-+0-+0 D
-SHL D D
-DEC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +0-+0-+0-+0 D
-SHL D D
-DEC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
+# RGB = -+-
 MOV -+--+--+--+ D
 SHL D D
 DEC D D
@@ -178,77 +84,229 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV 0+-0+-0+-0+ D
+# RGB = --0
+MOV --0--0--0-- D
 SHL D D
-DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV 0+-0+-0+-0+ D
+MOV --0--0--0-- D
 SHL D D
-DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV 0+-0+-0+-0+ D
+MOV --0--0--0-- D
 SHL D D
-DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV 0+-0+-0+-0+ D
+MOV --0--0--0-- D
 SHL D D
-DEC D D
 CPY D M
 MOV -239 D
 ADD D A A
 
-MOV ++-++-++-++ D
+# RGB = -00
+MOV -00-00-00-0 D
 SHL D D
-DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV ++-++-++-++ D
+MOV -00-00-00-0 D
 SHL D D
-DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV ++-++-++-++ D
+MOV -00-00-00-0 D
 SHL D D
-DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV ++-++-++-++ D
+MOV -00-00-00-0 D
 SHL D D
-DEC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = -+0
+MOV -+0-+0-+0-+ D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -+0-+0-+0-+ D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -+0-+0-+0-+ D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -+0-+0-+0-+ D
+SHL D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = --+
+MOV --+--+--+-- D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV --+--+--+-- D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV --+--+--+-- D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV --+--+--+-- D
+SHL D D
+INC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = -0+
+MOV -0+-0+-0+-0 D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -0+-0+-0+-0 D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -0+-0+-0+-0 D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -0+-0+-0+-0 D
+SHL D D
+INC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = -++
+MOV -++-++-++-+ D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -++-++-++-+ D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -++-++-++-+ D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV -++-++-++-+ D
+SHL D D
+INC D D
 CPY D M
 MOV 72 D
 ADD D A A
 
-MOV --0--0--0-- D
+# RGB = 0--
+MOV 0--0--0--0- D
 SHL D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV --0--0--0-- D
+MOV 0--0--0--0- D
 SHL D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV --0--0--0-- D
+MOV 0--0--0--0- D
 SHL D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV --0--0--0-- D
+MOV 0--0--0--0- D
 SHL D D
+DEC D D
 CPY D M
 MOV -239 D
 ADD D A A
 
+# RGB = 00-
+MOV 00-00-00-00 D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 00-00-00-00 D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 00-00-00-00 D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 00-00-00-00 D
+SHL D D
+DEC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = 0+-
+MOV 0+-0+-0+-0+ D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 0+-0+-0+-0+ D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 0+-0+-0+-0+ D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 0+-0+-0+-0+ D
+SHL D D
+DEC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = 0-0
 MOV 0-00-00-00- D
 SHL D D
 CPY D M
@@ -270,48 +328,7 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV +-0+-0+-0+- D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +-0+-0+-0+- D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +-0+-0+-0+- D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +-0+-0+-0+- D
-SHL D D
-CPY D M
-MOV -239 D
-ADD D A A
-
-MOV -00-00-00-0 D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -00-00-00-0 D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -00-00-00-0 D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -00-00-00-0 D
-SHL D D
-CPY D M
-MOV -239 D
-ADD D A A
-
+# RGB = 000
 MOV 00000000000 D
 SHL D D
 CPY D M
@@ -333,48 +350,7 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV +00+00+00+0 D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +00+00+00+0 D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +00+00+00+0 D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV +00+00+00+0 D
-SHL D D
-CPY D M
-MOV -239 D
-ADD D A A
-
-MOV -+0-+0-+0-+ D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -+0-+0-+0-+ D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -+0-+0-+0-+ D
-SHL D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -+0-+0-+0-+ D
-SHL D D
-CPY D M
-MOV -239 D
-ADD D A A
-
+# RGB = 0+0
 MOV 0+00+00+00+ D
 SHL D D
 CPY D M
@@ -396,77 +372,229 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV ++0++0++0++ D
+# RGB = 0-+
+MOV 0-+0-+0-+0- D
 SHL D D
+INC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV ++0++0++0++ D
+MOV 0-+0-+0-+0- D
 SHL D D
+INC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV ++0++0++0++ D
+MOV 0-+0-+0-+0- D
 SHL D D
+INC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV ++0++0++0++ D
+MOV 0-+0-+0-+0- D
 SHL D D
+INC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = 00+
+MOV 00+00+00+00 D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 00+00+00+00 D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 00+00+00+00 D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 00+00+00+00 D
+SHL D D
+INC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = 0++
+MOV 0++0++0++0+ D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 0++0++0++0+ D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 0++0++0++0+ D
+SHL D D
+INC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV 0++0++0++0+ D
+SHL D D
+INC D D
 CPY D M
 MOV 72 D
 ADD D A A
 
-MOV --+--+--+-- D
+# RGB = +--
+MOV +--+--+--+- D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV --+--+--+-- D
+MOV +--+--+--+- D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV --+--+--+-- D
+MOV +--+--+--+- D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV --+--+--+-- D
+MOV +--+--+--+- D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV -239 D
 ADD D A A
 
-MOV 0-+0-+0-+0- D
+# RGB = +0-
+MOV +0-+0-+0-+0 D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV 0-+0-+0-+0- D
+MOV +0-+0-+0-+0 D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV 0-+0-+0-+0- D
+MOV +0-+0-+0-+0 D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV 80 D
 ADD D A A
-MOV 0-+0-+0-+0- D
+MOV +0-+0-+0-+0 D
 SHL D D
-INC D D
+DEC D D
 CPY D M
 MOV -239 D
 ADD D A A
 
+# RGB = ++-
+MOV ++-++-++-++ D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV ++-++-++-++ D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV ++-++-++-++ D
+SHL D D
+DEC D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV ++-++-++-++ D
+SHL D D
+DEC D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = +-0
+MOV +-0+-0+-0+- D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV +-0+-0+-0+- D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV +-0+-0+-0+- D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV +-0+-0+-0+- D
+SHL D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = +00
+MOV +00+00+00+0 D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV +00+00+00+0 D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV +00+00+00+0 D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV +00+00+00+0 D
+SHL D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = ++0
+MOV ++0++0++0++ D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV ++0++0++0++ D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV ++0++0++0++ D
+SHL D D
+CPY D M
+MOV 80 D
+ADD D A A
+MOV ++0++0++0++ D
+SHL D D
+CPY D M
+MOV -239 D
+ADD D A A
+
+# RGB = +-+
 MOV +-++-++-++- D
 SHL D D
 INC D D
@@ -492,56 +620,7 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV -0+-0+-0+-0 D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -0+-0+-0+-0 D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -0+-0+-0+-0 D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -0+-0+-0+-0 D
-SHL D D
-INC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
-MOV 00+00+00+00 D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 00+00+00+00 D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 00+00+00+00 D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 00+00+00+00 D
-SHL D D
-INC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
+# RGB = +0+
 MOV +0++0++0++0 D
 SHL D D
 INC D D
@@ -567,56 +646,7 @@ CPY D M
 MOV -239 D
 ADD D A A
 
-MOV -++-++-++-+ D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -++-++-++-+ D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -++-++-++-+ D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV -++-++-++-+ D
-SHL D D
-INC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
-MOV 0++0++0++0+ D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 0++0++0++0+ D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 0++0++0++0+ D
-SHL D D
-INC D D
-CPY D M
-MOV 80 D
-ADD D A A
-MOV 0++0++0++0+ D
-SHL D D
-INC D D
-CPY D M
-MOV -239 D
-ADD D A A
-
+# RGB = +++
 MOV +++++++++++ D
 SHL D D
 INC D D

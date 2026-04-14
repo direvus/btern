@@ -272,7 +272,7 @@ class Emulator:
         for y in range(SCREEN_HEIGHT):
             x = 0
             while x < SCREEN_WIDTH:
-                value = int_to_trits(self.get_ram(addr), 12)[::-1]
+                value = int_to_trits(self.get_ram(addr), 12)
                 for i in range(0, 12, 3):
                     key = value[i:i+3]
                     colour_index = self.palette_map[key]
