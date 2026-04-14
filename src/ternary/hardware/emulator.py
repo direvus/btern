@@ -136,7 +136,7 @@ class Emulator:
     def get_palette(self) -> ImagePalette.ImagePalette:
         if self.palette is not None:
             return self.palette
-        
+
         self.palette_map = {}
         seq = []
         count = 0
@@ -150,7 +150,7 @@ class Emulator:
 
         self.palette = ImagePalette.ImagePalette('RGB', seq)
         return self.palette
-        
+
     def set_memory_callback(self, callback: Callable) -> None:
         self.memory_callback = callback
 
@@ -164,7 +164,7 @@ class Emulator:
 
     def get_m(self) -> int:
         return self.get_ram(self.a)
-    
+
     def set_speed(self, speed: int) -> None:
         self.speed = int(speed)
         self.cycle_time = 1.0 / self.speed
@@ -198,51 +198,54 @@ class Emulator:
         m = self.ram.get(self.a, 0)
 
         instruction = self.program[index]
-        mode = instruction[11]
+        mode = instruction[0]
 
         if mode == '0':
-            jump = instruction[:2]
-            shift, f, px, py, sx, sy, t = instruction[4:11]
+            jump = instruction[10:]
+            tgt, sy, sx, py, px, f, shift = instruction[1:8]
 
             x = self.a if sx == '-' else (m if sx == '0' else self.d)
             y = self.a if sy == '-' else (m if sy == '0' else self.d)
             result = compute(x, y, px, py, f)
+
             if shift == '-':
-                trits = int_to_trits(result, 12)[1:] + '0'
+                # Shift right
+                trits = '0' + int_to_trits(result, 12)[:11]
                 result = trits_to_int(trits)
             elif shift == '+':
-                trits = '0' + int_to_trits(result, 12)[:11]
+                # Shift left
+                trits = int_to_trits(result, 12)[1:] + '0'
                 result = trits_to_int(trits)
 
             nxt = add(self.pc, 1)
             if jump == '--':
                 nxt = self.a if result < 0 else nxt
-            elif jump == '-0':
-                nxt = self.a if result == 0 else nxt
-            elif jump == '-+':
-                nxt = self.a if result > 0 else nxt
             elif jump == '0-':
-                nxt = MIN_ADDR
-            elif jump == '0+':
-                nxt = self.a
+                nxt = self.a if result == 0 else nxt
             elif jump == '+-':
-                nxt = self.a if result <= 0 else nxt
+                nxt = self.a if result > 0 else nxt
+            elif jump == '-0':
+                nxt = MIN_ADDR
             elif jump == '+0':
+                nxt = self.a
+            elif jump == '-+':
+                nxt = self.a if result <= 0 else nxt
+            elif jump == '0+':
                 nxt = self.a if result != 0 else nxt
             elif jump == '++':
                 nxt = self.a if result >= 0 else nxt
 
             self.pc = nxt
 
-            if t == '-':
+            if tgt == '-':
                 self.a = result
-            elif t == '0':
+            elif tgt == '0':
                 self.set_ram(self.a, result)
             else:
                 self.d = result
         else:
             # MOV
-            value = trits_to_int(instruction[:11])
+            value = trits_to_int(instruction[1:])
             if mode == '-':
                 self.a = value
             else:
@@ -258,7 +261,7 @@ class Emulator:
 
     def get_ram_contents(self, index: int) -> int:
         return self.ram.get(index, 0)
-    
+
     def render(self, scale: int = 1) -> Image:
         width = SCREEN_WIDTH * scale
         height = SCREEN_HEIGHT * scale
