@@ -68,10 +68,13 @@ class Computer(Component):
         self.components['ROM'].load(data)
 
     def set_ram_contents(self, address: Trits, value: Trits) -> None:
-        return self.components['RAM'].set_contents(address, value[::-1])
+        addr = address[::-1]
+        value = value[::-1]
+        return self.components['RAM'].set_contents(addr, value)
 
     def get_ram_contents(self, address: Trits) -> Trits:
-        return self.components['RAM'].get_contents(address[::-1])
+        addr = address[::-1]
+        return self.components['RAM'].get_contents(addr)[::-1]
 
     def get_a(self) -> Trits:
         return self.components['CPU'].get_a()[::-1]

@@ -756,7 +756,7 @@ class ROM177KMock(Component):
         self.default_value = tuple(ZERO * 12)
 
     def get_index(self) -> int:
-        addr = tuple(self.get_value(f'addr[{i}]') for i in range(11))
+        addr = tuple(self.get_value(f'addr[{i}]') for i in range(10, -1, -1))
         return trits_to_int(addr) - self.min_address
 
     def get_outputs(self, inputs: Trits | None = None) -> Trits:
