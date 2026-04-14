@@ -123,7 +123,8 @@ register.
 It requires exactly two arguments. The first is the literal value, which can be
 one of:
 
-- A sequence of 11 trits, using the symbols `-`, `0` and `+`.
+- A sequence of 11 trits, using the symbols `-`, `0` and `+`, written from most
+  significant to least significant.
 - A signed decimal integer, consisting of an optional sign specifier (`-` or
   `+`), followed by a sequence of digits.
 - The name of a label defined in the same program.
@@ -134,7 +135,7 @@ The second argument is the destination, which must be either `A` or `D`.
 For example:
 
 ```
-MOV -0+-------- A
+MOV 000000000+- A
 MOV 10 D
 MOV LOOP1 A
 MOV pointer A
@@ -345,19 +346,19 @@ CHK D JGT
 This assembly code maps to the machine code program:
 
 ```
-0+000000000-  # 1. MOV 3 A
-00000-++++00  # 2. CLR M
-+0000000000-  # 3. MOV 1 A
-00000++0+0+0  # 4. CPY M D
--+000000000-  # 5. MOV 2 A
-00000++0++00  # 6. CPY D M
-00000000000-  # 7. LOOP: MOV 0 A
-00000++0+0+0  # 8. CPY M D
-0+000000000-  # 9. MOV 3 A
-00000+00+000  # 10. ADD D M M
--+000000000-  # 11. MOV 2 A
-0000000-00+0  # 12. DEC M D
-00000++0++00  # 13. CPY D M
--+----------  # 14. MOV LOOP A
--+000++0+++0  # 15. CHK D JGT
+-000000000+0  # 01. MOV 3 A
+00++++-00000  # 02. CLR M
+-0000000000+  # 03. MOV 1 A
+0+0+0++00000  # 04. CPY M D
+-000000000+-  # 05. MOV 2 A
+00++0++00000  # 06. CPY D M
+-00000000000  # 07. LOOP: MOV 0 A
+0+0+0++00000  # 08. CPY M D
+-000000000+0  # 09. MOV 3 A
+000+00+00000  # 10. ADD D M M
+-000000000+-  # 11. MOV 2 A
+0+00-0000000  # 12. DEC M D
+00++0++00000  # 13. CPY D M
+----------+-  # 14. MOV LOOP A
+0+++0++000+-  # 15. CHK D JGT
 ```
