@@ -3,8 +3,9 @@ import tkinter as tk
 import sys
 
 import customtkinter as ctk
+from PIL import Image, ImageTk
 from ternary.hardware.emulator import Emulator
-from ternary.hardware.util import MIN_ADDR, int_to_trits, trits_to_colour, input_stream
+from ternary.hardware.util import MIN_ADDR, int_to_trits, input_stream
 
 LOAD_BUTTON_LABEL = "📂 Load"
 RESET_BUTTON_LABEL = "↺ Reset"
@@ -96,15 +97,10 @@ class EmulatorGUI:
         )
         self.canvas.grid(row=0, column=0, sticky="", padx=10, pady=10)
 
-        self.pixels = []
-        for y in range(SCREEN_HEIGHT):
-            for x in range(SCREEN_WIDTH):
-                x0 = x * SCREEN_SCALE
-                y0 = y * SCREEN_SCALE
-                x1 = x0 + SCREEN_SCALE
-                y1 = y0 + SCREEN_SCALE
-                item = self.canvas.create_rectangle(x0, y0, x1, y1, outline='')
-                self.pixels.append(item)
+        # Create initial blank image
+        self.screen_image = Image.new('RGB', (SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE), (0, 0, 0))
+        self.photo_image = ImageTk.PhotoImage(self.screen_image)
+        self.canvas_image = self.canvas.create_image(0, 0, anchor='nw', image=self.photo_image)
 
         self.system_tray_frame = ctk.CTkFrame(main_frame, height=80)
         self.system_tray_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
@@ -138,15 +134,15 @@ class EmulatorGUI:
             item_frame = ctk.CTkFrame(parent, fg_color="transparent")
             item_frame.grid_columnconfigure(0, weight=0)
             item_frame.grid_columnconfigure(1, weight=1)
-            
+
             label = ctk.CTkLabel(item_frame, text=label_text, fg_color=COLOURS["register_label_bg"], text_color=COLOURS["register_label_text"], 
                                 corner_radius=4, padx=6, pady=2, font=self.mono_font)
             label.grid(row=0, column=0, padx=(0, 4), sticky="w")
-            
+
             value = ctk.CTkLabel(item_frame, text="0", fg_color=COLOURS["register_value_bg"], text_color=COLOURS["register_value_text"],
                                 corner_radius=4, padx=6, pady=2, anchor="w", font=self.mono_font)
             value.grid(row=0, column=1, sticky="nesw")
-            
+
             return item_frame, value
 
         self.item_a, self.label_a = create_register_item(tray_items_frame, "A")
@@ -180,6 +176,7 @@ class EmulatorGUI:
 
         self.refresh_program_list()
         self.update_tray()
+        self.update_canvas_image()
         self.reset_button.configure(state="normal")
         self.step_button.configure(state="normal")
         self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
@@ -358,18 +355,15 @@ class EmulatorGUI:
         self.label_ticks.configure(text=f"{self.emulator.ticks}")
         self.highlight_current_instruction()
         
-    def set_pixel(self, index: int, colour: str):
-        pixel = self.pixels[index]
-        self.canvas.itemconfig(pixel, fill=colour)
-
+    def update_canvas_image(self):
+        """Update the canvas with the current screen image from the emulator."""
+        pil_image = self.emulator.render(SCREEN_SCALE)
+        self.photo_image = ImageTk.PhotoImage(pil_image)
+        self.canvas.itemconfig(self.canvas_image, image=self.photo_image)
+        
     def update_memory(self, addr: int, value: int):
         if addr < SCREEN_MAX_ADDR:
-            i = 4 * (addr - MIN_ADDR)
-            word = int_to_trits(value, 12)
-            self.set_pixel(i, '#' + trits_to_colour(word[:3]))
-            self.set_pixel(i + 1, '#' + trits_to_colour(word[3:6]))
-            self.set_pixel(i + 2, '#' + trits_to_colour(word[6:9]))
-            self.set_pixel(i + 3, '#' + trits_to_colour(word[9:]))
+            self.update_canvas_image()
 
     def reset_emulator(self):
         self.emulator.reset()
@@ -378,6 +372,7 @@ class EmulatorGUI:
             self.root.after_cancel(self.after_id)
             self.after_id = None
         self.update_tray()
+        self.update_canvas_image()
         self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
 
     def step_emulator(self):
