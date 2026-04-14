@@ -28,6 +28,11 @@ class Computer(Component):
     then set the 'reset' signal, tick the clock, and then leave the reset
     signal at zero and continue to tick the clock while the computer runs the
     program.
+
+    The Computer expects to receive trit sequences in arithmetic order (most
+    significant to least) and outputs trit sequences in arithmetic order, but
+    internally within the hardware simulation, the order is reversed so that
+    the least significant trit has index zero.
     """
     def __init__(self):
         super().__init__(
@@ -63,16 +68,16 @@ class Computer(Component):
         self.components['ROM'].load(data)
 
     def set_ram_contents(self, address: Trits, value: Trits) -> None:
-        return self.components['RAM'].set_contents(address, value)
+        return self.components['RAM'].set_contents(address, value[::-1])
 
     def get_ram_contents(self, address: Trits) -> Trits:
-        return self.components['RAM'].get_contents(address)
+        return self.components['RAM'].get_contents(address[::-1])
 
     def get_a(self) -> Trits:
-        return self.components['CPU'].get_a()
+        return self.components['CPU'].get_a()[::-1]
 
     def get_d(self) -> Trits:
-        return self.components['CPU'].get_d()
+        return self.components['CPU'].get_d()[::-1]
 
     def get_program_address(self) -> Trits:
-        return self.components['CPU'].get_pc()
+        return self.components['CPU'].get_pc()[::-1]

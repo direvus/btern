@@ -11,20 +11,20 @@ from tests.util import seq_matches
         list(zip(
             (
                 '',
-                'MOV -84383 A',
+                'MOV 54257 A',
                 'MOV +0-+-++0--- A',
                 'MOV 0 D',
-                'MOV 88073 D',
+                'MOV -56255 D',
                 'MOV -00++-+++++ D',
                 'LABEL:\nMOV LABEL A',
                 ),
             (
                 '',
-                '+0-+-++0----',
-                '+0-+-++0----',
-                '00000000000+',
-                '-00++-++++++',
-                '-00++-++++++',
+                '-+0-+-++0---',
+                '-+0-+-++0---',
+                '+00000000000',
+                '+-00++-+++++',
+                '+-00++-+++++',
                 '------------',
                 ))))
 def test_hardware_assembler_mov(inputs, expected):
@@ -52,9 +52,9 @@ def test_hardware_assembler_mov(inputs, expected):
                 'ADD D -M M',
                 ),
             (
-                '00000+000++0',
-                '00000++++++0',
-                '00000+0-+000',
+                '0++000+00000',
+                '0++++++00000',
+                '000+-0+00000',
                 ))))
 def test_hardware_assembler_add(inputs, expected):
     ass = Assembler()
@@ -81,9 +81,9 @@ def test_hardware_assembler_add(inputs, expected):
                 'SUB D -M M',
                 ),
             (
-                '00000+0-0++0',
-                '00000++++++0',
-                '00000+00+000',
+                '0++0-0+00000',
+                '0++++++00000',
+                '000+00+00000',
                 ))))
 def test_hardware_assembler_sub(inputs, expected):
     ass = Assembler()
@@ -110,9 +110,9 @@ def test_hardware_assembler_sub(inputs, expected):
                 'CHK M',
                 ),
             (
-                '00000++0+--0',
-                '00000++0+++0',
-                '00000++0+000',
+                '0--+0++00000',
+                '0+++0++00000',
+                '000+0++00000',
                 ))))
 def test_hardware_assembler_chk(inputs, expected):
     ass = Assembler()
@@ -139,9 +139,9 @@ def test_hardware_assembler_chk(inputs, expected):
                 'CLR M',
                 ),
             (
-                '00000-++++-0',
-                '00000-+++++0',
-                '00000-++++00',
+                '0-++++-00000',
+                '0+++++-00000',
+                '00++++-00000',
                 ))))
 def test_hardware_assembler_clr(inputs, expected):
     ass = Assembler()
@@ -169,10 +169,10 @@ def test_hardware_assembler_clr(inputs, expected):
                 'CPY -D M',
                 ),
             (
-                '00000++0+0+0',
-                '00000++0+0-0',
-                '00000++0++00',
-                '00000++-++00',
+                '0+0+0++00000',
+                '0-0+0++00000',
+                '00++0++00000',
+                '00++-++00000',
                 ))))
 def test_hardware_assembler_cpy(inputs, expected):
     ass = Assembler()
@@ -199,9 +199,9 @@ def test_hardware_assembler_cpy(inputs, expected):
                 'AND -D A A',
                 ),
             (
-                '00000-00+0+0',
-                '00000-00-000',
-                '00000--0+--0',
+                '0+0+00-00000',
+                '000-00-00000',
+                '0--+0--00000',
                 ))))
 def test_hardware_assembler_and(inputs, expected):
     ass = Assembler()
@@ -228,9 +228,9 @@ def test_hardware_assembler_and(inputs, expected):
                 'INC 0 D',
                 ),
             (
-                '0000000++0+0',
-                '0000000+-000',
-                '000000+++0+0',
+                '0+0++0000000',
+                '000-+0000000',
+                '0+0+++000000',
                 ))))
 def test_hardware_assembler_inc(inputs, expected):
     ass = Assembler()
@@ -257,9 +257,9 @@ def test_hardware_assembler_inc(inputs, expected):
                 'DEC 0 D',
                 ),
             (
-                '0000000-+0+0',
-                '0000000--000',
-                '000000+-+0+0',
+                '0+0+-0000000',
+                '000--0000000',
+                '0+0+-+000000',
                 ))))
 def test_hardware_assembler_dec(inputs, expected):
     ass = Assembler()
@@ -286,9 +286,9 @@ def test_hardware_assembler_dec(inputs, expected):
                 'ISZ -M D',
                 ),
             (
-                '00000000+0+0',
-                '00000000-000',
-                '000000-000+0',
+                '0+0+00000000',
+                '000-00000000',
+                '0+000-000000',
                 ))))
 def test_hardware_assembler_isz(inputs, expected):
     ass = Assembler()
@@ -315,9 +315,9 @@ def test_hardware_assembler_isz(inputs, expected):
                 'SHL M A',
                 ),
             (
-                '0000+++0+++0',
-                '0000+++0+-00',
-                '0000+++0+0-0',
+                '0+++0+++0000',
+                '00-+0+++0000',
+                '0-0+0+++0000',
                 ))))
 def test_hardware_assembler_shl(inputs, expected):
     ass = Assembler()
@@ -344,9 +344,9 @@ def test_hardware_assembler_shl(inputs, expected):
                 'SHR M A',
                 ),
             (
-                '0000-++0+++0',
-                '0000-++0+-00',
-                '0000-++0+0-0',
+                '0+++0++-0000',
+                '00-+0++-0000',
+                '0-0+0++-0000',
                 ))))
 def test_hardware_assembler_shr(inputs, expected):
     ass = Assembler()
@@ -377,7 +377,7 @@ def test_hardware_assembler_nop():
     machine.seek(0)
     out = machine.read()
 
-    assert seq_matches(out[:12], '00000++0+++0')
+    assert seq_matches(out[:12], '0+++0++00000')
 
 
 @pytest.mark.parametrize(
@@ -389,9 +389,9 @@ def test_hardware_assembler_nop():
                 'CHK M JGT',
                 ),
             (
-                '0-000++0+++0',
-                '0+000++0+++0',
-                '-+000++0+000',
+                '0+++0++000-0',
+                '0+++0++000+0',
+                '000+0++000+-',
                 ))))
 def test_hardware_assembler_jump(inputs, expected):
     ass = Assembler()

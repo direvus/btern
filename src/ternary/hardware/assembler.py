@@ -30,13 +30,13 @@ INPUT_MAP = {
         }
 JUMP_MAP = {
         'JLT': '--',
-        'JEZ': '-0',
-        'JGT': '-+',
-        'RST': '0-',
+        'JEZ': '0-',
+        'JGT': '+-',
+        'RST': '-0',
         'NOJ': '00',
-        'JMP': '0+',
-        'JLE': '+-',
-        'JNZ': '+0',
+        'JMP': '+0',
+        'JLE': '-+',
+        'JNZ': '0+',
         'JGE': '++',
         }
 SHIFT_MAP = {
@@ -204,7 +204,7 @@ class Assembler:
         dest = parse_dest(args[2])
         jump, shift = parse_optional(args[3:])
 
-        inst = ''.join((jump, '00', shift, '+', px, py, x, y, dest, '0'))
+        inst = ''.join(('0', dest, y, x, py, px, '+', shift, '00', jump))
         self.instructions.append(inst)
         self.sources.append(source)
 
@@ -217,7 +217,7 @@ class Assembler:
         dest = parse_dest(args[2])
         jump, shift = parse_optional(args[3:])
 
-        inst = ''.join((jump, '00', shift, '-', px, py, x, y, dest, '0'))
+        inst = ''.join(('0', dest, y, x, py, px, '-', shift, '00', jump))
         self.instructions.append(inst)
         self.sources.append(source)
 
@@ -230,7 +230,7 @@ class Assembler:
         dest = parse_dest(args[1])
         jump, shift = parse_optional(args[2:])
 
-        inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
+        inst = ''.join(('0', dest, y, x, py, px, '0', shift, '00', jump))
         self.instructions.append(inst)
         self.sources.append(source)
 
@@ -243,7 +243,7 @@ class Assembler:
         dest = parse_dest(args[1])
         jump, shift = parse_optional(args[2:])
 
-        inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
+        inst = ''.join(('0', dest, y, x, py, px, '0', shift, '00', jump))
         self.instructions.append(inst)
         self.sources.append(source)
 
@@ -256,7 +256,7 @@ class Assembler:
         dest = parse_dest(args[1])
         jump, shift = parse_optional(args[2:])
 
-        inst = ''.join((jump, '00', shift, '0', px, py, x, y, dest, '0'))
+        inst = ''.join(('0', dest, y, x, py, px, '0', shift, '00', jump))
         self.instructions.append(inst)
         self.sources.append(source)
 
@@ -296,7 +296,7 @@ class Assembler:
                     f"invalid MOV value '{args[0]}', expected a symbol "
                     "name, decimal integer, or 11-trit sequence")
 
-        self.instructions.append(value + dest)
+        self.instructions.append(dest + value)
         self.sources.append(source)
 
     def write(self, stream):

@@ -785,6 +785,10 @@ class ROM177KMock(Component):
         (-----------), the values will be written sequentially into the ROM.
 
         The `values` argument must be an integer multiple of 12 in length.
+
+        Each 12-trit word is assumed to be in arithmetic trit order (from most
+        to least significant), and will be reversed when loading into a
+        register, so that index 0 refers to the least significant trit.
         """
         self.registers = []
         length = len(values)
@@ -794,7 +798,8 @@ class ROM177KMock(Component):
                     f"of 12, but got {length}")
 
         for i in range(0, length, 12):
-            self.registers.append(values[i:i+12])
+            word = values[i:i+12]
+            self.registers.append(word[::-1])
 
 
 class ProgramCounter11(Component):

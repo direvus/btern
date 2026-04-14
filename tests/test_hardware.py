@@ -14,17 +14,19 @@ from ternary.hardware import util
                 '-0',
                 '-+',
                 '-++',
-                '---+',
+                '++-',
+                '+-0-',
                 ),
             (
                 -1,
                 0,
                 1,
                 -4,
-                -1,
-                2,
+                -3,
+                -2,
+                -5,
                 11,
-                14,
+                17,
                 ))))
 def test_hardware_trits_to_int(inputs, expected):
     out = util.trits_to_int(inputs)
@@ -39,7 +41,7 @@ def test_hardware_trits_to_int(inputs, expected):
                 (0, 1),
                 (1, 1),
                 (-4, 2),
-                (-1, 2),
+                (-3, 2),
                 (2, 2),
                 (11, 3),
                 (14, 4),
@@ -50,9 +52,9 @@ def test_hardware_trits_to_int(inputs, expected):
                 '+',
                 '--',
                 '-0',
-                '-+',
-                '-++',
-                '---+',
+                '+-',
+                '++-',
+                '+---',
                 ))))
 def test_hardware_int_to_trits(inputs, expected):
     out = util.int_to_trits(*inputs)

@@ -46,6 +46,7 @@ COLOURS_3T = {
     '+++': 'FFFFFF',
 }
 
+
 @contextmanager
 def input_stream(path):
     if path == '-':
@@ -74,12 +75,12 @@ def output_stream(path, binary: bool = False):
 def trits_to_int(trits: Trits) -> int:
     """Convert a sequence of trits into a Python integer.
 
-    The trits are interpreted from least signficant at index 0, to most
-    significant at the end of the sequence.
+    The trits are interpreted in arithmetic order, from most signficant to
+    least significant.
     """
     result = 0
     scale = 1
-    for t in trits:
+    for t in reversed(trits):
         if t != ZERO:
             value = 1 if t == POS else -1
             result += value * scale
@@ -90,11 +91,11 @@ def trits_to_int(trits: Trits) -> int:
 def int_to_trits(n: int, size: int) -> Trits:
     """Convert a Python decimal integer into a fixed-length sequence of trits.
 
-    The trits are organised from least significant at index 0, to most
-    significant at the end of the sequence.
+    The trits are organised in arithmetic order, from most to least
+    significant.
 
-    Raises an error if the given integer cannot be represented in the given
-    number of trits.
+    Raises an error if the given `n` cannot be represented in `size` number of
+    trits.
     """
     if size <= 0:
         raise ValueError(f"Invalid trit size {size}")
@@ -109,7 +110,7 @@ def int_to_trits(n: int, size: int) -> Trits:
     for _ in range(size):
         x, rem = divmod(x, 3)
         result.append(trit_map[rem])
-    return ''.join(result)
+    return ''.join(reversed(result))
 
 
 def trits_to_colour(t: Trits) -> str:
