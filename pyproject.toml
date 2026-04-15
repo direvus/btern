@@ -13,6 +13,9 @@ readme = "README.md"
 license = "BSD-2-Clause"
 description = "Exploration of balanced ternary logic systems, including a hardware simulation of a ternary computer"
 keywords = ["ternary", "logic", "hardware", "simulation"]
+dependencies = [
+  "pillow",
+]
 
 [dependency-groups]
 test = ["pytest", "pytest-cov", "flake8"]
