@@ -4,7 +4,7 @@ import sys
 
 import customtkinter as ctk
 from PIL import Image, ImageTk
-from ternary.hardware.emulator import Emulator
+from ternary.hardware.emulator import Emulator, SCREEN_END_ADDR
 from ternary.hardware.util import MIN_ADDR, int_to_trits, input_stream
 
 LOAD_BUTTON_LABEL = "📂 Load"
@@ -18,7 +18,6 @@ SPEED_MAX_HZ = 1_000_000
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 200
 SCREEN_SCALE = 4
-SCREEN_MAX_ADDR = MIN_ADDR + (SCREEN_WIDTH * SCREEN_HEIGHT / 4)
 
 # Colour scheme: (light_mode, dark_mode) tuples
 COLOURS = {
@@ -52,7 +51,8 @@ class EmulatorGUI:
         self.root.title("Ternary Computer Emulator")
         self.root.geometry("1650x950")
 
-        self.emulator = Emulator()
+        self.emulator = Emulator(SCREEN_SCALE)
+        self.emulator.make_image()
         self.emulator.set_memory_callback(self.update_memory)
         self.program_rows = []
         self.breaks = set(breaks) if breaks is not None else set()
@@ -326,7 +326,7 @@ class EmulatorGUI:
                 inst_label.configure(fg_color=COLOURS["instruction_highlight_bg"], text_color=COLOURS["instruction_highlight_text"])
             else:
                 inst_label.configure(fg_color="transparent", text_color=COLOURS["instruction_text"])
-        
+
         # Scroll to keep active instruction centered
         if self.program_rows:
             total_rows = len(self.program_rows)
@@ -354,15 +354,15 @@ class EmulatorGUI:
         self.label_pc.configure(text=f"{self.emulator.pc} ({pc_trits})")
         self.label_ticks.configure(text=f"{self.emulator.ticks}")
         self.highlight_current_instruction()
-        
+
     def update_canvas_image(self):
-        """Update the canvas with the current screen image from the emulator."""
-        pil_image = self.emulator.render(SCREEN_SCALE)
+        """Update the canvas with the current image from the emulator."""
+        pil_image = self.emulator.get_image()
         self.photo_image = ImageTk.PhotoImage(pil_image)
         self.canvas.itemconfig(self.canvas_image, image=self.photo_image)
-        
+
     def update_memory(self, addr: int, value: int):
-        if addr < SCREEN_MAX_ADDR:
+        if addr < SCREEN_END_ADDR:
             self.update_canvas_image()
 
     def reset_emulator(self):

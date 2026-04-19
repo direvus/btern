@@ -26,6 +26,7 @@ from ternary.hardware.util import (
 
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 200
+SCREEN_END_ADDR = MIN_ADDR + (SCREEN_WIDTH * SCREEN_HEIGHT / 4)
 
 
 def do_and(a: int, b: int) -> int:
@@ -72,7 +73,7 @@ def compute(x: int, y: int, px: Trit, py: Trit, f: Trit) -> int:
 
 
 class Emulator:
-    def __init__(self):
+    def __init__(self, screen_scale: int = 1):
         self.a = 0
         self.d = 0
         self.pc = 0
@@ -83,8 +84,10 @@ class Emulator:
         self.speed = 1000  # 1 kHz
         self.cycle_time = 1.0 / self.speed
         self.rate_limit = False
+        self.screen_scale = screen_scale
         self.palette = None
         self.palette_map = {}
+        self.screen_image = self.make_image()
         self.memory_callback = None
 
     def load_binary(self, stream) -> None:
@@ -133,24 +136,6 @@ class Emulator:
         else:
             self.load_binary(stream)
 
-    def get_palette(self) -> ImagePalette.ImagePalette:
-        if self.palette is not None:
-            return self.palette
-
-        self.palette_map = {}
-        seq = []
-        count = 0
-        for key, colour in COLOURS_3T.items():
-            r = int(colour[:2], 16)
-            g = int(colour[2:4], 16)
-            b = int(colour[4:], 16)
-            self.palette_map[key] = count
-            seq.extend((r, g, b))
-            count += 1
-
-        self.palette = ImagePalette.ImagePalette('RGB', seq)
-        return self.palette
-
     def set_memory_callback(self, callback: Callable) -> None:
         self.memory_callback = callback
 
@@ -159,6 +144,7 @@ class Emulator:
 
     def set_ram(self, address: int, value: int) -> None:
         self.ram[address] = value
+        self.update_image(address, value)
         if self.memory_callback:
             self.memory_callback(address, value)
 
@@ -177,6 +163,7 @@ class Emulator:
         self.d = 0
         self.pc = MIN_ADDR
         self.ticks = 0
+        self.make_image()
 
     def execute(self):
         """Run the loaded program.
@@ -262,12 +249,62 @@ class Emulator:
     def get_ram_contents(self, index: int) -> int:
         return self.ram.get(index, 0)
 
-    def render(self, scale: int = 1) -> Image:
-        width = SCREEN_WIDTH * scale
-        height = SCREEN_HEIGHT * scale
-        im = Image.new('P', (width, height))
-        im.putpalette(self.get_palette())
-        draw = ImageDraw.Draw(im)
+    def get_palette(self) -> ImagePalette.ImagePalette:
+        if self.palette is not None:
+            return self.palette
+
+        self.palette_map = {}
+        seq = []
+        count = 0
+        for key, colour in COLOURS_3T.items():
+            r = int(colour[:2], 16)
+            g = int(colour[2:4], 16)
+            b = int(colour[4:], 16)
+            self.palette_map[key] = count
+            seq.extend((r, g, b))
+            count += 1
+
+        self.palette = ImagePalette.ImagePalette('RGB', seq)
+        return self.palette
+
+    def make_image(self) -> None:
+        width = SCREEN_WIDTH * self.screen_scale
+        height = SCREEN_HEIGHT * self.screen_scale
+        self.screen_image = Image.new('P', (width, height))
+        self.screen_image.putpalette(self.get_palette())
+        self.screen_draw = ImageDraw.Draw(self.screen_image)
+        bg = self.palette_map['000']
+        self.screen_draw.rectangle((0, 0, width, height), fill=bg, width=0)
+
+    def update_image(self, addr: int, value: int) -> None:
+        """Update the screen render image after a memory update.
+
+        Given a memory address, and the value held in that address, refresh the
+        pixels covered by that address, by drawing new rectangles on the
+        existing screen render.
+
+        Do nothing if the given address is not in the screen memory region, or
+        if the screen image has not been initialised.
+        """
+        if self.screen_image is None or addr >= SCREEN_END_ADDR:
+            return
+
+        row, col = divmod(addr - MIN_ADDR, SCREEN_WIDTH / 4)
+        x0 = col * 4 * self.screen_scale
+        y0 = row * self.screen_scale
+        y1 = y0 + self.screen_scale - 1
+        trits = int_to_trits(value, 12)
+        for i in range(0, 12, 3):
+            key = trits[i:i+3]
+            colour_index = self.palette_map[key]
+            x1 = x0 + self.screen_scale - 1
+            bounds = (x0, y0, x1, y1)
+            self.screen_draw.rectangle(bounds, fill=colour_index, width=0)
+            x0 += self.screen_scale
+
+    def render(self) -> Image:
+        if self.screen_image is None:
+            self.make_image()
         addr = MIN_ADDR
         for y in range(SCREEN_HEIGHT):
             x = 0
@@ -276,15 +313,20 @@ class Emulator:
                 for i in range(0, 12, 3):
                     key = value[i:i+3]
                     colour_index = self.palette_map[key]
-                    x0 = x * scale
-                    y0 = y * scale
-                    x1 = x0 + scale - 1
-                    y1 = y0 + scale - 1
-                    bounds = [(x0, y0), (x1, y1)]
-                    draw.rectangle(bounds, fill=colour_index, width=0)
+                    x0 = x * self.screen_scale
+                    y0 = y * self.screen_scale
+                    x1 = x0 + self.screen_scale - 1
+                    y1 = y0 + self.screen_scale - 1
+                    self.screen_draw.rectangle(
+                            [(x0, y0), (x1, y1)],
+                            fill=colour_index,
+                            width=0)
                     x += 1
                 addr += 1
-        return im
+        return self.screen_image
+
+    def get_image(self) -> Image:
+        return self.screen_image
 
 
 def main(
@@ -292,14 +334,14 @@ def main(
         select: list[int] | None = None,
         render_path: str = '',
         screen_scale: int = 1):
-    emu = Emulator()
+    emu = Emulator(screen_scale)
     with input_stream(input_path) as stream:
         emu.load(stream)
 
     emu.execute()
-    
+
     if render_path:
-        im = emu.render(screen_scale)
+        im = emu.render()
         with output_stream(render_path, binary=True) as stream:
             im.save(stream, format='PNG')
 
