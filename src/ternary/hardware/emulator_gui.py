@@ -1,6 +1,7 @@
 ﻿#!/usr/bin/env python
-import tkinter as tk
+import logging
 import sys
+import tkinter as tk
 
 import customtkinter as ctk
 from PIL import Image, ImageTk
@@ -55,6 +56,7 @@ class EmulatorGUI:
         self.emulator.make_image()
         self.emulator.set_memory_callback(self.update_memory)
         self.program_rows = []
+        self.program_length = 0
         self.breaks = set(breaks) if breaks is not None else set()
         self.running = False
         self.after_id = None
@@ -164,6 +166,7 @@ class EmulatorGUI:
         try:
             with input_stream(path) as stream:
                 self.emulator.load(stream)
+                self.program_length = len(self.emulator.program)
         except Exception as e:
             self.show_error_dialog("Program Load Error", f"Failed to load program from {path}:\n\n{str(e)}")
             return
@@ -363,7 +366,7 @@ class EmulatorGUI:
 
     def update_memory(self, addr: int, value: int):
         if addr < SCREEN_END_ADDR:
-            self.update_canvas_image()
+            self.root.after(0, self.update_canvas_image)
 
     def reset_emulator(self):
         self.emulator.reset()
@@ -412,15 +415,14 @@ class EmulatorGUI:
             return
 
         index = self.emulator.pc - MIN_ADDR
-        if index in self.breaks or not (0 <= index < len(self.emulator.program)):
+        if index in self.breaks or not (0 <= index < self.program_length):
             self.pause_running()
             return
 
         self.emulator.step()
         self.update_tray()
 
-        speed = self.speed_hz
-        delay = max(1, int(1000 / speed))
+        delay = max(10, int(1000 / self.speed_hz))
         self.after_id = self.root.after(delay, self.schedule_step)
 
     def run(self):
@@ -429,9 +431,20 @@ class EmulatorGUI:
 
 def cli():
     import argparse
-    parser = argparse.ArgumentParser(description="Ternary Computer Emulator GUI")
-    parser.add_argument("program", nargs="?", default=None, help="Path to the ternary program file to load")
-    parser.add_argument('-b', '--breakpoint', type=int, action='append')
+    logging.basicConfig(level=logging.INFO)
+    parser = argparse.ArgumentParser(
+            description="Ternary Computer Emulator GUI")
+    parser.add_argument(
+            "program",
+            nargs="?",
+            default=None,
+            help="Path to the ternary program file to load")
+    parser.add_argument(
+            '-b',
+            '--breakpoint',
+            type=int,
+            action='append',
+            help="Automatically pause when reaching this line number")
     args = parser.parse_args()
 
     gui = EmulatorGUI(input_path=args.program, breaks=args.breakpoint)
