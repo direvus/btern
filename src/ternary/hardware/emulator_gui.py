@@ -19,12 +19,12 @@ FONT_MONO.setStyleHint(QtGui.QFont.StyleHint.Monospace)
 FONT_MONO_ITALIC = QtGui.QFont(FONT_MONO)
 FONT_MONO_ITALIC.setItalic(True)
 
-COLOUR_DIM_TEXT = QtGui.QColor('#666666')
+COLOUR_DIM_TEXT = QtGui.QColor("#666666")
 
 ICON_FACTORY = IconFactory(
-        icon_set='lucide',
-        icon_size=16,
-        )
+    icon_set="lucide",
+    icon_size=16,
+)
 
 
 def format_clock_speed(hz):
@@ -37,8 +37,23 @@ def format_clock_speed(hz):
         return f"{hz} Hz"
 
 
+def format_trits(value: int):
+    trits = int_to_trits(value, 12)
+    return ' '.join((trits[:6], trits[6:]))
+
+
+class Worker(QtCore.QRunnable):
+    def __init__(self, fn):
+        super().__init__()
+        self.fn = fn
+
+    @QtCore.Slot()
+    def run(self):
+        self.fn()
+
+
 class TrayItem(QtWidgets.QWidget):
-    def __init__(self, name: str, primary: str = '', secondary: str = ''):
+    def __init__(self, name: str, primary: str = "", secondary: str = ""):
         super().__init__()
         self.name = QtWidgets.QLabel(name)
         self.primary = QtWidgets.QLineEdit(primary)
@@ -70,7 +85,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.program_length = 0
         self.breaks = set(breaks) if breaks is not None else set()
         self.running = False
+        self.count = 0
 
+        self.threadpool = QtCore.QThreadPool()
         self.create_layout()
 
         if input_path:
@@ -102,11 +119,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pen = QtGui.QPen()
         self.pen.setWidth(SCREEN_SCALE)
 
-        self.a = TrayItem('A', '000000 000000')
-        self.d = TrayItem('D', '000000 000000')
-        self.m = TrayItem('M', '000000 000000')
-        self.pc = TrayItem('PC', '000000 000000')
-        self.ticks = TrayItem('Ticks', '0')
+        self.a = TrayItem("A", "000000 000000")
+        self.d = TrayItem("D", "000000 000000")
+        self.m = TrayItem("M", "000000 000000")
+        self.pc = TrayItem("PC", "000000 000000")
+        self.ticks = TrayItem("Ticks", "0")
 
         info_tray.addWidget(self.a)
         info_tray.addWidget(self.d)
@@ -117,17 +134,20 @@ class MainWindow(QtWidgets.QMainWindow):
         # Add a space at the start of the text labels as a cheap way to get
         # some spacing between the text and the icon.
         self.load_button = QtWidgets.QPushButton(
-                ICON_FACTORY.asQPixmap('hard-drive-upload'),
+                ICON_FACTORY.asQPixmap("hard-drive-upload"),
                 " Load")
         self.reset_button = QtWidgets.QPushButton(
-                ICON_FACTORY.asQPixmap('power'),
+                ICON_FACTORY.asQPixmap("power"),
                 " Reset")
         self.step_button = QtWidgets.QPushButton(
-                ICON_FACTORY.asQPixmap('step-forward'),
+                ICON_FACTORY.asQPixmap("step-forward"),
                 " Step")
         self.run_button = QtWidgets.QPushButton(
-                ICON_FACTORY.asQPixmap('play'),
+                ICON_FACTORY.asQPixmap("play"),
                 " Run")
+
+        self.reset_button.pressed.connect(self.reset)
+        self.step_button.pressed.connect(self.schedule_step)
 
         controls.addWidget(self.load_button)
         controls.addWidget(self.reset_button)
@@ -146,12 +166,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self.running = False
         # TODO update buttons
 
+    def schedule_step(self):
+        worker = Worker(self.step)
+        self.threadpool.start(worker)
+
+    def step(self):
+        self.emulator.step()
+        self.count += 1
+        self.update_tray()
+
+        if self.running:
+            self.schedule_step()
+
     def start(self):
         self.running = True
         # TODO update buttons
+        self.schedule_step()
 
     def reset(self):
+        self.running = False
         self.emulator.reset()
+        self.count = 0
+        self.update_tray()
         self.stop()
 
     def load_program(self, path: str):
@@ -161,15 +197,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.program_length = len(self.emulator.program)
         except Exception as e:
             self.show_error_dialog(
-                    "Program Load Error",
-                    f"Failed to load program from {path}:\n\n{str(e)}")
+                "Program Load Error",
+                f"Failed to load program from {path}:\n\n{str(e)}",
+            )
             return
 
         self.reset()
         self.program_list.clear()
 
         for i, line in enumerate(self.emulator.program):
-            comment = self.emulator.comments.get(i, '')
+            comment = self.emulator.comments.get(i, "")
             item = QtWidgets.QTreeWidgetItem(self.program_list)
             item.setText(0, str(i + 1))
             item.setText(1, line)
@@ -186,25 +223,45 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_tray(self):
         # TODO
-        pass
+        a = self.emulator.a
+        self.a.set_primary_text(format_trits(a))
+        self.a.set_secondary_text(str(a))
+
+        d = self.emulator.d
+        self.d.set_primary_text(format_trits(d))
+        self.d.set_secondary_text(str(d))
+
+        m = self.emulator.get_ram(a)
+        self.m.set_primary_text(format_trits(m))
+        self.m.set_secondary_text(str(m))
+
+        pc = self.emulator.pc
+        self.pc.set_primary_text(format_trits(pc))
+        self.pc.set_secondary_text(str(pc))
+
+        self.ticks.set_primary_text(str(self.count))
 
 
 def cli():
     import argparse
+
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(
-            description="Ternary Computer Emulator GUI")
+        description="Ternary Computer Emulator GUI"
+    )
     parser.add_argument(
-            "program",
-            nargs="?",
-            default=None,
-            help="Path to the ternary program file to load")
+        "program",
+        nargs="?",
+        default=None,
+        help="Path to the ternary program file to load",
+    )
     parser.add_argument(
-            '-b',
-            '--breakpoint',
-            type=int,
-            action='append',
-            help="Automatically pause when reaching this line number")
+        "-b",
+        "--breakpoint",
+        type=int,
+        action="append",
+        help="Automatically pause when reaching this line number",
+    )
     args = parser.parse_args()
 
     app = QtWidgets.QApplication()
