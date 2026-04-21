@@ -1,36 +1,23 @@
 ﻿#!/usr/bin/env python
 import logging
-import sys
-import tkinter as tk
 
-import customtkinter as ctk
-from PIL import Image, ImageTk
+from PySide6 import QtCore, QtGui, QtWidgets
 from ternary.hardware.emulator import Emulator, SCREEN_END_ADDR
 from ternary.hardware.util import MIN_ADDR, int_to_trits, input_stream
 
-LOAD_BUTTON_LABEL = "📂 Load"
-RESET_BUTTON_LABEL = "↺ Reset"
-STEP_BUTTON_LABEL = "⏭ Step"
-RUN_BUTTON_LABEL = "▶ Run"
-PAUSE_BUTTON_LABEL = "⏸ Pause"
-CONTROL_BUTTON_WIDTH = 120
 SPEED_MIN_HZ = 1
 SPEED_MAX_HZ = 1_000_000
 SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 200
 SCREEN_SCALE = 4
 
-# Colour scheme: (light_mode, dark_mode) tuples
-COLOURS = {
-    "register_label_bg": "transparent",
-    "register_label_text": ("#333333", "#a0a0a0"),
-    "register_value_text": ("#e0e0e0", "#e0e0e0"),
-    "register_value_bg": ("#888888", "#404040"),
-    "instruction_text": ("#000000", "#e0e0e0"),
-    "instruction_highlight_bg": ("#0066cc", "#2f95ff"),
-    "instruction_highlight_text": ("white", "white"),
-    "comment_text": ("#666666", "#888888"),
-}
+FONT_MONO = QtGui.QFont("Fira Code")
+FONT_MONO.setStyleHint(QtGui.QFont.StyleHint.Monospace)
+
+FONT_MONO_ITALIC = QtGui.QFont(FONT_MONO)
+FONT_MONO_ITALIC.setItalic(True)
+
+COLOUR_DIM_TEXT = QtGui.QColor('#666666')
 
 
 def format_clock_speed(hz):
@@ -43,390 +30,146 @@ def format_clock_speed(hz):
         return f"{hz} Hz"
 
 
-class EmulatorGUI:
+class TrayItem(QtWidgets.QWidget):
+    def __init__(self, name: str, primary: str = '', secondary: str = ''):
+        super().__init__()
+        self.name = QtWidgets.QLabel(name)
+        self.primary = QtWidgets.QLineEdit(primary)
+        self.primary.setFont(FONT_MONO)
+        self.primary.setReadOnly(True)
+        self.secondary = QtWidgets.QLineEdit(secondary)
+        self.secondary.setFont(FONT_MONO)
+        self.secondary.setReadOnly(True)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.name)
+        layout.addWidget(self.primary)
+        layout.addWidget(self.secondary)
+        self.setLayout(layout)
+
+    def set_primary_text(self, text: str):
+        self.primary.setText(text)
+
+    def set_secondary_text(self, text: str):
+        self.secondary.setText(text)
+
+
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, input_path=None, breaks=None):
-        ctk.set_appearance_mode("system")
-        ctk.set_default_color_theme("blue")
-
-        self.root = ctk.CTk()
-        self.root.title("Ternary Computer Emulator")
-        self.root.geometry("1650x950")
-
-        self.emulator = Emulator(SCREEN_SCALE)
-        self.emulator.make_image()
-        self.emulator.set_memory_callback(self.update_memory)
-        self.program_rows = []
+        super().__init__()
+        self.setWindowTitle("T-12 Ternary Computer Emulator")
+        self.emulator = Emulator()
+        self.program = []
         self.program_length = 0
         self.breaks = set(breaks) if breaks is not None else set()
         self.running = False
-        self.after_id = None
-        self.speed_hz = 1000
-        self.mono_font = ("Courier New", 11)
 
         self.create_layout()
-        self.update_tray()
 
         if input_path:
-            self.root.after(100, lambda: self.load_program_from_path(input_path))
+            self.load_program(input_path)
 
     def create_layout(self):
-        main_frame = ctk.CTkFrame(self.root)
-        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
-        main_frame.grid_rowconfigure(0, weight=1)
-        main_frame.grid_rowconfigure(1, weight=0)
-        main_frame.grid_columnconfigure(1, weight=1)
+        self.root = QtWidgets.QWidget()
+        main_layout = QtWidgets.QVBoxLayout()
+        main_panel = QtWidgets.QHBoxLayout()
+        controls = QtWidgets.QHBoxLayout()
+        info_tray = QtWidgets.QHBoxLayout()
 
-        left_frame = ctk.CTkFrame(main_frame, width=288)
-        left_frame.grid(row=0, column=0, sticky="ns", padx=5, pady=5)
-        left_frame.grid_rowconfigure(0, weight=1)
+        width = SCREEN_WIDTH * SCREEN_SCALE
+        height = SCREEN_HEIGHT * SCREEN_SCALE
 
-        self.program_frame = ctk.CTkScrollableFrame(left_frame, width=364, height=600)
-        self.program_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        self.program_frame.grid_columnconfigure(1, weight=1)
+        self.program_list = QtWidgets.QTreeWidget()
+        self.program_list.setColumnCount(3)
+        self.program_list.setMinimumWidth(280)
+        self.program_list.header().hide()
+        font = QtGui.QFont(FONT_MONO)
+        font.setPointSize(8)
+        self.program_list.setFont(font)
 
-        canvas_frame = ctk.CTkFrame(main_frame)
-        canvas_frame.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
-        canvas_frame.grid_rowconfigure(0, weight=1)
-        canvas_frame.grid_columnconfigure(0, weight=1)
+        self.screen = QtWidgets.QLabel()
+        self.pix = QtGui.QPixmap(width, height)
+        self.screen.setMinimumSize(width, height)
+        self.screen.setPixmap(self.pix)
+        self.painter = QtGui.QPainter()
+        self.pen = QtGui.QPen()
+        self.pen.setWidth(SCREEN_SCALE)
 
-        self.canvas = tk.Canvas(
-            canvas_frame,
-            width=SCREEN_WIDTH * SCREEN_SCALE,
-            height=SCREEN_HEIGHT * SCREEN_SCALE,
-            bg="black",
-            highlightthickness=1,
-            highlightbackground="#777",
-        )
-        self.canvas.grid(row=0, column=0, sticky="", padx=10, pady=10)
+        self.a = TrayItem('A', '000000 000000')
+        self.d = TrayItem('D', '000000 000000')
+        self.m = TrayItem('M', '000000 000000')
+        self.pc = TrayItem('PC', '000000 000000')
+        self.ticks = TrayItem('Ticks', '0')
 
-        # Create initial blank image
-        self.screen_image = Image.new('RGB', (SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE), (0, 0, 0))
-        self.photo_image = ImageTk.PhotoImage(self.screen_image)
-        self.canvas_image = self.canvas.create_image(0, 0, anchor='nw', image=self.photo_image)
+        info_tray.addWidget(self.a)
+        info_tray.addWidget(self.d)
+        info_tray.addWidget(self.m)
+        info_tray.addWidget(self.pc)
+        info_tray.addWidget(self.ticks)
 
-        self.system_tray_frame = ctk.CTkFrame(main_frame, height=80)
-        self.system_tray_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
-        self.system_tray_frame.grid_columnconfigure(0, weight=1)
-        self.system_tray_frame.grid_columnconfigure(1, weight=1)
+        self.load_button = QtWidgets.QPushButton("Load")
+        self.reset_button = QtWidgets.QPushButton("Reset")
+        self.step_button = QtWidgets.QPushButton("Step")
+        self.run_button = QtWidgets.QPushButton("Run")
 
-        control_frame = ctk.CTkFrame(self.system_tray_frame)
-        control_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=(10, 5))
-        control_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+        controls.addWidget(self.load_button)
+        controls.addWidget(self.reset_button)
+        controls.addWidget(self.step_button)
+        controls.addWidget(self.run_button)
 
-        self.load_button = ctk.CTkButton(control_frame, text=LOAD_BUTTON_LABEL, command=self.load_program, width=CONTROL_BUTTON_WIDTH)
-        self.load_button.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        main_panel.addWidget(self.program_list)
+        main_panel.addWidget(self.screen)
+        main_layout.addLayout(main_panel)
+        main_layout.addLayout(info_tray)
+        main_layout.addLayout(controls)
+        self.root.setLayout(main_layout)
+        self.setCentralWidget(self.root)
 
-        self.reset_button = ctk.CTkButton(control_frame, text=RESET_BUTTON_LABEL, command=self.reset_emulator, state="disabled", width=CONTROL_BUTTON_WIDTH)
-        self.reset_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+    def stop(self):
+        self.running = False
+        # TODO update buttons
 
-        self.step_button = ctk.CTkButton(control_frame, text=STEP_BUTTON_LABEL, command=self.step_emulator, state="disabled", width=CONTROL_BUTTON_WIDTH)
-        self.step_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+    def start(self):
+        self.running = True
+        # TODO update buttons
 
-        self.run_button = ctk.CTkButton(control_frame, text=RUN_BUTTON_LABEL, command=self.toggle_running, state="disabled", width=CONTROL_BUTTON_WIDTH)
-        self.run_button.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
+    def reset(self):
+        self.emulator.reset()
+        self.stop()
 
-        self.speed_button = ctk.CTkButton(control_frame, text=self.get_speed_button_text(), command=self.open_speed_dialog, width=CONTROL_BUTTON_WIDTH)
-        self.speed_button.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
-
-        tray_items_frame = ctk.CTkFrame(self.system_tray_frame)
-        tray_items_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=(5, 10))
-        tray_items_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1, uniform='all')
-
-        def create_register_item(parent, label_text):
-            item_frame = ctk.CTkFrame(parent, fg_color="transparent")
-            item_frame.grid_columnconfigure(0, weight=0)
-            item_frame.grid_columnconfigure(1, weight=1)
-
-            label = ctk.CTkLabel(item_frame, text=label_text, fg_color=COLOURS["register_label_bg"], text_color=COLOURS["register_label_text"], 
-                                corner_radius=4, padx=6, pady=2, font=self.mono_font)
-            label.grid(row=0, column=0, padx=(0, 4), sticky="w")
-
-            value = ctk.CTkLabel(item_frame, text="0", fg_color=COLOURS["register_value_bg"], text_color=COLOURS["register_value_text"],
-                                corner_radius=4, padx=6, pady=2, anchor="w", font=self.mono_font)
-            value.grid(row=0, column=1, sticky="nesw")
-
-            return item_frame, value
-
-        self.item_a, self.label_a = create_register_item(tray_items_frame, "A")
-        self.item_a.grid(row=0, column=0, padx=5, sticky="nsew")
-
-        self.item_d, self.label_d = create_register_item(tray_items_frame, "D")
-        self.item_d.grid(row=0, column=1, padx=5, sticky="nsew")
-
-        self.item_m, self.label_m = create_register_item(tray_items_frame, "M")
-        self.item_m.grid(row=0, column=2, padx=5, sticky="nsew")
-
-        self.item_pc, self.label_pc = create_register_item(tray_items_frame, "PC")
-        self.item_pc.grid(row=0, column=3, padx=5, sticky="nsew")
-
-        self.item_ticks, self.label_ticks = create_register_item(tray_items_frame, "Ticks")
-        self.item_ticks.grid(row=0, column=4, padx=5, sticky="nsew")
-
-    def load_program_from_path(self, path):
+    def load_program(self, path: str):
         try:
             with input_stream(path) as stream:
                 self.emulator.load(stream)
                 self.program_length = len(self.emulator.program)
         except Exception as e:
-            self.show_error_dialog("Program Load Error", f"Failed to load program from {path}:\n\n{str(e)}")
+            self.show_error_dialog(
+                    "Program Load Error",
+                    f"Failed to load program from {path}:\n\n{str(e)}")
             return
 
-        self.emulator.reset()
-        self.running = False
-        if self.after_id is not None:
-            self.root.after_cancel(self.after_id)
-            self.after_id = None
+        self.reset()
+        self.program_list.clear()
 
-        self.refresh_program_list()
+        for i, line in enumerate(self.emulator.program):
+            comment = self.emulator.comments.get(i, '')
+            item = QtWidgets.QTreeWidgetItem(self.program_list)
+            item.setText(0, str(i + 1))
+            item.setText(1, line)
+            item.setText(2, comment)
+            item.setTextAlignment(1, QtCore.Qt.AlignCenter)
+            item.setTextAlignment(0, QtCore.Qt.AlignRight)
+            item.setFont(2, FONT_MONO_ITALIC)
+            item.setFont(2, FONT_MONO_ITALIC)
+            item.setForeground(0, COLOUR_DIM_TEXT)
+            item.setForeground(2, COLOUR_DIM_TEXT)
+
+        self.program_list.resizeColumnToContents(0)
         self.update_tray()
-        self.update_canvas_image()
-        self.reset_button.configure(state="normal")
-        self.step_button.configure(state="normal")
-        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
-
-    def get_speed_button_text(self):
-        return f"⚙ Speed: {format_clock_speed(self.speed_hz)}"
-
-    def open_speed_dialog(self):
-        dialog = ctk.CTkToplevel(self.root)
-        dialog.title("Adjust Speed")
-        dialog.geometry("480x150")
-        dialog.grab_set()
-        dialog.transient(self.root)
-        dialog.grid_columnconfigure(0, weight=1)
-        dialog.grid_columnconfigure(1, weight=0)
-
-        label = ctk.CTkLabel(dialog, text=f"Set execution speed ({format_clock_speed(SPEED_MIN_HZ)} to {format_clock_speed(SPEED_MAX_HZ)}):", anchor="w")
-        label.grid(row=0, column=0, columnspan=2, padx=16, pady=(16, 8), sticky="ew")
-
-        speed_var = tk.StringVar(value=str(self.speed_hz))
-
-        def update_entry(value):
-            speed_var.set(str(int(float(value))))
-
-        slider = ctk.CTkSlider(dialog, from_=SPEED_MIN_HZ, to=SPEED_MAX_HZ, command=update_entry)
-        slider.set(self.speed_hz)
-        slider.grid(row=1, column=0, padx=16, pady=(0, 8), sticky="ew")
-
-        input_frame = ctk.CTkFrame(dialog)
-        input_frame.grid(row=1, column=1, padx=(8, 16), pady=(0, 8), sticky="ew")
-        input_frame.grid_columnconfigure(0, weight=1)
-
-        speed_entry = ctk.CTkEntry(input_frame, textvariable=speed_var, width=80)
-        speed_entry.grid(row=0, column=0, padx=(0, 4), pady=5, sticky="ew")
-
-        hz_label = ctk.CTkLabel(input_frame, text="Hz", anchor="w")
-        hz_label.grid(row=0, column=1, padx=(0, 0), pady=5, sticky="w")
-
-        def validate_speed(value_str):
-            try:
-                value = int(value_str)
-            except ValueError:
-                raise ValueError("Enter an integer value for Hz.")
-            if value < SPEED_MIN_HZ or value > SPEED_MAX_HZ:
-                raise ValueError(f"Speed must be between {SPEED_MIN_HZ} and {SPEED_MAX_HZ} Hz.")
-            return value
-
-        def apply_speed():
-            try:
-                speed_value = validate_speed(speed_var.get())
-            except ValueError as exc:
-                tk.messagebox.showerror("Invalid speed", str(exc), parent=dialog)
-                return
-            self.speed_hz = speed_value
-            self.speed_button.configure(text=self.get_speed_button_text())
-            dialog.destroy()
-
-        def on_entry_return(event):
-            try:
-                speed_value = validate_speed(speed_var.get())
-            except ValueError:
-                return
-            slider.set(speed_value)
-
-        speed_entry.bind("<Return>", on_entry_return)
-        speed_entry.bind("<FocusOut>", lambda event: on_entry_return(event))
-
-        button_frame = ctk.CTkFrame(dialog)
-        button_frame.grid(row=2, column=0, columnspan=2, padx=16, pady=(0, 16), sticky="ew")
-        button_frame.grid_columnconfigure((0, 1), weight=1)
-
-        cancel_button = ctk.CTkButton(button_frame, text="Cancel", command=dialog.destroy)
-        cancel_button.grid(row=0, column=0, padx=5, sticky="ew")
-
-        ok_button = ctk.CTkButton(button_frame, text="OK", command=apply_speed)
-        ok_button.grid(row=0, column=1, padx=5, sticky="ew")
-
-    def show_error_dialog(self, title, message):
-        tk.messagebox.showerror(title, message)
-
-    def load_program(self):
-        path = tk.filedialog.askopenfilename(
-            title="Select Ternary Program",
-            filetypes=[("Ternary text", ["*.t12", "*.txt"]),  ("Binary program", "*.bin"), ("All files", "*")],
-        )
-        if not path:
-            return
-
-        try:
-            with open(path, "r", encoding="utf-8") as stream:
-                self.emulator.load(stream)
-        except (ValueError, UnicodeDecodeError):
-            with open(path, "rb") as stream:
-                self.emulator.load(stream)
-
-        self.emulator.reset()
-        self.running = False
-        if self.after_id is not None:
-            self.root.after_cancel(self.after_id)
-            self.after_id = None
-
-        self.refresh_program_list()
-        self.update_tray()
-        self.reset_button.configure(state="normal")
-        self.step_button.configure(state="normal")
-        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
-
-    def refresh_program_list(self):
-        for inst_label, comment_label in self.program_rows:
-            inst_label.destroy()
-            comment_label.destroy()
-        self.program_rows.clear()
-
-        for index, instruction in enumerate(self.emulator.program):
-            inst_label = ctk.CTkLabel(
-                self.program_frame,
-                text=f"{index:04d}: {instruction}",
-                anchor="w",
-                fg_color="transparent",
-                text_color=COLOURS["instruction_text"],
-                corner_radius=8,
-                font=self.mono_font,
-            )
-            inst_label.grid(row=index, column=0, sticky="ew", padx=(0, 8), pady=2)
-
-            comment_text = self.emulator.comments.get(index, "")
-            comment_label = None
-            if comment_text:
-                comment_label = ctk.CTkLabel(
-                    self.program_frame,
-                    text=comment_text,
-                    anchor="w",
-                    text_color=COLOURS["comment_text"],
-                    fg_color="transparent",
-                    font=self.mono_font,
-                )
-                comment_label.grid(row=index, column=1, sticky="w", pady=2)
-
-            self.program_rows.append((inst_label, comment_label))
-
-        self.highlight_current_instruction()
-
-    def highlight_current_instruction(self):
-        index = self.emulator.pc - MIN_ADDR
-        for idx, (inst_label, _) in enumerate(self.program_rows):
-            if idx == index:
-                inst_label.configure(fg_color=COLOURS["instruction_highlight_bg"], text_color=COLOURS["instruction_highlight_text"])
-            else:
-                inst_label.configure(fg_color="transparent", text_color=COLOURS["instruction_text"])
-
-        # Scroll to keep active instruction centered
-        if self.program_rows:
-            total_rows = len(self.program_rows)
-            visible_rows = 20  # Approximate based on height=600 and row_height~30
-            if total_rows > visible_rows:
-                center_offset = visible_rows // 2
-                if index <= center_offset:
-                    fraction = 0.0
-                elif index >= total_rows - center_offset:
-                    fraction = 1.0
-                else:
-                    fraction = (index - center_offset) / (total_rows - visible_rows)
-                self.program_frame._parent_canvas.yview_moveto(fraction)
 
     def update_tray(self):
-        a_trits = int_to_trits(self.emulator.a, 12)
-        d_trits = int_to_trits(self.emulator.d, 12)
-        m_value = self.emulator.get_m()
-        m_trits = int_to_trits(m_value, 12)
-        pc_trits = int_to_trits(self.emulator.pc, 11)
-
-        self.label_a.configure(text=f"{self.emulator.a} ({a_trits})")
-        self.label_d.configure(text=f"{self.emulator.d} ({d_trits})")
-        self.label_m.configure(text=f"{m_value} ({m_trits})")
-        self.label_pc.configure(text=f"{self.emulator.pc} ({pc_trits})")
-        self.label_ticks.configure(text=f"{self.emulator.ticks}")
-        self.highlight_current_instruction()
-
-    def update_canvas_image(self):
-        """Update the canvas with the current image from the emulator."""
-        pil_image = self.emulator.get_image()
-        self.photo_image = ImageTk.PhotoImage(pil_image)
-        self.canvas.itemconfig(self.canvas_image, image=self.photo_image)
-
-    def update_memory(self, addr: int, value: int):
-        if addr < SCREEN_END_ADDR:
-            self.root.after(0, self.update_canvas_image)
-
-    def reset_emulator(self):
-        self.emulator.reset()
-        self.running = False
-        if self.after_id is not None:
-            self.root.after_cancel(self.after_id)
-            self.after_id = None
-        self.update_tray()
-        self.update_canvas_image()
-        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
-
-    def step_emulator(self):
-        if not self.emulator.program:
-            return
-
-        index = self.emulator.pc - MIN_ADDR
-        if not (0 <= index < len(self.emulator.program)):
-            return
-
-        self.emulator.step()
-        self.update_tray()
-
-    def toggle_running(self):
-        if self.running:
-            self.pause_running()
-        else:
-            self.start_running()
-
-    def start_running(self):
-        if not self.emulator.program or self.running:
-            return
-
-        self.running = True
-        self.run_button.configure(text=PAUSE_BUTTON_LABEL)
-        self.schedule_step()
-
-    def pause_running(self):
-        if self.after_id is not None:
-            self.root.after_cancel(self.after_id)
-            self.after_id = None
-        self.running = False
-        self.run_button.configure(state="normal", text=RUN_BUTTON_LABEL)
-
-    def schedule_step(self):
-        if not self.running:
-            return
-
-        index = self.emulator.pc - MIN_ADDR
-        if index in self.breaks or not (0 <= index < self.program_length):
-            self.pause_running()
-            return
-
-        self.emulator.step()
-        self.update_tray()
-
-        delay = max(10, int(1000 / self.speed_hz))
-        self.after_id = self.root.after(delay, self.schedule_step)
-
-    def run(self):
-        self.root.mainloop()
+        # TODO
+        pass
 
 
 def cli():
@@ -447,9 +190,10 @@ def cli():
             help="Automatically pause when reaching this line number")
     args = parser.parse_args()
 
-    gui = EmulatorGUI(input_path=args.program, breaks=args.breakpoint)
-    gui.run()
-    sys.exit(0)
+    app = QtWidgets.QApplication()
+    window = MainWindow(input_path=args.program, breaks=args.breakpoint)
+    window.show()
+    app.exec()
 
 
 if __name__ == "__main__":
