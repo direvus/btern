@@ -1,7 +1,9 @@
 ﻿#!/usr/bin/env python
 import logging
 
+from iconipy import IconFactory
 from PySide6 import QtCore, QtGui, QtWidgets
+
 from ternary.hardware.emulator import Emulator, SCREEN_END_ADDR
 from ternary.hardware.util import MIN_ADDR, int_to_trits, input_stream
 
@@ -18,6 +20,11 @@ FONT_MONO_ITALIC = QtGui.QFont(FONT_MONO)
 FONT_MONO_ITALIC.setItalic(True)
 
 COLOUR_DIM_TEXT = QtGui.QColor('#666666')
+
+ICON_FACTORY = IconFactory(
+        icon_set='lucide',
+        icon_size=16,
+        )
 
 
 def format_clock_speed(hz):
@@ -107,10 +114,20 @@ class MainWindow(QtWidgets.QMainWindow):
         info_tray.addWidget(self.pc)
         info_tray.addWidget(self.ticks)
 
-        self.load_button = QtWidgets.QPushButton("Load")
-        self.reset_button = QtWidgets.QPushButton("Reset")
-        self.step_button = QtWidgets.QPushButton("Step")
-        self.run_button = QtWidgets.QPushButton("Run")
+        # Add a space at the start of the text labels as a cheap way to get
+        # some spacing between the text and the icon.
+        self.load_button = QtWidgets.QPushButton(
+                ICON_FACTORY.asQPixmap('hard-drive-upload'),
+                " Load")
+        self.reset_button = QtWidgets.QPushButton(
+                ICON_FACTORY.asQPixmap('power'),
+                " Reset")
+        self.step_button = QtWidgets.QPushButton(
+                ICON_FACTORY.asQPixmap('step-forward'),
+                " Step")
+        self.run_button = QtWidgets.QPushButton(
+                ICON_FACTORY.asQPixmap('play'),
+                " Run")
 
         controls.addWidget(self.load_button)
         controls.addWidget(self.reset_button)

@@ -19,7 +19,7 @@ dependencies = [
 
 [dependency-groups]
 test = ["pytest", "pytest-cov", "flake8"]
-gui = ["pyside6"]
+gui = ["pyside6", "iconipy"]
 
 [project.scripts]
 assembler = "ternary.hardware.assembler:cli"
