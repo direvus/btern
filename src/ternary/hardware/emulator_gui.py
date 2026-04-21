@@ -1,5 +1,6 @@
 ﻿#!/usr/bin/env python
 import logging
+import time
 
 from iconipy import IconFactory
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -42,14 +43,22 @@ def format_trits(value: int):
     return ' '.join((trits[:6], trits[6:]))
 
 
+class WorkerSignals(QtCore.QObject):
+    finished = QtCore.Signal(int)
+
+
 class Worker(QtCore.QRunnable):
     def __init__(self, fn):
         super().__init__()
         self.fn = fn
+        self.signals = WorkerSignals()
 
     @QtCore.Slot()
     def run(self):
+        timer = time.perf_counter_ns()
         self.fn()
+        duration = time.perf_counter_ns() - timer
+        self.signals.finished.emit(duration)
 
 
 class TrayItem(QtWidgets.QWidget):
@@ -88,6 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.count = 0
 
         self.threadpool = QtCore.QThreadPool()
+        self.threadpool.setMaxThreadCount(1)
         self.create_layout()
 
         if input_path:
@@ -148,6 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.reset_button.pressed.connect(self.reset)
         self.step_button.pressed.connect(self.schedule_step)
+        self.run_button.pressed.connect(self.start)
 
         controls.addWidget(self.load_button)
         controls.addWidget(self.reset_button)
@@ -162,25 +173,87 @@ class MainWindow(QtWidgets.QMainWindow):
         self.root.setLayout(main_layout)
         self.setCentralWidget(self.root)
 
+    def update_buttons(self):
+        index = self.get_program_index()
+        in_bounds = 0 <= index < self.program_length
+
+        self.load_button.setEnabled(not self.running)
+        self.reset_button.setEnabled(not self.running)
+        self.step_button.setEnabled(not self.running and in_bounds)
+        self.run_button.setEnabled(in_bounds)
+        self.run_button.setChecked(self.running)
+
+        icon = 'pause' if self.running else 'play'
+        text = ' Pause' if self.running else ' Run'
+        self.run_button.setIcon(ICON_FACTORY.asQPixmap(icon))
+        self.run_button.setText(text)
+
+    def update_tray(self):
+        a = self.emulator.a
+        self.a.set_primary_text(format_trits(a))
+        self.a.set_secondary_text(str(a))
+
+        d = self.emulator.d
+        self.d.set_primary_text(format_trits(d))
+        self.d.set_secondary_text(str(d))
+
+        m = self.emulator.get_ram(a)
+        self.m.set_primary_text(format_trits(m))
+        self.m.set_secondary_text(str(m))
+
+        pc = self.emulator.pc
+        self.pc.set_primary_text(format_trits(pc))
+        self.pc.set_secondary_text(str(pc))
+
+        self.ticks.set_primary_text(str(self.count))
+
+    def update_program_list(self):
+        index = self.get_program_index()
+        item = self.program_list.topLevelItem(index)
+        self.program_list.setCurrentItem(item)
+
+    def get_program_index(self):
+        return self.emulator.pc - MIN_ADDR
+
     def stop(self):
         self.running = False
-        # TODO update buttons
+        self.update_buttons()
 
     def schedule_step(self):
         worker = Worker(self.step)
+        worker.signals.finished.connect(self.step_completed)
         self.threadpool.start(worker)
 
     def step(self):
         self.emulator.step()
+
+    def step_completed(self, duration: int):
         self.count += 1
         self.update_tray()
+        self.update_program_list()
+        self.update_buttons()
+        # TODO: update screen
+
+        index = self.get_program_index()
+        if index >= self.program_length or index < 0:
+            self.stop()
+            return
 
         if self.running:
+            # TODO: delay according to target clock speed
             self.schedule_step()
 
     def start(self):
+        """Called when the run/pause button is pressed.
+
+        If the emulator is stopped, start running it. If the emulator is
+        running, stop it.
+        """
+        if self.running:
+            self.stop()
+            return
         self.running = True
-        # TODO update buttons
+        self.update_buttons()
         self.schedule_step()
 
     def reset(self):
@@ -188,6 +261,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.emulator.reset()
         self.count = 0
         self.update_tray()
+        self.update_program_list()
+        self.update_buttons()
         self.stop()
 
     def load_program(self, path: str):
@@ -220,26 +295,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.program_list.resizeColumnToContents(0)
         self.update_tray()
-
-    def update_tray(self):
-        # TODO
-        a = self.emulator.a
-        self.a.set_primary_text(format_trits(a))
-        self.a.set_secondary_text(str(a))
-
-        d = self.emulator.d
-        self.d.set_primary_text(format_trits(d))
-        self.d.set_secondary_text(str(d))
-
-        m = self.emulator.get_ram(a)
-        self.m.set_primary_text(format_trits(m))
-        self.m.set_secondary_text(str(m))
-
-        pc = self.emulator.pc
-        self.pc.set_primary_text(format_trits(pc))
-        self.pc.set_secondary_text(str(pc))
-
-        self.ticks.set_primary_text(str(self.count))
+        self.update_program_list()
+        self.update_buttons()
 
 
 def cli():
