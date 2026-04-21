@@ -11,6 +11,7 @@ programs. That's where the emulator comes in.
 """
 import argparse
 import io
+import logging
 import sys
 import time
 from collections.abc import Callable
@@ -354,6 +355,7 @@ def main(
 
 
 def cli():
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
     parser.add_argument('-s', '--select', type=int, action='append')
