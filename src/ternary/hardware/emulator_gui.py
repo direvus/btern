@@ -243,7 +243,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 "&Reset",
                 self)
         self.reset_action.triggered.connect(self.reset)
-        self.reset_action.setShortcut(QtGui.QKeySequence("Ctrl-r"))
+        self.reset_action.setShortcut(QtGui.QKeySequence("Ctrl+r"))
 
         self.step_action = QtGui.QAction(
                 ICON_FACTORY.asQPixmap("step-forward"),
@@ -362,7 +362,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_buttons()
 
     def schedule_step(self):
-        # TODO show error and don't step if PC is outside the program.
+        index = self.get_program_index()
+        if index < 0 or index >= self.program_length:
+            QtWidgets.QMessageBox.warning(
+                    self,
+                    "Program counter out of bounds",
+                    "The program counter address is outside of the loaded "
+                    "program. Please reset the emulator to continue.")
+            return
+
         worker = Worker(self.step)
         worker.signals.finished.connect(self.step_completed)
         self.threadpool.start(worker)
