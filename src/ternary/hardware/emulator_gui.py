@@ -86,8 +86,45 @@ class TrayItem(QtWidgets.QWidget):
         self.secondary.setText(text)
 
 
+class SpeedDialog(QtWidgets.QDialog):
+    def __init__(self, speed: int, parent):
+        super().__init__(parent)
+        self.setWindowTitle("Set clock speed")
+        self.speed = speed
+
+        self.spinbox = QtWidgets.QSpinBox()
+        self.spinbox.setMinimum(1)
+        self.spinbox.setMaximum(1_000_000)
+        self.spinbox.setValue(speed)
+        self.spinbox.valueChanged.connect(self.value_changed)
+
+        unit_label = QtWidgets.QLabel("Hz")
+        label = QtWidgets.QLabel("Choose a clock speed between 1 Hz and 1 MHz")
+
+        buttons = (
+                QtWidgets.QDialogButtonBox.Ok |
+                QtWidgets.QDialogButtonBox.Cancel)
+
+        self.buttonbox = QtWidgets.QDialogButtonBox(buttons)
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
+
+        inputbox = QtWidgets.QHBoxLayout()
+        inputbox.addWidget(self.spinbox)
+        inputbox.addWidget(unit_label)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addLayout(inputbox)
+        layout.addWidget(label)
+        layout.addWidget(self.buttonbox)
+        self.setLayout(layout)
+
+    def value_changed(self, value: int):
+        self.speed = value
+
+
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, input_path=None, breaks=None):
+    def __init__(self, input_path=None, breaks=None, speed: int = 1000):
         super().__init__()
         self.setWindowTitle("T-12 Ternary Computer Emulator")
         self.emulator = Emulator()
@@ -96,10 +133,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.breaks = set(breaks) if breaks is not None else set()
         self.running = False
         self.count = 0
+        self.speed = speed
+        self.duration = 1000.0 / self.speed  # milliseconds between ticks
 
         self.threadpool = QtCore.QThreadPool()
         self.threadpool.setMaxThreadCount(1)
+
+        self.create_actions()
         self.create_layout()
+        self.create_menu()
         self.clear_screen()
 
         if input_path:
@@ -156,15 +198,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.run_button = QtWidgets.QPushButton(
                 ICON_FACTORY.asQPixmap("play"),
                 " Run")
+        self.speed_button = QtWidgets.QPushButton(
+                ICON_FACTORY.asQPixmap("gauge"),
+                f" Clock: {format_clock_speed(self.speed)} ",
+                self)
 
-        self.reset_button.pressed.connect(self.reset)
-        self.step_button.pressed.connect(self.schedule_step)
-        self.run_button.pressed.connect(self.start)
+        self.load_button.pressed.connect(self.load_action.trigger)
+        self.reset_button.pressed.connect(self.reset_action.trigger)
+        self.step_button.pressed.connect(self.step_action.trigger)
+        self.run_button.pressed.connect(self.run_action.trigger)
+        self.speed_button.pressed.connect(self.open_clock_speed_dialog)
 
         controls.addWidget(self.load_button)
         controls.addWidget(self.reset_button)
         controls.addWidget(self.step_button)
         controls.addWidget(self.run_button)
+        controls.addWidget(self.speed_button)
 
         main_panel.addWidget(self.program_list)
         main_panel.addWidget(self.screen)
@@ -173,6 +222,63 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout.addLayout(controls)
         self.root.setLayout(main_layout)
         self.setCentralWidget(self.root)
+
+    def create_actions(self):
+        self.load_action = QtGui.QAction(
+                ICON_FACTORY.asQPixmap("hard-drive-upload"),
+                '&Load program',
+                self)
+        self.load_action.triggered.connect(self.get_program_path)
+        self.load_action.setShortcut(QtGui.QKeySequence("Ctrl+o"))
+
+        self.quit_action = QtGui.QAction(
+                ICON_FACTORY.asQPixmap("log-out"),
+                "&Quit",
+                self)
+        self.quit_action.triggered.connect(self.close)
+        self.quit_action.setShortcut(QtGui.QKeySequence("Ctrl+q"))
+
+        self.reset_action = QtGui.QAction(
+                ICON_FACTORY.asQPixmap("power"),
+                "&Reset",
+                self)
+        self.reset_action.triggered.connect(self.reset)
+        self.reset_action.setShortcut(QtGui.QKeySequence("Ctrl-r"))
+
+        self.step_action = QtGui.QAction(
+                ICON_FACTORY.asQPixmap("step-forward"),
+                "&Step",
+                self)
+        self.step_action.triggered.connect(self.schedule_step)
+        self.step_action.setShortcut(QtGui.QKeySequence("F2"))
+
+        self.run_action = QtGui.QAction(
+                ICON_FACTORY.asQPixmap("play"),
+                "Run/&pause",
+                self)
+        self.run_action.triggered.connect(self.start)
+        self.run_action.setShortcut(QtGui.QKeySequence("F3"))
+
+        self.set_speed_action = QtGui.QAction(
+                ICON_FACTORY.asQPixmap("gauge"),
+                "Set &clock speed",
+                self)
+        self.set_speed_action.triggered.connect(self.open_clock_speed_dialog)
+
+    def create_menu(self):
+        menu = self.menuBar()
+
+        file_menu = menu.addMenu("&File")
+        file_menu.addAction(self.load_action)
+        file_menu.addAction(self.quit_action)
+
+        edit_menu = menu.addMenu("&Edit")
+        edit_menu.addAction(self.set_speed_action)
+
+        run_menu = menu.addMenu("&Run")
+        run_menu.addAction(self.reset_action)
+        run_menu.addAction(self.step_action)
+        run_menu.addAction(self.run_action)
 
     def update_buttons(self):
         index = self.get_program_index()
@@ -238,6 +344,16 @@ class MainWindow(QtWidgets.QMainWindow):
         painter.end()
         self.screen.setPixmap(self.pix)
 
+    def get_program_path(self):
+        """Prompt the user to select a program path with a dialog."""
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+                parent=self,
+                caption="Select program to load",
+                dir='.',
+                filter="T12 programs (*.t12)")
+        if path:
+            self.load_program(path)
+
     def get_program_index(self):
         return self.emulator.pc - MIN_ADDR
 
@@ -246,6 +362,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_buttons()
 
     def schedule_step(self):
+        # TODO show error and don't step if PC is outside the program.
         worker = Worker(self.step)
         worker.signals.finished.connect(self.step_completed)
         self.threadpool.start(worker)
@@ -270,8 +387,10 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         if self.running:
-            # TODO: delay according to target clock speed
-            self.schedule_step()
+            # Duration from emulator is in nanoseconds
+            millis = duration / 1_000_000
+            delay = max(0, self.duration - millis)
+            QtCore.QTimer.singleShot(delay, self.schedule_step)
 
     def start(self):
         """Called when the run/pause button is pressed.
@@ -329,6 +448,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_program_list()
         self.update_buttons()
 
+    def open_clock_speed_dialog(self):
+        dialog = SpeedDialog(self.speed, self)
+        if dialog.exec():
+            self.speed = dialog.speed
+            self.duration = 1000.0 / self.speed  # milliseconds between ticks
+            label = f" Clock: {format_clock_speed(self.speed)}"
+            self.speed_button.setText(label)
+
 
 def cli():
     import argparse
@@ -350,10 +477,20 @@ def cli():
         action="append",
         help="Automatically pause when reaching this line number",
     )
+    parser.add_argument(
+        "-c",
+        "--clock",
+        type=int,
+        default=1000,
+        help="Set the target clock speed (Hz)",
+    )
     args = parser.parse_args()
 
     app = QtWidgets.QApplication()
-    window = MainWindow(input_path=args.program, breaks=args.breakpoint)
+    window = MainWindow(
+            input_path=args.program,
+            breaks=args.breakpoint,
+            speed=args.clock)
     window.show()
     app.exec()
 
