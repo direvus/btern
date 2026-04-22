@@ -327,7 +327,7 @@ class Assembler:
             stream.write(binary.encode(program))
 
 
-def main(input_path: str = '-'):
+def main(input_path: str = '-', binary: bool = False):
     if input_path == '-':
         output_path = '-'
     else:
@@ -346,7 +346,7 @@ def main(input_path: str = '-'):
             print(e, file=sys.stderr)
         return False
 
-    with output_stream(output_path) as stream:
+    with output_stream(output_path, binary) as stream:
         assembler.write(stream)
     return True
 
@@ -354,6 +354,10 @@ def main(input_path: str = '-'):
 def cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_path', nargs='?', default='-')
+    parser.add_argument(
+            '-b', '--binary',
+            action='store_true',
+            help="Output the program in binary encoding")
 
     args = parser.parse_args()
     success = False
