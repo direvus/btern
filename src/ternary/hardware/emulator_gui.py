@@ -429,10 +429,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.emulator.load(stream)
                 self.program_length = len(self.emulator.program)
         except Exception as e:
-            self.show_error_dialog(
-                "Program Load Error",
-                f"Failed to load program from {path}:\n\n{str(e)}",
-            )
+            QtWidgets.QMessageBox.warning(
+                    self,
+                    "Program failed to load",
+                    f"Failed to load program from {path}:\n\n{str(e)}\n\n"
+                    "Please ensure that the selected file is a valid T-12 "
+                    "program encoded in binary or text form.")
             return
 
         self.reset()
