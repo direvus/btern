@@ -115,17 +115,22 @@ def int_to_trits(n: int, size: int) -> Trits:
 
 def trits_to_colour(t: Trits) -> str:
     """Map a 3-trit sequence to a colour.
-    
-    Each 3-trit sequence maps to a colour in a 27-colour RGB space. The first trit controls the red quantity, the second trit controls the green and the third trits controls the blue. A negative trit means none of that colour value, a zero trit means 50% and a positive trit means 100%.
-    
-    If the supplied trit sequence is longer than 3 trits, only the first 3 trits are used and any excess is ignored.
 
-    If the suppled trit sequence is shorter than 3 trits, a ValueError is raised.
+    Each 3-trit sequence maps to a colour in a 27-colour RGB space. The first
+    trit controls the red quantity, the second trit controls the green and the
+    third trits controls the blue. A negative trit means none of that colour
+    value, a zero trit means 50% and a positive trit means 100%.
+
+    If the supplied trit sequence is longer than 3 trits, only the first 3
+    trits are used and any excess is ignored.
+
+    If the suppled trit sequence is shorter than 3 trits, a ValueError is
+    raised.
 
     The colour is returned as a six-character hexadecimal string, for example:
-    
+
     >>> trits_to_colour('-0+')
-    '007FFF' 
+    '007FFF'
     """
     try:
         return COLOURS_3T[t[:3]]

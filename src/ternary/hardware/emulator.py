@@ -178,9 +178,14 @@ class Emulator:
         while self.pc < exit_address:
             self.step()
 
-    def step(self):
-        """Execute one computer cycle."""
+    def step(self) -> str:
+        """Execute one computer cycle.
+
+        Return the name of the register that was modified by the instruction
+        ('A', 'D' or 'M').
+        """
         start = time.perf_counter()
+        result = None
 
         index = self.pc - MIN_ADDR
         m = self.ram.get(self.a, 0)
@@ -227,17 +232,22 @@ class Emulator:
 
             if tgt == '-':
                 self.a = result
+                result = 'A'
             elif tgt == '0':
                 self.set_ram(self.a, result)
+                result = 'M'
             else:
                 self.d = result
+                result = 'D'
         else:
             # MOV
             value = trits_to_int(instruction[1:])
             if mode == '-':
                 self.a = value
+                result = 'A'
             else:
                 self.d = value
+                result = 'D'
 
             self.pc = add(self.pc, 1)
 
@@ -246,6 +256,7 @@ class Emulator:
             if self.cycle_time > dur:
                 time.sleep(self.cycle_time - dur)
         self.ticks += 1
+        return result
 
     def get_ram_contents(self, index: int) -> int:
         return self.ram.get(index, 0)

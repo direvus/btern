@@ -6,7 +6,8 @@ from iconipy import IconFactory
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from ternary.hardware.emulator import Emulator, SCREEN_END_ADDR
-from ternary.hardware.util import MIN_ADDR, int_to_trits, input_stream
+from ternary.hardware.util import (
+        MIN_ADDR, int_to_trits, input_stream, trits_to_colour)
 
 SPEED_MIN_HZ = 1
 SPEED_MAX_HZ = 1_000_000
@@ -44,7 +45,7 @@ def format_trits(value: int):
 
 
 class WorkerSignals(QtCore.QObject):
-    finished = QtCore.Signal(int)
+    finished = QtCore.Signal(str, int)
 
 
 class Worker(QtCore.QRunnable):
@@ -56,9 +57,9 @@ class Worker(QtCore.QRunnable):
     @QtCore.Slot()
     def run(self):
         timer = time.perf_counter_ns()
-        self.fn()
+        target = self.fn()
         duration = time.perf_counter_ns() - timer
-        self.signals.finished.emit(duration)
+        self.signals.finished.emit(target, duration)
 
 
 class TrayItem(QtWidgets.QWidget):
@@ -99,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.threadpool = QtCore.QThreadPool()
         self.threadpool.setMaxThreadCount(1)
         self.create_layout()
+        self.clear_screen()
 
         if input_path:
             self.load_program(input_path)
@@ -125,7 +127,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pix = QtGui.QPixmap(width, height)
         self.screen.setMinimumSize(width, height)
         self.screen.setPixmap(self.pix)
-        self.painter = QtGui.QPainter()
         self.pen = QtGui.QPen()
         self.pen.setWidth(SCREEN_SCALE)
 
@@ -212,6 +213,31 @@ class MainWindow(QtWidgets.QMainWindow):
         item = self.program_list.topLevelItem(index)
         self.program_list.setCurrentItem(item)
 
+    def update_screen(self, address: int, value: int):
+        row, col = divmod(address - MIN_ADDR, SCREEN_WIDTH / 4)
+        offset = SCREEN_SCALE // 2
+        x = col * SCREEN_SCALE * 4 + offset
+        y = row * SCREEN_SCALE + offset
+        trits = int_to_trits(value, 12)
+        painter = QtGui.QPainter(self.pix)
+        for i in range(0, 12, 3):
+            colour = '#' + trits_to_colour(trits[i:i+3])
+            self.pen.setColor(colour)
+            painter.setPen(self.pen)
+            painter.drawPoint(x, y)
+            x += SCREEN_SCALE
+        painter.end()
+        self.screen.setPixmap(self.pix)
+
+    def clear_screen(self):
+        painter = QtGui.QPainter(self.pix)
+        colour = '#' + trits_to_colour('000')
+        w = SCREEN_WIDTH * SCREEN_SCALE
+        h = SCREEN_HEIGHT * SCREEN_SCALE
+        painter.fillRect(0, 0, w, h, QtGui.QColor(colour))
+        painter.end()
+        self.screen.setPixmap(self.pix)
+
     def get_program_index(self):
         return self.emulator.pc - MIN_ADDR
 
@@ -224,15 +250,19 @@ class MainWindow(QtWidgets.QMainWindow):
         worker.signals.finished.connect(self.step_completed)
         self.threadpool.start(worker)
 
-    def step(self):
-        self.emulator.step()
+    def step(self) -> str:
+        return self.emulator.step()
 
-    def step_completed(self, duration: int):
+    def step_completed(self, target: str, duration: int):
         self.count += 1
         self.update_tray()
         self.update_program_list()
         self.update_buttons()
-        # TODO: update screen
+
+        if target == 'M':
+            a = self.emulator.a
+            if a < SCREEN_END_ADDR:
+                self.update_screen(a, self.emulator.get_ram(a))
 
         index = self.get_program_index()
         if index >= self.program_length or index < 0:
@@ -263,6 +293,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_tray()
         self.update_program_list()
         self.update_buttons()
+        self.clear_screen()
         self.stop()
 
     def load_program(self, path: str):
