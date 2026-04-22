@@ -91,9 +91,10 @@ class Emulator:
         self.screen_image = self.make_image()
         self.memory_callback = None
 
-    def load_binary(self, stream) -> None:
+    def load_binary(self, stream, prefix: bytes = b'') -> None:
         """Load a program encoded in binary format."""
-        program = str(binary.decode(stream.read()))
+        data = b''.join((prefix, stream.read()))
+        program = str(binary.decode(data))
         length = len(program)
         if length % 12 != 0:
             raise ValueError(
@@ -109,7 +110,19 @@ class Emulator:
         codes = []
         comments = {}
         i = 0
+
+        # Inspect the first byte -- if it's in the range 0xf3 - 0xf7 then the
+        # file is probably binary encoded.
+        char = stream.buffer.read(1)
+        if 0xf3 <= char[0] <= 0xf7:
+            self.load_binary(stream.buffer, char)
+            return
+
         for line in stream:
+            if char:
+                line = char.decode() + line
+                char = None
+
             line = line.strip()
             if not line:
                 continue
