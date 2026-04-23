@@ -1,3 +1,4 @@
+from io import BytesIO
 import pytest
 
 from ternary.hardware import emulator
@@ -74,3 +75,14 @@ def test_hardware_emulator_mul():
 
     emu.execute()
     assert emu.get_ram(3) == 154
+
+
+def test_hardware_emulator_load_binary():
+    program = BytesIO(
+            b'\xf6\x01yy\xcap\xe6\xd6xyy\xe5y\x94\xe9y(y\xcb\xebxyy\xd4\x9d'
+            b'vy{\x85\xe5pyy\xd4\xca^y\x94\x95y(y\xb2^y\x9e\xcaQ\x00q\xe9{'
+            )
+    emu = emulator.Emulator()
+    emu.load(program)
+    emu.execute()
+    assert emu.get_ram(3) == -231

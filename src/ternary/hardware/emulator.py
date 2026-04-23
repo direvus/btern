@@ -109,17 +109,23 @@ class Emulator:
         """Load a program encoded in text format."""
         codes = []
         comments = {}
+        char = None
         i = 0
 
         # Inspect the first byte -- if it's in the range 0xf3 - 0xf7 then the
         # file is probably binary encoded.
-        char = stream.buffer.read(1)
-        if 0xf3 <= char[0] <= 0xf7:
-            self.load_binary(stream.buffer, char)
-            return
+        try:
+            char = stream.buffer.read(1)
+            if 0xf3 <= char[0] <= 0xf7:
+                self.load_binary(stream.buffer, char)
+                return
+        except AttributeError:
+            # No 'buffer' attribute means the stream is probably a StringIO or
+            # similar, so just treat is as text.
+            pass
 
         for line in stream:
-            if char:
+            if char is not None:
                 line = char.decode() + line
                 char = None
 
