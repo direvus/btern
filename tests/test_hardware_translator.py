@@ -5,7 +5,6 @@ import pytest
 
 from ternary.hardware.assembler import Assembler
 from ternary.hardware.translator import Translator
-from ternary.hardware.simulator import Simulator
 from ternary.hardware.emulator import Emulator
 
 
@@ -71,6 +70,91 @@ def test_hardware_translator_sub(a, b, expected):
             f'push constant {a}',
             f'push constant {b}',
             'sub'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inp,expected",
+        [
+            (0, 0),
+            (1, -1),
+            (-1, 1),
+            (-87, 87),
+            (422, -422),
+            ])
+def test_hardware_translator_not(inp, expected):
+    emu = emulate((
+            f'push constant {inp}',
+            'not'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inp,expected",
+        [
+            (0, 0),
+            (1, 3),
+            (-1, -3),
+            (-87, -261),
+            (422, 1266),
+            ])
+def test_hardware_translator_shiftl(inp, expected):
+    emu = emulate((
+            f'push constant {inp}',
+            'shiftl'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inp,expected",
+        [
+            (0, 0),
+            (1, 0),
+            (-1, 0),
+            (-87, -29),
+            (422, 141),
+            ])
+def test_hardware_translator_shiftr(inp, expected):
+    emu = emulate((
+            f'push constant {inp}',
+            'shiftr'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inp,expected",
+        [
+            (0, 1),
+            (1, 2),
+            (-1, 0),
+            (-87, -86),
+            (422, 423),
+            ])
+def test_hardware_translator_inc(inp, expected):
+    emu = emulate((
+            f'push constant {inp}',
+            'inc'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "inp,expected",
+        [
+            (0, -1),
+            (1, 0),
+            (-1, -2),
+            (-87, -88),
+            (422, 421),
+            ])
+def test_hardware_translator_dec(inp, expected):
+    emu = emulate((
+            f'push constant {inp}',
+            'dec'))
     out = emu.get_ram_contents(0)
     assert out == expected
 
