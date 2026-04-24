@@ -3,7 +3,7 @@ from io import BytesIO, StringIO
 
 import pytest
 
-from ternary.hardware.assembler import Assembler
+from ternary.hardware.assembler import Assembler, PREDEF_VARS, VAR_ADDR
 from ternary.hardware.translator import Translator
 from ternary.hardware.emulator import Emulator
 from ternary.hardware.util import MIN_ADDR
@@ -290,3 +290,13 @@ def test_hardware_translator_label_goto():
         emu.step()
     out = emu.pc - MIN_ADDR
     assert out < length
+
+
+def test_hardware_translator_push_pop():
+    emu = execute((
+            'push constant 87',
+            'pop local 1',
+            ))
+    local_addr = PREDEF_VARS['local'] + VAR_ADDR
+    local = emu.get_ram(local_addr)
+    assert emu.get_ram(local + 1) == 87

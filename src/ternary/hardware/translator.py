@@ -263,11 +263,12 @@ class Translator:
         """
         if segment in SEGMENTS:
             code = [f'MOV {segment} A  # pop {segment} {offset}']
-            # Skip adding the offset if it's zero
-            if offset != 0:
+            if offset == 0:
+                code.append('CPY M D')
+            else:
                 code.extend((
                         f'MOV {offset} D',
-                        'ADD A D D',
+                        'ADD M D D',
                         ))
             code.extend((
                     'MOV addr A',
