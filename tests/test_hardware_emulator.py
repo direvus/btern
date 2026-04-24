@@ -18,7 +18,7 @@ from ternary.hardware.util import trits_to_int
                 '++++++++++++',
                 ))))
 def test_hardware_emulator_and(inputs, expected):
-    out = emulator.do_and(*map(trits_to_int, inputs))
+    out = emulator.tritwise_and(*map(trits_to_int, inputs))
     assert out == trits_to_int(expected)
 
 
