@@ -30,7 +30,7 @@ SCREEN_HEIGHT = 200
 SCREEN_END_ADDR = MIN_ADDR + (SCREEN_WIDTH * SCREEN_HEIGHT / 4)
 
 
-def do_and(a: int, b: int) -> int:
+def tritwise_and(a: int, b: int) -> int:
     ta = int_to_trits(a, 12)
     tb = int_to_trits(b, 12)
 
@@ -56,7 +56,7 @@ def compute(x: int, y: int, px: Trit, py: Trit, f: Trit) -> int:
 
     if f == '-':
         # AND
-        return do_and(x, y)
+        return tritwise_and(x, y)
     elif f == '+':
         # ADD
         return add(x, y)

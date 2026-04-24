@@ -221,12 +221,12 @@ class Translator:
                 # least significant trit.
                 trits = int_to_trits(offset, 12)
                 code.extend((
-                        f'MOV {trits[1:]} D  # push constant {offset}',
+                        f'MOV {trits[:-1]} D  # push constant {offset}',
                         'SHL D D',
                         ))
-                if trits[0] == POS:
+                if trits[-1] == POS:
                     code.append('INC D D')
-                if trits[0] == NEG:
+                if trits[-1] == NEG:
                     code.append('DEC D D')
             else:
                 # Constant value fits within 11 trits, so just use a literal

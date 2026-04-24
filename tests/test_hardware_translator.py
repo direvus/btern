@@ -75,6 +75,42 @@ def test_hardware_translator_sub(a, b, expected):
 
 
 @pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            (0, 0, 0),
+            (0, 1, 0),
+            (1, 0, 0),
+            (1, 1, 1),
+            (-255541, -163520, -262669),
+            ])
+def test_hardware_translator_and(a, b, expected):
+    emu = emulate((
+            f'push constant {a}',
+            f'push constant {b}',
+            'and'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            (0, 0, 0),
+            (0, 1, 1),
+            (1, 0, 1),
+            (1, 1, 1),
+            (-255541, -163520, -156392),
+            ])
+def test_hardware_translator_or(a, b, expected):
+    emu = emulate((
+            f'push constant {a}',
+            f'push constant {b}',
+            'or'))
+    out = emu.get_ram_contents(0)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
         "inp,expected",
         [
             (0, 0),
