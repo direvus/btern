@@ -6,6 +6,7 @@ import pytest
 from ternary.hardware.assembler import Assembler
 from ternary.hardware.translator import Translator
 from ternary.hardware.emulator import Emulator
+from ternary.hardware.util import MIN_ADDR
 
 
 def emulate(program: Iterable[str]) -> Emulator:
@@ -13,8 +14,8 @@ def emulate(program: Iterable[str]) -> Emulator:
 
     This function translates a VM source program into assembly, hands the
     assembly off to the Assembler to process into machine code, and finally
-    hands the machine code off to the Emulator to execute, and returns the
-    Emulator instance.
+    loads the machine code in to an Emulator, and returns the Emulator
+    instance.
     """
     tr = Translator()
     ass = Assembler()
@@ -32,6 +33,11 @@ def emulate(program: Iterable[str]) -> Emulator:
 
     machine.seek(0)
     emu.load(machine)
+    return emu
+
+
+def execute(program: Iterable[str]) -> Emulator:
+    emu = emulate(program)
     emu.execute()
     return emu
 
@@ -47,7 +53,7 @@ def emulate(program: Iterable[str]) -> Emulator:
             (-7, -422, -429),
             ])
 def test_hardware_translator_add(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'add'))
@@ -66,7 +72,7 @@ def test_hardware_translator_add(a, b, expected):
             (-7, -422, 415),
             ])
 def test_hardware_translator_sub(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'sub'))
@@ -84,7 +90,7 @@ def test_hardware_translator_sub(a, b, expected):
             (-255541, -163520, -262669),
             ])
 def test_hardware_translator_and(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'and'))
@@ -102,7 +108,7 @@ def test_hardware_translator_and(a, b, expected):
             (-255541, -163520, -156392),
             ])
 def test_hardware_translator_or(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'or'))
@@ -120,7 +126,7 @@ def test_hardware_translator_or(a, b, expected):
             (422, -422),
             ])
 def test_hardware_translator_not(inp, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {inp}',
             'not'))
     out = emu.get_ram_contents(0)
@@ -137,7 +143,7 @@ def test_hardware_translator_not(inp, expected):
             (422, 1266),
             ])
 def test_hardware_translator_shiftl(inp, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {inp}',
             'shiftl'))
     out = emu.get_ram_contents(0)
@@ -154,7 +160,7 @@ def test_hardware_translator_shiftl(inp, expected):
             (422, 141),
             ])
 def test_hardware_translator_shiftr(inp, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {inp}',
             'shiftr'))
     out = emu.get_ram_contents(0)
@@ -171,7 +177,7 @@ def test_hardware_translator_shiftr(inp, expected):
             (422, 423),
             ])
 def test_hardware_translator_inc(inp, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {inp}',
             'inc'))
     out = emu.get_ram_contents(0)
@@ -188,7 +194,7 @@ def test_hardware_translator_inc(inp, expected):
             (422, 421),
             ])
 def test_hardware_translator_dec(inp, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {inp}',
             'dec'))
     out = emu.get_ram_contents(0)
@@ -206,7 +212,7 @@ def test_hardware_translator_dec(inp, expected):
             (-7, -422, -1),
             ])
 def test_hardware_translator_eq(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'eq'))
@@ -225,7 +231,7 @@ def test_hardware_translator_eq(a, b, expected):
             (-7, -422, 1),
             ])
 def test_hardware_translator_ne(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'ne'))
@@ -244,7 +250,7 @@ def test_hardware_translator_ne(a, b, expected):
             (-7, -422, False),
             ])
 def test_hardware_translator_lt(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'lt'))
@@ -263,9 +269,24 @@ def test_hardware_translator_lt(a, b, expected):
             (-7, -422, True),
             ])
 def test_hardware_translator_gt(a, b, expected):
-    emu = emulate((
+    emu = execute((
             f'push constant {a}',
             f'push constant {b}',
             'gt'))
     out = emu.get_ram_contents(0)
     assert (out > 0) == expected
+
+
+def test_hardware_translator_label_goto():
+    emu = emulate((
+            'push constant 0',
+            'label line1',
+            'goto line1',
+            ))
+    length = len(emu.program)
+    emu.reset()
+    for _ in range(length):
+        print("stepping")
+        emu.step()
+    out = emu.pc - MIN_ADDR
+    assert out < length
