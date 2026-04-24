@@ -231,3 +231,41 @@ def test_hardware_translator_ne(a, b, expected):
             'ne'))
     out = emu.get_ram_contents(0)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            (0, 0, False),
+            (0, 1, True),
+            (1, 0, False),
+            (1, 1, False),
+            (-87, 2, True),
+            (-7, -422, False),
+            ])
+def test_hardware_translator_lt(a, b, expected):
+    emu = emulate((
+            f'push constant {a}',
+            f'push constant {b}',
+            'lt'))
+    out = emu.get_ram_contents(0)
+    assert (out > 0) == expected
+
+
+@pytest.mark.parametrize(
+        "a,b,expected",
+        [
+            (0, 0, False),
+            (0, 1, False),
+            (1, 0, True),
+            (1, 1, False),
+            (-87, 2, False),
+            (-7, -422, True),
+            ])
+def test_hardware_translator_gt(a, b, expected):
+    emu = emulate((
+            f'push constant {a}',
+            f'push constant {b}',
+            'gt'))
+    out = emu.get_ram_contents(0)
+    assert (out > 0) == expected
