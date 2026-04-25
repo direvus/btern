@@ -118,10 +118,11 @@ class Translator:
         self.program = []
         self.module = ''
         self.function = ''
-        self.linenum = 0
+        self.line_num = 0
+        self.call_count = 0
 
     def read(self, stream: io.TextIOBase, filename: str):
-        self.linenum = 1
+        self.line_num = 1
         self.module = filename
         self.program.append(f"### Module: {filename}")
         for line in stream:
@@ -132,9 +133,9 @@ class Translator:
                 code = self.translate(line)
             except ValueError as e:
                 raise ValueError(
-                        f"{e} at {self.context} line {self.linenum}")
+                        f"{e} at {self.context} line {self.line_num}")
             self.program.extend(code)
-            self.linenum += 1
+            self.line_num += 1
 
     def write(self, stream: io.TextIOBase):
         for line in self.program:
@@ -186,6 +187,10 @@ class Translator:
                     f'MOV {label} A',
                     'CHK D JGT',
                     )
+
+        if name == 'function':
+            func_name, nlocals = args
+            return self.translate_function(func_name, int(nlocals))
 
         raise ValueError(f"Invalid operation '{name}'")
 
@@ -306,6 +311,33 @@ class Translator:
             raise ValueError("Pop to constant is not valid.")
 
         raise ValueError(f"Invalid segment name '{segment}'.")
+
+    def translate_function(self, name: str, nlocals: int) -> Iterable[str]:
+        self.function = name
+        result = [
+                f'# function {name}({nlocals})',
+                f'{self.context}:',
+                'MOV local A',
+                'CPY M A',
+                ]
+        # Initialise all locals to zero
+        for _ in range(nlocals):
+            result.extend((
+                    'CLR M',
+                    'INC A A',
+                    ))
+        # Set the stack pointer past the locals
+        if nlocals > 0:
+            result.extend((
+                    'CPY A D',
+                    'MOV sp A',
+                    'CPY D M',
+                    ))
+        return result
+
+    def translate_call(self, function: str, nargs: int) -> Iterable[str]:
+        # TODO
+        pass
 
 
 def main(input_path: str = '-'):

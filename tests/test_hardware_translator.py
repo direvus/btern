@@ -42,6 +42,11 @@ def execute(program: Iterable[str]) -> Emulator:
     return emu
 
 
+def get_pointer(emulator: Emulator, name: str) -> int:
+    addr = PREDEF_VARS[name] + VAR_ADDR
+    return emulator.get_ram(addr)
+
+
 @pytest.mark.parametrize(
         "a,b,expected",
         [
@@ -316,6 +321,35 @@ def test_hardware_translator_push_pop():
             'push constant 87',
             'pop local 1',
             ))
-    local_addr = PREDEF_VARS['local'] + VAR_ADDR
-    local = emu.get_ram(local_addr)
+    local = get_pointer(emu, 'local')
     assert emu.get_ram(local + 1) == 87
+
+
+def test_hardware_translator_push_invalid():
+    tr = Translator()
+    value = MAX_INT + 1
+    with pytest.raises(ValueError):
+        tr.translate(f'push constant {value}')
+
+
+def test_hardware_translator_function():
+    emu = execute((
+            'function test_func 0',
+            ))
+    # With zero locals, the stack pointer and the local pointer should still be
+    # equal to each other at their initial value.
+    sp = get_pointer(emu, 'sp')
+    local = get_pointer(emu, 'local')
+    assert sp == 0
+    assert sp == local
+
+
+def test_hardware_translator_function_locals():
+    emu = execute((
+            'function test_func 3',
+            ))
+    # With three locals, the stack pointer should be at local + 3
+    sp = get_pointer(emu, 'sp')
+    local = get_pointer(emu, 'local')
+    assert local == 0
+    assert sp == (local + 3)
