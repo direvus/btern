@@ -117,6 +117,7 @@ class Translator:
     def __init__(self):
         self.program = []
         self.module = ''
+        self.function = ''
         self.linenum = 0
 
     def read(self, stream: io.TextIOBase, filename: str):
@@ -131,13 +132,19 @@ class Translator:
                 code = self.translate(line)
             except ValueError as e:
                 raise ValueError(
-                        f"{e} at {self.module} line {self.linenum}")
+                        f"{e} at {self.context} line {self.linenum}")
             self.program.extend(code)
             self.linenum += 1
 
     def write(self, stream: io.TextIOBase):
         for line in self.program:
             stream.write(f'{line}\n')
+
+    @property
+    def context(self) -> str:
+        if self.function:
+            return f'{self.module}.{self.function}'
+        return self.module
 
     def translate(self, line: str) -> Iterable[str]:
         tokens = line.split()
@@ -158,10 +165,10 @@ class Translator:
             return self.translate_pop(*args)
 
         if name == 'label':
-            return (f'{self.module}.{args[0]}:',)
+            return (f'{self.context}.{args[0]}:',)
 
         if name == 'goto':
-            label = f'{self.module}.{args[0]}'
+            label = f'{self.context}.{args[0]}'
             return (
                     f'MOV {label} A  # goto {args[0]}',
                     'NOP JMP',
@@ -170,7 +177,7 @@ class Translator:
         if name == 'if-goto':
             # Take the top value off the stack, and go to the given label if
             # that value is positive.
-            label = f'{self.module}.{args[0]}'
+            label = f'{self.context}.{args[0]}'
             return (
                     'MOV sp A  # if-goto {label}',
                     'DEC M M',
