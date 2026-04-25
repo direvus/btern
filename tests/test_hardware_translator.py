@@ -6,7 +6,7 @@ import pytest
 from ternary.hardware.assembler import Assembler, PREDEF_VARS, VAR_ADDR
 from ternary.hardware.translator import Translator
 from ternary.hardware.emulator import Emulator
-from ternary.hardware.util import MIN_ADDR
+from ternary.hardware.util import MIN_ADDR, MAX_INT
 
 
 def emulate(program: Iterable[str]) -> Emulator:
@@ -286,10 +286,29 @@ def test_hardware_translator_label_goto():
     length = len(emu.program)
     emu.reset()
     for _ in range(length):
-        print("stepping")
         emu.step()
     out = emu.pc - MIN_ADDR
     assert out < length
+
+
+@pytest.mark.parametrize(
+        "inp,jumped",
+        [
+            (0, False),
+            (1, True),
+            (-1, False),
+            (-87, False),
+            (422, True),
+            ])
+def test_hardware_translator_if_goto(inp, jumped):
+    emu = execute((
+            f'push constant {inp}',
+            'if-goto exit',
+            f'push constant {MAX_INT}',
+            'label exit',
+            ))
+    out = emu.get_ram_contents(0)
+    assert (out == MAX_INT) != jumped
 
 
 def test_hardware_translator_push_pop():

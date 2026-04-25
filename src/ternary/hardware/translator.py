@@ -167,6 +167,19 @@ class Translator:
                     'NOP JMP',
                     )
 
+        if name == 'if-goto':
+            # Take the top value off the stack, and go to the given label if
+            # that value is positive.
+            label = f'{self.module}.{args[0]}'
+            return (
+                    'MOV sp A  # if-goto {label}',
+                    'DEC M M',
+                    'CPY M A',
+                    'CPY M D',
+                    f'MOV {label} A',
+                    'CHK D JGT',
+                    )
+
         raise ValueError(f"Invalid operation '{name}'")
 
     def translate_push(self, segment: str, offset: int) -> Iterable[str]:
