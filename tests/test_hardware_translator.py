@@ -355,7 +355,7 @@ def test_hardware_translator_function_locals():
     assert sp == (local + 3)
 
 
-def test_hardware_translator_call0():
+def test_hardware_translator_call_zero():
     emu = execute((
             'call test_func 0',
             # Fake start of function definition label, so the call has
@@ -373,8 +373,42 @@ def test_hardware_translator_call0():
 
     ret = emu.get_ram_contents(sp - 3)
     orig_local = emu.get_ram_contents(sp - 2)
-    orig_args = emu.get_ram_contents(sp - 2)
+    orig_args = emu.get_ram_contents(sp - 1)
 
     assert ret == MIN_ADDR + len(emu.program)
     assert orig_local == 0
     assert orig_args == 0
+
+
+def test_hardware_translator_call():
+    emu = execute((
+            'push constant -1',
+            'push constant 87',
+            'push constant -4443',
+            'push constant 2',
+            'call test_func 4',
+            # Fake start of function definition label, so the call has
+            # somewhere to jump to.
+            'label test_func',
+            ))
+    # The stack should contain the four arguments, the return address, and the
+    # original locals and args pointers.
+    sp = get_pointer(emu, 'sp')
+    local = get_pointer(emu, 'local')
+    args = get_pointer(emu, 'args')
+
+    ret = emu.get_ram_contents(sp - 3)
+    orig_local = emu.get_ram_contents(sp - 2)
+    orig_args = emu.get_ram_contents(sp - 1)
+
+    assert ret == MIN_ADDR + len(emu.program)
+    assert orig_local == 0
+    assert orig_args == 0
+    assert sp == 3 + 4
+    assert local == sp
+    assert args == 0
+
+    assert emu.get_ram_contents(args) == -1
+    assert emu.get_ram_contents(args + 1) == 87
+    assert emu.get_ram_contents(args + 2) == -4443
+    assert emu.get_ram_contents(args + 3) == 2
