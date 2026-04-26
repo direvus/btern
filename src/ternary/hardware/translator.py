@@ -13,7 +13,7 @@ from ternary.hardware.util import (
         MIN_ADDR, MAX_ADDR, MIN_INT, MAX_INT)
 
 
-SEGMENTS = {'local', 'args', 'this', 'that'}
+SEGMENTS = ('local', 'args')
 # Codes that always produce the same static assembly output and require no
 # substitutions.
 STATIC_CODES = {
@@ -192,6 +192,10 @@ class Translator:
             func_name, nlocals = args
             return self.translate_function(func_name, int(nlocals))
 
+        if name == 'call':
+            func_name, nargs = args
+            return self.translate_call(func_name, int(nargs))
+
         raise ValueError(f"Invalid operation '{name}'")
 
     def translate_push(self, segment: str, offset: int) -> Iterable[str]:
@@ -336,8 +340,46 @@ class Translator:
         return result
 
     def translate_call(self, function: str, nargs: int) -> Iterable[str]:
-        # TODO
-        pass
+        self.call_count += 1
+        label = f'{self.context}.call.{function}.{self.call_count}'
+        return (
+                # Push the return label address to the stack
+                f'MOV {label} D  # call {function} {nargs}',
+                'MOV sp A',
+                'INC M M',
+                'DEC M A',
+                'CPY D M',
+                # Push the current local segment pointer to the stack
+                'MOV local A',
+                'CPY M D',
+                'MOV sp A',
+                'INC M M',
+                'DEC M A',
+                'CPY D M',
+                # Push the current args segment pointer to the stack
+                'MOV args A',
+                'CPY M D',
+                'MOV sp A',
+                'INC M M',
+                'DEC M A',
+                'CPY D M',
+                # Set the local pointer for the called function to match sp
+                'INC A D',
+                'MOV local A',
+                'CPY D M',
+                # Set args for the new function to point at the top `nargs`
+                # items that were already on the stack, before we added the
+                # return address, local and args.
+                f'MOV {nargs + 3} D',
+                'SUB M D D',
+                'MOV args A',
+                'CPY D M',
+                # Jump to the target function definition
+                f'MOV {function} A',
+                'NOP JMP',
+                # Return here when the function exits
+                f'{label}:',
+                )
 
 
 def main(input_path: str = '-'):

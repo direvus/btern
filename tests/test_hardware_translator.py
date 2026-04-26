@@ -353,3 +353,28 @@ def test_hardware_translator_function_locals():
     local = get_pointer(emu, 'local')
     assert local == 0
     assert sp == (local + 3)
+
+
+def test_hardware_translator_call0():
+    emu = execute((
+            'call test_func 0',
+            # Fake start of function definition label, so the call has
+            # somewhere to jump to.
+            'label test_func',
+            ))
+    # With a zero argument call, the stack should contain the return address,
+    # and the original locals and args pointers.
+    sp = get_pointer(emu, 'sp')
+    local = get_pointer(emu, 'local')
+    args = get_pointer(emu, 'args')
+    assert sp == 3
+    assert local == sp
+    assert args == 0
+
+    ret = emu.get_ram_contents(sp - 3)
+    orig_local = emu.get_ram_contents(sp - 2)
+    orig_args = emu.get_ram_contents(sp - 2)
+
+    assert ret == MIN_ADDR + len(emu.program)
+    assert orig_local == 0
+    assert orig_args == 0
