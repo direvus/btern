@@ -10,7 +10,7 @@ from ternary.hardware.util import MIN_ADDR, MAX_INT
 
 
 def emulate(program: Iterable[str]) -> Emulator:
-    """Translate, assemble and emulate a VM program.
+    """Translate, assemble and load a VM program into an Emulator.
 
     This function translates a VM source program into assembly, hands the
     assembly off to the Assembler to process into machine code, and finally
@@ -332,6 +332,34 @@ def test_hardware_translator_push_invalid():
         tr.translate(f'push constant {value}')
 
 
+def test_hardware_translator_push_arg():
+    emu = emulate((
+            'push arg 0',
+            'push arg 1',
+            ))
+    # Set up a scenario similar to calling a function: the stack will have two
+    # function arguments, followed by the return address, and the previous
+    # local and arg pointers.
+    emu.ram[0] = 27
+    emu.ram[1] = -4443
+    emu.ram[2] = MIN_ADDR
+    emu.ram[3] = 0
+    emu.ram[4] = 0
+    sp = PREDEF_VARS['sp'] + VAR_ADDR
+    emu.ram[sp] = 5
+
+    # After executing, the args should now be copied onto the stack.
+    emu.execute()
+    assert emu.ram[0] == 27
+    assert emu.ram[1] == -4443
+    assert emu.ram[2] == MIN_ADDR
+    assert emu.ram[3] == 0
+    assert emu.ram[4] == 0
+    assert emu.ram[5] == 27
+    assert emu.ram[6] == -4443
+    assert emu.ram[sp] == 7
+
+
 def test_hardware_translator_function():
     emu = execute((
             'function test_func 0',
@@ -366,7 +394,7 @@ def test_hardware_translator_call_zero():
     # and the original locals and args pointers.
     sp = get_pointer(emu, 'sp')
     local = get_pointer(emu, 'local')
-    args = get_pointer(emu, 'args')
+    args = get_pointer(emu, 'arg')
     assert sp == 3
     assert local == sp
     assert args == 0
@@ -395,7 +423,7 @@ def test_hardware_translator_call():
     # original locals and args pointers.
     sp = get_pointer(emu, 'sp')
     local = get_pointer(emu, 'local')
-    args = get_pointer(emu, 'args')
+    args = get_pointer(emu, 'arg')
 
     ret = emu.get_ram_contents(sp - 3)
     orig_local = emu.get_ram_contents(sp - 2)
@@ -412,3 +440,25 @@ def test_hardware_translator_call():
     assert emu.get_ram_contents(args + 1) == 87
     assert emu.get_ram_contents(args + 2) == -4443
     assert emu.get_ram_contents(args + 3) == 2
+
+
+def test_hardware_translator_return():
+    # Declare and run a function that adds its two arguments together and
+    # returns the result.
+    emu = execute((
+            'push constant 87',
+            'push constant -4443',
+            'call test.add 2',
+            'goto end',
+            'function add 0',
+            'push arg 0',
+            'push arg 1',
+            'add',
+            'return',
+            'label end',
+            ))
+    # The stack should contain the sum of the two constants
+    sp = get_pointer(emu, 'sp')
+    out = emu.get_ram_contents(sp - 1)
+
+    assert out == -4443 + 87

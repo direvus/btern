@@ -46,7 +46,7 @@ SHIFT_MAP = {
 PREDEF_VARS = {
         'sp': 0,
         'local': 1,
-        'args': 2,
+        'arg': 2,
         }
 MIN_ADDR = -(3 ** 11 // 2)
 VAR_ADDR = -13

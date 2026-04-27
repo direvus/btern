@@ -13,7 +13,7 @@ from ternary.hardware.util import (
         MIN_ADDR, MAX_ADDR, MIN_INT, MAX_INT)
 
 
-SEGMENTS = ('local', 'args')
+SEGMENTS = ('local', 'arg')
 # Codes that always produce the same static assembly output and require no
 # substitutions.
 STATIC_CODES = {
@@ -111,19 +111,63 @@ STATIC_CODES = {
             'CPY -D M',
             ),
         }
+BOOTSTRAP_CODE = (
+        '### Bootstrap',
+        'MOV init A',
+        'NOP JMP',
+        'return:  # Return from function',
+        # Copy the return address from local - 3 to a variable
+        'MOV 3 D',
+        'MOV local A',
+        'SUB M D D',
+        'MOV addr A',
+        'CPY D M',
+        # Copy the top value from the stack to arg[0], and make that the new
+        # top of the stack.
+        'MOV sp A',
+        'DEC M A',
+        'CPY M D',
+        'MOV arg A',
+        'CPY M A',
+        'CPY D M',
+        'INC A D',
+        'MOV sp A',
+        'CPY D M',
+        # Restore the saved pointers for local and arg from the calling
+        # context.
+        'MOV local A',
+        'DEC M A',
+        'CPY M D',
+        'MOV arg A',
+        'CPY D M',
+        'MOV local A',
+        'DEC M A',
+        'DEC A A',
+        'CPY M D',
+        'MOV local A',
+        'CPY D M',
+        # Jump to the return address.
+        'MOV addr A',
+        'CPY M A',
+        'NOP JMP',
+        'init:',
+        )
 
 
 class Translator:
-    def __init__(self):
+    def __init__(self, bootstrap: bool = True):
         self.program = []
         self.module = ''
         self.function = ''
         self.line_num = 0
         self.call_count = 0
 
+        if bootstrap:
+            self.program.extend(BOOTSTRAP_CODE)
+
     def read(self, stream: io.TextIOBase, filename: str):
         self.line_num = 1
-        self.module = filename
+        self.module, _ = os.path.splitext(filename)
         self.program.append(f"### Module: {filename}")
         for line in stream:
             line = line.strip()
@@ -196,6 +240,9 @@ class Translator:
             func_name, nargs = args
             return self.translate_call(func_name, int(nargs))
 
+        if name == 'return':
+            return self.translate_return()
+
         raise ValueError(f"Invalid operation '{name}'")
 
     def translate_push(self, segment: str, offset: int) -> Iterable[str]:
@@ -224,10 +271,12 @@ class Translator:
         if segment in SEGMENTS:
             code = [f'MOV {segment} A  # push {segment} {offset}']
             # Skip adding the offset if it's zero
-            if offset != 0:
+            if offset == 0:
+                code.append('CPY M A')
+            else:
                 code.extend((
                         f'MOV {offset} D',
-                        'ADD A D A',
+                        'ADD M D A',
                         ))
             code.extend((
                     'CPY M D',
@@ -337,6 +386,7 @@ class Translator:
                     'MOV sp A',
                     'CPY D M',
                     ))
+        self.function = ''
         return result
 
     def translate_call(self, function: str, nargs: int) -> Iterable[str]:
@@ -349,7 +399,7 @@ class Translator:
                 'INC M M',
                 'DEC M A',
                 'CPY D M',
-                # Push the current local segment pointer to the stack
+                # Push the current locals segment pointer to the stack
                 'MOV local A',
                 'CPY M D',
                 'MOV sp A',
@@ -357,7 +407,7 @@ class Translator:
                 'DEC M A',
                 'CPY D M',
                 # Push the current args segment pointer to the stack
-                'MOV args A',
+                'MOV arg A',
                 'CPY M D',
                 'MOV sp A',
                 'INC M M',
@@ -372,13 +422,19 @@ class Translator:
                 # return address, local and args.
                 f'MOV {nargs + 3} D',
                 'SUB M D D',
-                'MOV args A',
+                'MOV arg A',
                 'CPY D M',
                 # Jump to the target function definition
                 f'MOV {function} A',
                 'NOP JMP',
                 # Return here when the function exits
                 f'{label}:',
+                )
+
+    def translate_return(self) -> Iterable[str]:
+        return (
+                'MOV return A',
+                'NOP JMP',
                 )
 
 

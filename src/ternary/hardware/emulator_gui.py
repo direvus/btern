@@ -416,6 +416,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def reset(self):
         self.running = False
         self.emulator.reset()
+        self.emulator.ram.clear()
         self.count = 0
         self.update_tray()
         self.update_program_list()
