@@ -15,16 +15,9 @@ See the documentation for more detail:
 
 There are a few opportunities for future expansion in this design.
 
-- One reserved ALU operation (when both 'f' and 'py' are zero) that could be
-  made to do something useful, just not sure what. Could be a tryte swap, or a
-  tritwise reverse?
 - Two reserved trits in the machine language.
 - The 'reset' signal only has two states, zero or non-zero. There is room to
   make neg and pos behave differently, perhaps adding something like a halt?
-- Consider ways to terminate the program. Maybe reserve the very last address
-  of the program space as a shutdown, so if the CPU ever tries to jump there,
-  we stop running? That way a shutdown is just two machine instructions -- move
-  11+ into A and then jump.
 
 ## Acknowledgements
 
