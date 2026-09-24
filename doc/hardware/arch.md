@@ -61,10 +61,21 @@ input is replaced with zero.
 
 The 'f' signal instructs the ALU which function to perform on the inputs. When
 'f' is negative, the function is a logical tritwise AND. When 'f' is positive,
-the function is arithmetic addition. When 'f' is zero, we ignore the 'y' input
-and apply a unary function to 'x'. Because 'y' is ignored, we re-use the 'py'
-signal to select either increment of x (when 'py' is positive) or decrement of
-x (when 'py' is negative).
+the function is arithmetic addition.
+
+When 'f' is zero, we ignore the 'y' input and apply a unary function to 'x'.
+Because 'y' is ignored, we re-use the 'py' signal to select increment,
+decrement or is-zero, for 'py' value positive, negative or zero respectively.
+
+So the overall function selection, based on the 'f' and 'py' inputs, is:
+
+|  f  | py  | function             |
+|-----|-----|----------------------|
+| `-` | all | logical x AND y      |
+| `0` | `-` | decrement of x       |
+| `0` | `0` | is x zero?           |
+| `0` | `+` | increment of x       |
+| `+` | all | arithmetic x + y     |
 
 ## Jump Controller (JC)
 
